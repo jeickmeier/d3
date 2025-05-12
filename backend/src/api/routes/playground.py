@@ -61,4 +61,4 @@ if hasattr(_agno_async_router, "TeamGetResponse"):
 
 # Import after patching so that `Playground` and downstream modules pick up the
 # patched version.
-from agno.playground import Playground
+from agno.playground import Playground  # noqa: E402

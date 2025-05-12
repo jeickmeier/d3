@@ -12,6 +12,3 @@ Requires-Dist: psycopg[binary]
 Requires-Dist: sqlalchemy
 Requires-Dist: sqlmodel>=0.0.24
 Requires-Dist: yfinance
-Provides-Extra: dev
-Requires-Dist: mypy; extra == "dev"
-Requires-Dist: ruff; extra == "dev"

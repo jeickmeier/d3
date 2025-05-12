@@ -1,18 +1,10 @@
 import logging
-from enum import Enum
 from typing import List, Optional
 
 from agno.agent import Agent
 from .registry import AGENT_REGISTRY
 
 logger = logging.getLogger(__name__)
-
-class AgentType(Enum):
-    WEB_AGENT = "web_agent"
-    AGNO_ASSIST = "agno_assist"
-    FINANCE_AGENT = "finance_agent"
-    HACKERNEWS_AGENT = "hackernews_agent"
-
 
 def get_available_agents() -> List[str]:
     """Returns a list of all available agent IDs."""
