@@ -1,0 +1,63 @@
+# ---- Builder Stage ----
+# Use Alpine base image for smaller footprint
+FROM python:3.12-alpine AS builder
+
+# Install build dependencies needed for some Python packages
+RUN apk add --no-cache gcc musl-dev libffi-dev
+
+# Create a virtual environment
+ENV VENV_PATH=/opt/venv
+RUN python -m venv $VENV_PATH
+# Add venv bin to path for this stage
+ENV PATH="$VENV_PATH/bin:$PATH"
+
+WORKDIR /app
+
+# Copy only requirements
+COPY backend/requirements.txt ./
+
+# Install dependencies with optimized flags
+RUN pip install --no-cache-dir uv && \
+    uv pip sync --no-cache requirements.txt && \
+    pip cache purge && \
+    rm -rf /tmp/* /var/tmp/*
+
+# ---- Final Stage ----
+# Use Alpine for the final image as well
+FROM python:3.12-alpine
+
+ARG USER=app
+ARG UID=61000
+ARG GID=61000
+ARG APP_DIR=/app
+
+ENV APP_DIR=${APP_DIR} \
+    VENV_PATH=/opt/venv \
+    PATH="/opt/venv/bin:$PATH" \
+    PYTHONUNBUFFERED=1 \
+    PYTHONDONTWRITEBYTECODE=1
+
+# Create non-root user and group with minimal shell
+RUN addgroup -g ${GID} ${USER} && \
+    adduser -D -G ${USER} -u ${UID} -h ${APP_DIR} ${USER} && \
+    mkdir -p ${APP_DIR} && \
+    chown -R ${USER}:${USER} ${APP_DIR}
+
+# Copy only the virtual environment from builder stage
+COPY --from=builder ${VENV_PATH} ${VENV_PATH}
+
+WORKDIR ${APP_DIR}
+
+# Copy only necessary application code
+# IMPORTANT: Ensure .dockerignore excludes: .git, .venv, __pycache__, tests, etc.
+COPY --chown=${USER}:${USER} . .
+
+# Remove any unnecessary files that might have been copied
+RUN find . -type d -name __pycache__ -exec rm -rf {} +; \
+    find . -name '*.pyc' -delete; \
+    find . -name '*.pyo' -delete
+
+# Switch to non-root user
+USER ${USER}
+
+CMD ["uvicorn", "api.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]

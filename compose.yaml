@@ -1,0 +1,61 @@
+services:
+  d3-db:
+    build:
+      context: .
+      dockerfile: db/Dockerfile.pgvectorscale
+      args:
+        CACHE_BUSTER: ${CACHE_BUSTER_VAR:-none}
+    restart: unless-stopped
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: ${DB_USER:-ai}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-ai}
+      POSTGRES_DB: ${DB_NAME:-ai}
+      # Pass DB_HOST, DB_PORT, etc. to the extension script
+      DB_HOST: localhost
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-ai}
+      DB_PASS: ${DB_PASSWORD:-ai}
+      DB_DATABASE: ${DB_NAME:-ai}
+      WAIT_FOR_DB: "True"
+      PRINT_ENV_ON_LOAD: "True"
+    networks:
+      - d3-network
+
+  d3-backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile.agnoapi
+    image: ${IMAGE_NAME:-d3-backend}:${IMAGE_TAG:-latest}
+    command: sh -c "if [ "$$WAIT_FOR_DB" = "True" ]; then echo 'Waiting for database...'; sleep 5; fi && if [ "$$PRINT_ENV_ON_LOAD" = "True" ]; then echo '=================================================='; printenv; echo '=================================================='; fi && cd /app/backend && PYTHONPATH=/app python -m uvicorn api.main:app --host 0.0.0.0 --port 8000 --reload"
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    volumes:
+      - .:/app
+    environment:
+      OPENAI_API_KEY: ${OPENAI_API_KEY}
+      # AGNO_MONITOR: "True"
+      # AGNO_API_KEY: ${AGNO_API_KEY}
+      DB_HOST: d3-db
+      DB_PORT: 5432
+      DB_USER: ${DB_USER:-ai}
+      DB_PASS: ${DB_PASSWORD:-ai}
+      DB_DATABASE: ${DB_NAME:-ai}
+      WAIT_FOR_DB: "True"
+      PRINT_ENV_ON_LOAD: "True"
+    networks:
+      - d3-network
+    depends_on:
+      - d3-db
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+networks:
+  d3-network:
+
+volumes:
+  pgdata:

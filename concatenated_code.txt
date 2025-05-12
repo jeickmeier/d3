@@ -1,0 +1,952 @@
+# --- START FILE: backend/agents/__init__.py ---
+
+# --- END FILE: backend/agents/__init__.py ---
+
+# --- START FILE: backend/agents/agno_assist.py ---
+from textwrap import dedent
+from typing import Optional
+
+from agno.agent import Agent, AgentKnowledge
+from agno.embedder.openai import OpenAIEmbedder
+from agno.knowledge.url import UrlKnowledge
+from agno.memory.v2.db.postgres import PostgresMemoryDb
+from agno.memory.v2.memory import Memory
+from agno.models.openai import OpenAIChat
+from agno.storage.agent.postgres import PostgresAgentStorage
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.vectordb.pgvector import PgVector, SearchType
+
+from db.session import db_url
+
+
+def get_agno_assist_knowledge() -> AgentKnowledge:
+    return UrlKnowledge(
+        urls=["https://docs.agno.com/llms-full.txt"],
+        vector_db=PgVector(
+            db_url=db_url,
+            table_name="agno_assist_knowledge",
+            search_type=SearchType.hybrid,
+            embedder=OpenAIEmbedder(id="text-embedding-3-small"),
+        ),
+    )
+
+
+def get_agno_assist(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    return Agent(
+        name="Agno Assist",
+        agent_id="agno_assist",
+        user_id=user_id,
+        session_id=session_id,
+        model=OpenAIChat(id=model_id),
+        # Tools available to the agent
+        tools=[DuckDuckGoTools()],
+        # Description of the agent
+        description=dedent("""\
+            You are AgnoAssist, an advanced AI Agent specializing in Agno: a lightweight framework for building multi-modal, reasoning Agents.
+
+            Your goal is to help developers understand and use Agno by providing clear explanations, functional code examples, and best-practice guidance for using Agno.
+        """),
+        # Instructions for the agent
+        instructions=dedent("""\
+            Your mission is to provide comprehensive and actionable support for developers working with the Agno framework. Follow these steps to deliver high-quality assistance:
+
+            1. **Understand the request**
+            - Analyze the request to determine if it requires a knowledge search, creating an Agent, or both.
+            - If you need to search the knowledge base, identify 1-3 key search terms related to Agno concepts.
+            - If you need to create an Agent, search the knowledge base for relevant concepts and use the example code as a guide.
+            - When the user asks for an Agent, they mean an Agno Agent.
+            - All concepts are related to Agno, so you can search the knowledge base for relevant information
+
+            After Analysis, always start the iterative search process. No need to wait for approval from the user.
+
+            2. **Iterative Knowledge Base Search:**
+            - Use the `search_knowledge_base` tool to iteratively gather information.
+            - Focus on retrieving Agno concepts, illustrative code examples, and specific implementation details relevant to the user's request.
+            - Continue searching until you have sufficient information to comprehensively address the query or have explored all relevant search terms.
+
+            After the iterative search process, determine if you need to create an Agent.
+
+            3. **Code Creation**
+            - Create complete, working code examples that users can run. For example:
+            ```python
+            from agno.agent import Agent
+            from agno.tools.duckduckgo import DuckDuckGoTools
+
+            agent = Agent(tools=[DuckDuckGoTools()])
+
+            # Perform a web search and capture the response
+            response = agent.run("What's happening in France?")
+            ```
+            - Remember to:
+                * Build the complete agent implementation
+                * Includes all necessary imports and setup
+                * Add comprehensive comments explaining the implementation
+                * Ensure all dependencies are listed
+                * Include error handling and best practices
+                * Add type hints and documentation
+
+            Key topics to cover:
+            - Agent architecture, levels, and capabilities.
+            - Knowledge base integration and memory management strategies.
+            - Tool creation, integration, and usage.
+            - Supported models and their configuration.
+            - Common development patterns and best practices within Agno.
+
+            Additional Information:
+            - You are interacting with the user_id: {current_user_id}
+            - The user's name might be different from the user_id, you may ask for it if needed and add it to your memory if they share it with you.\
+        """),
+        # This makes `current_user_id` available in the instructions
+        add_state_in_messages=True,
+        # -*- Knowledge -*-
+        # Add the knowledge base to the agent
+        knowledge=get_agno_assist_knowledge(),
+        # Give the agent a tool to search the knowledge base (this is True by default but set here for clarity)
+        search_knowledge=True,
+        # -*- Storage -*-
+        # Storage chat history and session state in a Postgres table
+        storage=PostgresAgentStorage(table_name="agno_assist_sessions", db_url=db_url),
+        # -*- History -*-
+        # Send the last 3 messages from the chat history
+        add_history_to_messages=True,
+        num_history_runs=3,
+        # Add a tool to read the chat history if needed
+        read_chat_history=True,
+        # -*- Memory -*-
+        # Enable agentic memory where the Agent can personalize responses to the user
+        memory=Memory(
+            model=OpenAIChat(id=model_id),
+            db=PostgresMemoryDb(table_name="user_memories", db_url=db_url),
+            delete_memories=True,
+            clear_memories=True,
+        ),
+        enable_agentic_memory=True,
+        # -*- Other settings -*-
+        # Format responses using markdown
+        markdown=True,
+        # Add the current date and time to the instructions
+        add_datetime_to_instructions=True,
+        # Show debug logs
+        debug_mode=debug_mode,
+    )
+
+# --- END FILE: backend/agents/agno_assist.py ---
+
+# --- START FILE: backend/agents/finance_agent.py ---
+from textwrap import dedent
+from typing import Optional
+
+from agno.agent import Agent
+from agno.memory.v2.db.postgres import PostgresMemoryDb
+from agno.memory.v2.memory import Memory
+from agno.models.openai import OpenAIChat
+from agno.storage.agent.postgres import PostgresAgentStorage
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.tools.yfinance import YFinanceTools
+
+from db.session import db_url
+
+
+def get_finance_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    return Agent(
+        name="Finance Agent",
+        agent_id="finance_agent",
+        user_id=user_id,
+        session_id=session_id,
+        model=OpenAIChat(id=model_id),
+        # Tools available to the agent
+        tools=[
+            DuckDuckGoTools(),
+            YFinanceTools(
+                stock_price=True,
+                analyst_recommendations=True,
+                stock_fundamentals=True,
+                historical_prices=True,
+                company_info=True,
+                company_news=True,
+            ),
+        ],
+        # Description of the agent
+        description=dedent("""\
+            You are FinMaster, a seasoned Wall Street analyst with deep expertise in market analysis and financial data interpretation.
+
+            Your goal is to provide users with comprehensive, accurate, and actionable financial insights, presented in a clear and professional manner.
+        """),
+        # Instructions for the agent
+        instructions=dedent("""\
+            As FinMaster, your goal is to deliver insightful and data-driven responses. Adhere to the following process:
+
+            1. **Understand the Query:**
+               - Carefully analyze the user's request to determine the specific financial information or analysis needed.
+               - Identify the relevant company, ticker symbol, or market sector.
+
+            2. **Gather Financial Data:**
+               - Utilize available tools to collect up-to-date information for:
+                 - Market Overview (Latest stock price, 52-week high/low)
+                 - Financial Deep Dive (Key metrics like P/E, Market Cap, EPS)
+                 - Professional Insights (Analyst recommendations, recent rating changes)
+               - If necessary for broader market context or news, use `duckduckgo_search`, prioritizing reputable financial news outlets.
+
+            3. **Analyze and Synthesize:**
+               - Interpret the collected data to form a comprehensive view.
+               - For Market Context:
+                 - Consider industry trends and the company's positioning.
+                 - Perform a high-level competitive analysis if data is available.
+                 - Note market sentiment indicators if discernible from news or analyst opinions.
+
+            4. **Construct Your Report:**
+               - **Reporting Style:**
+                 - Begin with a concise executive summary of the key findings.
+                 - Important: USE TABLES for presenting numerical data (e.g., key metrics, historical prices).
+                 - Employ clear section headers for organization (e.g., "Market Overview," "Financial Deep Dive").
+                 - Use emoji indicators for trends (e.g., 📈 for upward, 📉 for downward) where appropriate.
+                 - Highlight key insights using bullet points.
+                 - Where possible, compare metrics to industry averages or historical performance.
+                 - Include brief explanations for technical terms if they are likely to be unfamiliar to the user.
+                 - Conclude with a brief forward-looking statement or potential outlook, based on available data.
+               - **Risk Disclosure:**
+                 - Always highlight potential risk factors associated with an investment or market condition.
+                 - Note any significant market uncertainties or volatility.
+                 - Mention relevant regulatory concerns if applicable and known.
+
+            5. **Leverage Memory & Context:**
+               - You have access to recent messages. Integrate previous interactions and user clarifications to maintain conversational continuity.
+
+            6. **Final Quality & Presentation Review:**
+               - Before sending, critically review your response for:
+                 - Accuracy of data and analysis.
+                 - Clarity and conciseness of language.
+                 - Completeness in addressing the user's query.
+                 - Professionalism in tone and presentation.
+                 - Proper organization and formatting.
+
+            7. **Handle Uncertainties Gracefully:**
+               - If you cannot find definitive information for a specific request, or if data is inconclusive, clearly state these limitations.
+               - Do not speculate beyond the available data.
+
+            Additional Information:
+            - You are interacting with the user_id: {current_user_id}
+            - The user's name might be different from the user_id, you may ask for it if needed and add it to your memory if they share it with you.
+            - Always use the available tools to fetch the latest data; do not rely on pre-existing knowledge for financial figures or recommendations.\
+        """),
+        # This makes `current_user_id` available in the instructions
+        add_state_in_messages=True,
+        # -*- Storage -*-
+        # Storage chat history and session state in a Postgres table
+        storage=PostgresAgentStorage(table_name="finance_agent_sessions", db_url=db_url),
+        # -*- History -*-
+        # Send the last 3 messages from the chat history
+        add_history_to_messages=True,
+        num_history_runs=3,
+        # Add a tool to read the chat history if needed
+        read_chat_history=True,
+        # -*- Memory -*-
+        # Enable agentic memory where the Agent can personalize responses to the user
+        memory=Memory(
+            model=OpenAIChat(id=model_id),
+            db=PostgresMemoryDb(table_name="user_memories", db_url=db_url),
+            delete_memories=True,
+            clear_memories=True,
+        ),
+        enable_agentic_memory=True,
+        # -*- Other settings -*-
+        # Format responses using markdown
+        markdown=True,
+        # Add the current date and time to the instructions
+        add_datetime_to_instructions=True,
+        # Show debug logs
+        debug_mode=debug_mode,
+    )
+
+# --- END FILE: backend/agents/finance_agent.py ---
+
+# --- START FILE: backend/agents/hackernews_agent.py ---
+from textwrap import dedent
+from typing import Optional
+
+from agno.agent import Agent
+from agno.memory.v2.db.postgres import PostgresMemoryDb
+from agno.memory.v2.memory import Memory
+from agno.models.openai import OpenAIChat
+from agno.storage.agent.postgres import PostgresAgentStorage
+from agno.tools.hackernews import HackerNewsTools
+
+from db.session import db_url
+
+
+def get_hackernews_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    return Agent(
+        name="HackerNews Researcher",
+        agent_id="hacker_news_agent",
+        user_id=user_id,
+        session_id=session_id,
+        model=OpenAIChat(id=model_id),
+
+        # Tools available to the agent
+        tools=[HackerNewsTools()],
+        # Description of the agent
+        description=dedent("""\
+            You are HackerNews Researcher, a specialist agent focused on discovering, analyzing, and summarizing the most relevant and insightful content from Hacker News.
+
+            Harness the HackerNewsTools to retrieve top stories, drill into comment threads, and extract essential details such as upvote counts, author info, and direct links. Your responses should be clear, concise, and include explicit references to the original Hacker News posts.
+        """),
+        # Instructions for the agent
+        instructions=dedent("""\
+            As HackerNews Researcher, your goal is to find, analyze, and summarize the most relevant Hacker News stories based on the user's query. Follow these steps:
+
+            1. Identify Query Focus:
+            - Parse the user's request to determine topics, keywords, and desired depth.
+            - If the query is too broad or ambiguous, ask clarifying questions before proceeding.
+
+            2. Fetch Top Stories:
+            - Use `HackerNewsTools.get_top_stories` to retrieve the top N stories (e.g., N=5) relevant to the identified topics.
+            - Prioritize results by score, recency, or relevance according to user preference.
+
+            3. Retrieve Story Details:
+            - For each story, use `HackerNewsTools.get_item` to obtain title, score, author, time, URL, and text.
+            - Optionally, fetch top comments with `HackerNewsTools.get_comments` and extract key discussion highlights.
+
+            4. Summarize and Cite:
+            - Summarize each story in 2–3 concise sentences, emphasizing key insights and relevance.
+            - Include citations with story ID, author, score, and direct Hacker News URL.
+            - For comment highlights, include author, upvote count, and a brief excerpt.
+
+            5. Structure Your Response:
+            - Begin with a brief overview of your findings.
+            - Present each story as a numbered list or subheading.
+            - Conclude with overall trends, comparisons, or emerging themes.
+
+            6. Engage and Follow Up:
+            - Suggest related topics or follow-up questions the user might explore.
+            - Encourage the user to refine criteria or request deeper analysis on a specific thread.
+
+            7. Handle Edge Cases:
+            - If no relevant stories are found, acknowledge it and solicit more details or alternative topics.
+            - Clearly state any data limitations or uncertainties in the retrieved information.
+
+            Additional Information:
+            - You are interacting with user_id: {current_user_id}
+            - Use agent memory to recall past topics and user preferences when relevant.\
+        """),
+        # This makes `current_user_id` available in the instructions
+        add_state_in_messages=True,
+        # -*- Storage -*-
+        # Storage chat history and session state in a Postgres table
+        storage=PostgresAgentStorage(table_name="hacker_news_agent_sessions", db_url=db_url),
+        # -*- History -*-
+        # Send the last 3 messages from the chat history
+        add_history_to_messages=True,
+        num_history_runs=3,
+        # Add a tool to read the chat history if needed
+        read_chat_history=True,
+        # -*- Memory -*-
+        # Enable agentic memory where the Agent can personalize responses to the user
+        memory=Memory(
+            model=OpenAIChat(id=model_id),
+            db=PostgresMemoryDb(table_name="user_memories", db_url=db_url),
+            delete_memories=True,
+            clear_memories=True,
+        ),
+        enable_agentic_memory=True,
+        # -*- Other settings -*-
+        # Format responses using markdown
+        markdown=True,
+        # Add the current date and time to the instructions
+        add_datetime_to_instructions=True,
+        # Show debug logs
+        debug_mode=debug_mode,
+    )
+
+
+
+
+
+# --- END FILE: backend/agents/hackernews_agent.py ---
+
+# --- START FILE: backend/agents/selector.py ---
+from enum import Enum
+from typing import List, Optional
+
+from agents.agno_assist import get_agno_assist
+from agents.finance_agent import get_finance_agent
+from agents.web_agent import get_web_agent
+from agents.hackernews_agent import get_hackernews_agent
+
+class AgentType(Enum):
+    WEB_AGENT = "web_agent"
+    AGNO_ASSIST = "agno_assist"
+    FINANCE_AGENT = "finance_agent"
+    HACKERNEWS_AGENT = "hackernews_agent"
+
+
+def get_available_agents() -> List[str]:
+    """Returns a list of all available agent IDs."""
+    return [agent.value for agent in AgentType]
+
+
+def get_agent(
+    model_id: str = "gpt-4.1",
+    agent_id: Optional[AgentType] = None,
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+):
+    if agent_id == AgentType.WEB_AGENT:
+        return get_web_agent(model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode)
+    elif agent_id == AgentType.AGNO_ASSIST:
+        return get_agno_assist(model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode)
+    elif agent_id == AgentType.FINANCE_AGENT:
+        return get_finance_agent(model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode)
+    elif agent_id == AgentType.HACKERNEWS_AGENT:
+        return get_hackernews_agent(model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode)
+    raise ValueError(f"Agent: {agent_id} not found")
+
+# --- END FILE: backend/agents/selector.py ---
+
+# --- START FILE: backend/agents/web_agent.py ---
+from textwrap import dedent
+from typing import Optional
+
+from agno.agent import Agent
+from agno.memory.v2.db.postgres import PostgresMemoryDb
+from agno.memory.v2.memory import Memory
+from agno.models.openai import OpenAIChat
+from agno.storage.agent.postgres import PostgresAgentStorage
+from agno.tools.duckduckgo import DuckDuckGoTools
+
+from db.session import db_url
+
+
+def get_web_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    return Agent(
+        name="Web Search Agent",
+        agent_id="web_search_agent",
+        user_id=user_id,
+        session_id=session_id,
+        model=OpenAIChat(id=model_id),
+        # Tools available to the agent
+        tools=[DuckDuckGoTools()],
+        # Description of the agent
+        description=dedent("""\
+            You are WebX, an advanced Web Search Agent designed to deliver accurate, context-rich information from the web.
+
+            Your responses should be clear, concise, and supported by citations from the web.
+        """),
+        # Instructions for the agent
+        instructions=dedent("""\
+            As WebX, your goal is to provide users with accurate, context-rich information from the web. Follow these steps meticulously:
+
+            1. Understand and Search:
+            - Carefully analyze the user's query to identify 1-3 *precise* search terms.
+            - Use the `duckduckgo_search` tool to gather relevant information. Prioritize reputable and recent sources.
+            - Cross-reference information from multiple sources to ensure accuracy.
+            - If initial searches are insufficient or yield conflicting information, refine your search terms or acknowledge the limitations/conflicts in your response.
+
+            2. Leverage Memory & Context:
+            - You have access to the last 3 messages. Use the `get_chat_history` tool if more conversational history is needed.
+            - Integrate previous interactions and user preferences to maintain continuity.
+            - Keep track of user preferences and prior clarifications.
+
+            3. Construct Your Response:
+            - **Start** with a direct and succinct answer that immediately addresses the user's core question.
+            - **Then, if the query warrants it** (e.g., not for simple factual questions like "What is the weather in Tokyo?" or "What is the capital of France?"), **expand** your answer by:
+                - Providing clear explanations, relevant context, and definitions.
+                - Including supporting evidence such as statistics, real-world examples, and data points.
+                - Addressing common misconceptions or providing alternative viewpoints if appropriate.
+            - Structure your response for both quick understanding and deeper exploration.
+            - Avoid speculation and hedging language (e.g., "it might be," "based on my limited knowledge").
+            - **Citations are mandatory.** Support all factual claims with clear citations from your search results.
+
+            4. Enhance Engagement:
+            - After delivering your answer, propose relevant follow-up questions or related topics the user might find interesting to explore further.
+
+            5. Final Quality & Presentation Review:
+            - Before sending, critically review your response for clarity, accuracy, completeness, depth, and overall engagement.
+            - Ensure your answer is well-organized, easy to read, and aligns with your role as an expert web search agent.
+
+            6. Handle Uncertainties Gracefully:
+            - If you cannot find definitive information, if data is inconclusive, or if sources significantly conflict, clearly state these limitations.
+            - Encourage the user to ask further questions if they need more clarification or if you can assist in a different way.
+
+            Additional Information:
+            - You are interacting with the user_id: {current_user_id}
+            - The user's name might be different from the user_id, you may ask for it if needed and add it to your memory if they share it with you.\
+        """),
+        # This makes `current_user_id` available in the instructions
+        add_state_in_messages=True,
+        # -*- Storage -*-
+        # Storage chat history and session state in a Postgres table
+        storage=PostgresAgentStorage(table_name="web_search_agent_sessions", db_url=db_url),
+        # -*- History -*-
+        # Send the last 3 messages from the chat history
+        add_history_to_messages=True,
+        num_history_runs=3,
+        # Add a tool to read the chat history if needed
+        read_chat_history=True,
+        # -*- Memory -*-
+        # Enable agentic memory where the Agent can personalize responses to the user
+        memory=Memory(
+            model=OpenAIChat(id=model_id),
+            db=PostgresMemoryDb(table_name="user_memories", db_url=db_url),
+            delete_memories=True,
+            clear_memories=True,
+        ),
+        enable_agentic_memory=True,
+        # -*- Other settings -*-
+        # Format responses using markdown
+        markdown=True,
+        # Add the current date and time to the instructions
+        add_datetime_to_instructions=True,
+        # Show debug logs
+        debug_mode=debug_mode,
+    )
+
+# --- END FILE: backend/agents/web_agent.py ---
+
+# --- START FILE: backend/api/__init__.py ---
+
+# --- END FILE: backend/api/__init__.py ---
+
+# --- START FILE: backend/api/main.py ---
+from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+
+from api.routes.v1_router import v1_router
+from api.settings import api_settings
+
+# Load environment variables from .env file
+load_dotenv()
+
+
+def create_app() -> FastAPI:
+    """Create a FastAPI App"""
+
+    # Create FastAPI App
+    app: FastAPI = FastAPI(
+        title=api_settings.title,
+        version=api_settings.version,
+        docs_url="/docs" if api_settings.docs_enabled else None,
+        redoc_url="/redoc" if api_settings.docs_enabled else None,
+        openapi_url="/openapi.json" if api_settings.docs_enabled else None,
+    )
+
+    # Add v1 router
+    app.include_router(v1_router)
+
+    # Add Middlewares
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=api_settings.cors_origin_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    return app
+
+
+# Create a FastAPI app
+app = create_app()
+
+# --- END FILE: backend/api/main.py ---
+
+# --- START FILE: backend/api/routes/__init__.py ---
+
+# --- END FILE: backend/api/routes/__init__.py ---
+
+# --- START FILE: backend/api/routes/agents.py ---
+from enum import Enum
+from logging import getLogger
+from typing import AsyncGenerator, List, Optional
+
+from agno.agent import Agent, AgentKnowledge
+from fastapi import APIRouter, HTTPException, status
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+
+from agents.agno_assist import get_agno_assist_knowledge
+from agents.selector import AgentType, get_agent, get_available_agents
+
+logger = getLogger(__name__)
+
+######################################################
+## Routes for the Agent Interface
+######################################################
+
+agents_router = APIRouter(prefix="/agents", tags=["Agents"])
+
+
+class Model(str, Enum):
+    gpt_4_1 = "gpt-4.1"
+    o4_mini = "o4-mini"
+    o3 = "o3"
+
+
+@agents_router.get("", response_model=List[str])
+async def list_agents():
+    """
+    Returns a list of all available agent IDs.
+
+    Returns:
+        List[str]: List of agent identifiers
+    """
+    return get_available_agents()
+
+
+async def chat_response_streamer(agent: Agent, message: str) -> AsyncGenerator:
+    """
+    Stream agent responses chunk by chunk.
+
+    Args:
+        agent: The agent instance to interact with
+        message: User message to process
+
+    Yields:
+        Text chunks from the agent response
+    """
+    run_response = await agent.arun(message, stream=True)
+    async for chunk in run_response:
+        # chunk.content only contains the text response from the Agent.
+        # For advanced use cases, we should yield the entire chunk
+        # that contains the tool calls and intermediate steps.
+        yield chunk.content
+
+
+class RunRequest(BaseModel):
+    """Request model for an running an agent"""
+
+    message: str
+    stream: bool = True
+    model: Model = Model.gpt_4_1
+    user_id: Optional[str] = None
+    session_id: Optional[str] = None
+
+
+@agents_router.post("/{agent_id}/runs", status_code=status.HTTP_200_OK)
+async def create_agent_run(agent_id: AgentType, body: RunRequest):
+    """
+    Sends a message to a specific agent and returns the response.
+
+    Args:
+        agent_id: The ID of the agent to interact with
+        body: Request parameters including the message
+
+    Returns:
+        Either a streaming response or the complete agent response
+    """
+    logger.debug(f"RunRequest: {body}")
+
+    try:
+        agent: Agent = get_agent(
+            model_id=body.model.value,
+            agent_id=agent_id,
+            user_id=body.user_id,
+            session_id=body.session_id,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=str(e))
+
+    if body.stream:
+        return StreamingResponse(
+            chat_response_streamer(agent, body.message),
+            media_type="text/event-stream",
+        )
+    else:
+        response = await agent.arun(body.message, stream=False)
+        # In this case, the response.content only contains the text response from the Agent.
+        # For advanced use cases, we should yield the entire response
+        # that contains the tool calls and intermediate steps.
+        return response.content
+
+
+@agents_router.post("/{agent_id}/knowledge/load", status_code=status.HTTP_200_OK)
+async def load_agent_knowledge(agent_id: AgentType):
+    """
+    Loads the knowledge base for a specific agent.
+
+    Args:
+        agent_id: The ID of the agent to load knowledge for.
+
+    Returns:
+        A success message if the knowledge base is loaded.
+    """
+    agent_knowledge: Optional[AgentKnowledge] = None
+
+    if agent_id == AgentType.AGNO_ASSIST:
+        agent_knowledge = get_agno_assist_knowledge()
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=f"Agent {agent_id} does not have a knowledge base.",
+        )
+
+    try:
+        await agent_knowledge.aload(upsert=True)
+    except Exception as e:
+        logger.error(f"Error loading knowledge base for {agent_id}: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to load knowledge base for {agent_id}.",
+        )
+
+    return {"message": f"Knowledge base for {agent_id} loaded successfully."}
+
+# --- END FILE: backend/api/routes/agents.py ---
+
+# --- START FILE: backend/api/routes/health.py ---
+from fastapi import APIRouter
+
+######################################################
+## Routes for the API Health
+######################################################
+
+health_router = APIRouter(tags=["Health"])
+
+
+@health_router.get("/health")
+def get_health():
+    """Check the health of the Api"""
+
+    return {
+        "status": "success",
+    }
+
+# --- END FILE: backend/api/routes/health.py ---
+
+# --- START FILE: backend/api/routes/playground.py ---
+from pydantic import BaseModel, field_validator
+from agno.playground import schemas as _agno_schemas
+from agno.playground import Playground  # needed before first usage
+import agno.playground.async_router as _agno_async_router
+
+from agents.agno_assist import get_agno_assist
+from agents.finance_agent import get_finance_agent
+from agents.web_agent import get_web_agent
+from agents.hackernews_agent import get_hackernews_agent
+from teams.research import get_hn_team
+
+######################################################
+## Routes for the Playground Interface
+######################################################
+
+# Get Agents to serve in the playground
+web_agent = get_web_agent(debug_mode=True)
+agno_assist = get_agno_assist(debug_mode=True)
+finance_agent = get_finance_agent(debug_mode=True)
+hackernews_agent = get_hackernews_agent(debug_mode=True)
+hnews_team = get_hn_team(debug_mode=True)
+
+# Create a playground instance with our custom adapter that handles team response models correctly
+playground = Playground(agents=[web_agent, agno_assist, finance_agent, hackernews_agent], teams=[hnews_team])
+
+# Get the router for the playground
+playground_router = playground.get_async_router()
+
+# ---------------------------------------------------------------------------
+# Patch Agno playground schema to allow BaseModel classes for `response_model`
+# ---------------------------------------------------------------------------
+
+class _PatchedTeamGetResponse(_agno_schemas.TeamGetResponse):
+    """Allow passing a Pydantic BaseModel *class* as `response_model`."""
+
+    @field_validator("response_model", mode="before")
+    @classmethod
+    def _convert_response_model(cls, v):  # noqa: N805 – pydantic validator API
+        if isinstance(v, type) and issubclass(v, BaseModel):
+            return v.__name__
+        return v
+
+
+# Replace references in both `schemas` and `async_router` so future imports,
+# as well as the already-imported router module, use the patched class.
+_agno_schemas.TeamGetResponse = _PatchedTeamGetResponse
+if hasattr(_agno_async_router, "TeamGetResponse"):
+    _agno_async_router.TeamGetResponse = _PatchedTeamGetResponse
+
+
+# Import after patching so that `Playground` and downstream modules pick up the
+# patched version.
+from agno.playground import Playground
+# --- END FILE: backend/api/routes/playground.py ---
+
+# --- START FILE: backend/api/routes/v1_router.py ---
+from fastapi import APIRouter
+
+from api.routes.agents import agents_router
+from api.routes.health import health_router
+from api.routes.playground import playground_router
+
+
+v1_router = APIRouter(prefix="/v1")
+v1_router.include_router(health_router)
+v1_router.include_router(agents_router)
+v1_router.include_router(playground_router)
+
+# --- END FILE: backend/api/routes/v1_router.py ---
+
+# --- START FILE: backend/api/settings.py ---
+from typing import List, Optional
+
+from pydantic import Field, field_validator
+from pydantic_core.core_schema import FieldValidationInfo
+from pydantic_settings import BaseSettings
+
+
+class ApiSettings(BaseSettings):
+    """Api settings that are set using environment variables."""
+
+    title: str = "agent-api"
+    version: str = "1.0"
+
+    # Set to False to disable docs at /docs and /redoc
+    docs_enabled: bool = True
+
+    # Cors origin list to allow requests from.
+    # This list is set using the set_cors_origin_list validator
+    # which uses the runtime_env variable to set the
+    # default cors origin list.
+    cors_origin_list: Optional[List[str]] = Field(None, validate_default=True)
+
+    @field_validator("cors_origin_list", mode="before")
+    def set_cors_origin_list(cls, cors_origin_list, info: FieldValidationInfo):
+        valid_cors = cors_origin_list or []
+
+        # Add app.agno.com to cors to allow requests from the Agno playground.
+        valid_cors.append("https://app.agno.com")
+        # Add localhost to cors to allow requests from the local environment.
+        valid_cors.append("http://localhost")
+        # Add localhost:3000 to cors to allow requests from local Agent UI.
+        valid_cors.append("http://localhost:3000")
+
+        return valid_cors
+
+
+# Create ApiSettings object
+api_settings = ApiSettings()
+
+# --- END FILE: backend/api/settings.py ---
+
+# --- START FILE: backend/db/__init__.py ---
+
+# --- END FILE: backend/db/__init__.py ---
+
+# --- START FILE: backend/db/session.py ---
+from typing import Generator
+
+from sqlalchemy.engine import Engine, create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from db.url import get_db_url
+
+# Create SQLAlchemy Engine using a database URL
+db_url: str = get_db_url()
+db_engine: Engine = create_engine(db_url, pool_pre_ping=True)
+
+# Create a SessionLocal class
+SessionLocal: sessionmaker[Session] = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
+
+
+def get_db() -> Generator[Session, None, None]:
+    """
+    Dependency to get a database session.
+
+    Yields:
+        Session: An SQLAlchemy database session.
+    """
+    db: Session = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# --- END FILE: backend/db/session.py ---
+
+# --- START FILE: backend/db/url.py ---
+from os import getenv
+
+
+def get_db_url() -> str:
+    db_driver = getenv("DB_DRIVER", "postgresql+psycopg")
+    db_user = getenv("DB_USER")
+    db_pass = getenv("DB_PASS")
+    db_host = getenv("DB_HOST")
+    db_port = getenv("DB_PORT")
+    db_database = getenv("DB_DATABASE")
+    return "{}://{}{}@{}:{}/{}".format(
+        db_driver,
+        db_user,
+        f":{db_pass}" if db_pass else "",
+        db_host,
+        db_port,
+        db_database,
+    )
+
+# --- END FILE: backend/db/url.py ---
+
+# --- START FILE: backend/teams/__init__.py ---
+
+# --- END FILE: backend/teams/__init__.py ---
+
+# --- START FILE: backend/teams/research.py ---
+from typing import List
+from agno.agent import Agent
+from agno.models.openai import OpenAIChat
+from agno.team import Team
+from typing import Optional
+
+from agents.web_agent import get_web_agent
+from agents.hackernews_agent import get_hackernews_agent
+
+web_searcher = get_web_agent()
+hn_researcher = get_hackernews_agent()
+
+
+def get_hn_team(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Team:
+    return Team(
+        name="HackerNews Team",
+        team_id="hn_team",
+        user_id=user_id,
+        session_id=session_id,
+        model=OpenAIChat(id=model_id),
+        
+        mode="coordinate",  # Could also use 'collaborate' or 'route'
+        members=[hn_researcher, web_searcher],
+        instructions=[
+            "First, search for relevant posts on HackerNews.",
+            "Then, ask the web searcher to find more information on each story.",
+            "Finally, summarize and provide an engaging overview in an article format."
+        ],
+        
+        show_tool_calls=True,
+        markdown=True,
+        debug_mode=debug_mode,
+        show_members_responses=True,
+    )
+# --- END FILE: backend/teams/research.py ---
+

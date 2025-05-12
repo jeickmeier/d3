@@ -1,0 +1,61 @@
+# syntax=docker/dockerfile:1.4
+# Stage 1: Builder
+FROM agnohq/pgvector:16 AS builder
+
+ARG CACHE_BUSTER
+
+# Install build dependencies with cleanup in same layer
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    curl \
+    git \
+    build-essential \
+    jq \
+    clang \
+    libclang-dev \
+    pkg-config \
+    libpq-dev \
+    postgresql-server-dev-16 \
+    ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+# Clone pgvectorscale
+WORKDIR /build
+ENV GIT_SSL_NO_VERIFY=true
+RUN git clone --depth 1 https://github.com/timescale/pgvectorscale pgvectorscale
+
+# Set build environment variables
+ENV TARGET_CC=/usr/bin/gcc \
+    TARGET_LINKER=/usr/bin/gcc \
+    RUSTFLAGS="-C relocation-model=pic"
+
+WORKDIR /build/pgvectorscale/pgvectorscale
+
+# Install Rust and build in a single layer to reduce image size
+RUN echo "Using cache buster: ${CACHE_BUSTER}" && \
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --profile minimal && \
+    . /root/.cargo/env && \
+    export PG_VERSION=$(cargo metadata --format-version 1 | jq -r '.packages[] | select(.name == "pgrx") | .version') && \
+    cargo install --locked cargo-pgrx --version $PG_VERSION && \
+    cargo pgrx init --pg16 $(which pg_config) && \
+    cargo pgrx install --release && \
+    # Verify files
+    ls -l /usr/share/postgresql/16/extension/vectorscale.control && \
+    ls -l /usr/share/postgresql/16/extension/vectorscale--*.sql && \
+    # Clean up
+    rm -rf /root/.cargo /root/.rustup /usr/local/cargo
+
+# Stage 2: Final Image - Minimal
+FROM agnohq/pgvector:16
+
+# Copy only the needed files
+COPY --from=builder /usr/lib/postgresql/16/lib/pgvectorscale*.so /usr/lib/postgresql/16/lib/
+COPY --from=builder /usr/share/postgresql/16/extension/vectorscale.control /usr/share/postgresql/16/extension/
+COPY --from=builder /usr/share/postgresql/16/extension/vectorscale--*.sql /usr/share/postgresql/16/extension/
+
+# Add the scripts to create the extension and set up users
+# Note: init-user-db.sh must run first to create the postgres user
+COPY db/scripts/init-user-db.sh /docker-entrypoint-initdb.d/10-init-user-db.sh
+COPY db/scripts/create_vectorscale_extension.sh /docker-entrypoint-initdb.d/20-create_vectorscale_extension.sh
+RUN chmod +x /docker-entrypoint-initdb.d/10-init-user-db.sh \
+    && chmod +x /docker-entrypoint-initdb.d/20-create_vectorscale_extension.sh

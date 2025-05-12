@@ -1,0 +1,13 @@
+agno==1.4.6
+duckduckgo-search
+fastapi[standard]
+openai
+pgvector
+psycopg[binary]
+sqlalchemy
+sqlmodel>=0.0.24
+yfinance
+
+[dev]
+mypy
+ruff
