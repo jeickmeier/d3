@@ -2,11 +2,8 @@ from agno.models.openai import OpenAIChat
 from agno.team import Team
 from typing import Optional
 
-from agents.web_agent import get_agent as get_web_agent_instance
-from agents.hackernews_agent import get_agent as get_hackernews_agent_instance
-
-web_searcher = get_web_agent_instance()
-hn_researcher = get_hackernews_agent_instance()
+from agents.web.builder import get_agent as build_web_agent
+from agents.hackernews.builder import get_agent as build_hn_agent
 
 
 def get_hn_team(
@@ -15,6 +12,9 @@ def get_hn_team(
     session_id: Optional[str] = None,
     debug_mode: bool = True,
 ) -> Team:
+    # Build member agents lazily with the same runtime parameters
+    web_searcher = build_web_agent(model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode)
+    hn_researcher = build_hn_agent(model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode)
     return Team(
         name="HackerNews Team",
         team_id="hn_team",

@@ -9,6 +9,7 @@ Requires-Dist: fastapi[standard]
 Requires-Dist: openai
 Requires-Dist: pgvector
 Requires-Dist: psycopg[binary]
+Requires-Dist: pytest>=8.3.5
 Requires-Dist: sqlalchemy
 Requires-Dist: sqlmodel>=0.0.24
 Requires-Dist: yfinance

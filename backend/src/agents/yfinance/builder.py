@@ -1,0 +1,40 @@
+from pathlib import Path
+from typing import Optional
+
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.tools.yfinance import YFinanceTools
+from agents.base.builder import AgentConfig, BaseAgentBuilder
+from agno.agent import Agent
+
+# Load prompts
+PROMPT_DIR = Path(__file__).parent / "prompts"
+DESCRIPTION = (PROMPT_DIR / "description.md").read_text()
+INSTRUCTIONS = (PROMPT_DIR / "instructions.md").read_text()
+
+cfg = AgentConfig(
+    agent_id="yfinance_agent",
+    name="YFinance Agent",
+    description=DESCRIPTION,
+    instructions=INSTRUCTIONS,
+    tools=[
+        DuckDuckGoTools(),
+        YFinanceTools(
+            stock_price=True,
+            analyst_recommendations=True,
+            stock_fundamentals=True,
+            historical_prices=True,
+            company_info=True,
+            company_news=True,
+        ),
+    ],
+)
+
+def get_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    cfg.model_id = model_id
+    cfg.debug_mode = debug_mode
+    return BaseAgentBuilder(cfg, user_id, session_id).build() 
