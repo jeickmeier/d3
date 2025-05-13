@@ -2,10 +2,13 @@ from agno.playground import Playground  # needed before first usage
 
 from agents.registry import AGENT_REGISTRY
 import logging
+from api.settings import api_settings  # import settings for log level
 
 from teams.selector import get_available_teams, get_team
 
 logger = logging.getLogger(__name__)
+# Determine debug mode based on LOG_LEVEL
+debug_mode_flag = api_settings.log_level.upper() == "DEBUG"
 
 ######################################################
 ## Routes for the Playground Interface
@@ -16,8 +19,7 @@ playground_agents = []
 for agent_id, registration_info in AGENT_REGISTRY.items():
     try:
         agent_getter = registration_info["agent_getter"]
-        # Instantiate with default/playground settings (e.g., debug_mode=True)
-        agent_instance = agent_getter(debug_mode=True)
+        agent_instance = agent_getter(debug_mode=debug_mode_flag)
         playground_agents.append(agent_instance)
         logger.info(f"Successfully instantiated agent '{agent_id}' for playground.")
     except Exception as e:
@@ -29,7 +31,7 @@ for agent_id, registration_info in AGENT_REGISTRY.items():
 playground_teams = []
 for team_id in get_available_teams():
     try:
-        team_instance = get_team(team_id, debug_mode=True)
+        team_instance = get_team(team_id, debug_mode=debug_mode_flag)
         playground_teams.append(team_instance)
         logger.info(f"Successfully instantiated team '{team_id}' for playground.")
     except Exception as e:

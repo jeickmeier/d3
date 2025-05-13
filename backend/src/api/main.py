@@ -1,13 +1,18 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-
-from api.routes.v1_router import v1_router
-from api.settings import api_settings
+import logging
 
 # Load environment variables from .env file
 load_dotenv()
 
+from api.settings import api_settings # noqa: E402
+level = api_settings.log_level.upper()
+logging.basicConfig(level=level)
+logging.getLogger("uvicorn.error").setLevel(level)
+logging.getLogger("uvicorn.access").setLevel(level)
+
+from api.routes.v1_router import v1_router # noqa: E402
 
 def create_app() -> FastAPI:
     """Create a FastAPI App"""

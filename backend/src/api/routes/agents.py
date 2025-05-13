@@ -2,13 +2,12 @@ from enum import Enum
 from logging import getLogger
 from typing import AsyncGenerator, List, Optional
 
-from agno.agent import Agent, AgentKnowledge
-from fastapi import APIRouter, HTTPException, status
+from agno.agent import Agent
+from fastapi import APIRouter, status
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
 from agents.selector import get_agent, get_available_agents
-from agents.registry import AGENT_REGISTRY
 
 logger = getLogger(__name__)
 
@@ -97,39 +96,3 @@ async def create_agent_run(agent_id: str, body: RunRequest):
         # For advanced use cases, we should yield the entire response
         # that contains the tool calls and intermediate steps.
         return response.content
-
-
-@agents_router.post("/{agent_id}/knowledge/load", status_code=status.HTTP_200_OK)
-async def load_agent_knowledge(agent_id: str):
-    """
-    Loads the knowledge base for a specific agent.
-
-    Args:
-        agent_id: The ID of the agent to load knowledge for.
-
-    Returns:
-        A success message if the knowledge base is loaded.
-    """
-    if agent_id not in AGENT_REGISTRY:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Agent '{agent_id}' not found.")
-
-    registration_info = AGENT_REGISTRY[agent_id]
-    knowledge_getter = registration_info.get("knowledge_getter")
-
-    if not knowledge_getter:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=f"Agent '{agent_id}' does not have a registered knowledge base getter ('get_knowledge' function).",
-        )
-
-    try:
-        agent_knowledge: AgentKnowledge = knowledge_getter()
-        await agent_knowledge.aload(upsert=True)
-    except Exception as e:
-        logger.error(f"Error loading knowledge base for {agent_id}: {e}")
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Failed to load knowledge base for {agent_id}.",
-        )
-
-    return {"message": f"Knowledge base for {agent_id} loaded successfully."}
