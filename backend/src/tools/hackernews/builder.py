@@ -3,6 +3,7 @@
 This also serves as a concrete example of how to structure tool-builder modules so
 that they are automatically discovered by `tools.registry`.
 """
+
 from __future__ import annotations
 
 import json
@@ -18,6 +19,7 @@ from tools.base.builder import ToolConfig, BaseToolBuilder
 # -----------------------------------------------------------------------------
 # Tool functions
 # -----------------------------------------------------------------------------
+
 
 def get_top_hackernews_stories(num_stories: int = 10) -> str:  # noqa: D401
     """Return the top *num_stories* from Hacker News as a JSON string.
@@ -76,4 +78,4 @@ def get_tools():
     register the tool set automatically.
     """
 
-    return BaseToolBuilder(cfg).build() 
+    return BaseToolBuilder(cfg).build()

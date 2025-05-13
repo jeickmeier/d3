@@ -1,1 +1,1 @@
-from .builder import ToolConfig, BaseToolBuilder  # noqa: F401 
+from .builder import ToolConfig, BaseToolBuilder  # noqa: F401

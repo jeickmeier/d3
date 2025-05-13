@@ -1,5 +1,6 @@
 """Module defining the base agent builder and AgentConfig dataclass for constructing agents."""
-from typing import List, Optional, Any, Dict
+
+from typing import List, Optional, Any
 from pydantic import BaseModel, Field
 
 from agno.agent import Agent
@@ -34,6 +35,7 @@ class BaseAgentBuilder:
 
     The builder sets up the agent with model, tools, storage, memory, and other configurations.
     """
+
     def __init__(self, cfg: AgentConfig, user_id: Optional[str] = None, session_id: Optional[str] = None):
         self.cfg = cfg
         self.user_id = user_id

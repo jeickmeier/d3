@@ -1,4 +1,5 @@
 """Module providing utilities to list and instantiate available agents from the agent registry."""
+
 import logging
 from typing import List, Optional
 

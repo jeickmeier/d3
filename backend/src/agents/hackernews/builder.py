@@ -1,4 +1,5 @@
 """Agent builder for the HackerNews Researcher: constructs the agent with its prompts and HN tools."""
+
 from pathlib import Path
 from typing import Optional
 

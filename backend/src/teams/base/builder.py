@@ -4,8 +4,7 @@ Base abstractions for constructing AI teams.
 This module defines the TeamConfig dataclass and the BaseTeamBuilder class, which together specify team setup and instantiate Team objects with configured member agents.
 """
 
-from dataclasses import dataclass
-from typing import List, Callable, Optional, Union, Dict, Any
+from typing import List, Callable, Optional, Union, Dict, Any, Literal
 from pydantic import BaseModel, Field
 
 from agno.agent import Agent
@@ -17,15 +16,19 @@ class TeamConfig(BaseModel):
     team_id: str = Field(..., description="Unique identifier for the team.")
     name: str = Field(..., description="Display name of the team.")
     description: str = Field(..., description="Description of the team's purpose.")
-    instructions: Union[List[str], str] = Field(..., description="Guidance or instructions for the team; can be a list of strings or a single string.")
-    mode: str = Field(..., description="Coordination mode for the team.")
+    instructions: Union[List[str], str] = Field(
+        ..., description="Guidance or instructions for the team; can be a list of strings or a single string."
+    )
+    mode: Literal["route", "coordinate", "collaborate"] = Field(..., description="Coordination mode for the team.")
     member_builders: List[Callable[..., Agent]] = Field(..., description="Callables to construct agent members.")
     model_id: str = Field("gpt-4.1", description="Default model identifier.")
     markdown: bool = Field(True, description="Whether to format outputs in Markdown.")
     debug_mode: bool = Field(False, description="Whether to enable debug logging.")
     show_tool_calls: bool = Field(True, description="Whether to include tool call traces.")
     show_members_responses: bool = Field(True, description="Whether to include raw member responses.")
-    extra_kwargs: Optional[Dict[str, Any]] = Field(None, description="Additional keyword arguments for Team constructor.")
+    extra_kwargs: Optional[Dict[str, Any]] = Field(
+        None, description="Additional keyword arguments for Team constructor."
+    )
 
     class Config:
         arbitrary_types_allowed = True
@@ -36,6 +39,7 @@ class BaseTeamBuilder:
 
     Encapsulates logic to construct agent members and wrap them into a Team.
     """
+
     def __init__(
         self,
         cfg: TeamConfig,
@@ -54,7 +58,7 @@ class BaseTeamBuilder:
         Returns:
             Team: The fully built team with all members and settings.
         """
-        members = [
+        members: List[Agent | Team] = [
             builder(
                 model_id=self.cfg.model_id,
                 user_id=self.user_id,

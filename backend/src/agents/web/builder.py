@@ -1,4 +1,5 @@
 """Agent builder for the Web Search Agent: constructs the agent with its prompts and web search tools."""
+
 from pathlib import Path
 from typing import Optional
 

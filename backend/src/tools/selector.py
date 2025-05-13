@@ -1,4 +1,5 @@
 """Utilities to access tool sets registered in tools.registry."""
+
 from __future__ import annotations
 
 from typing import List, Callable
@@ -23,4 +24,4 @@ def get_tools(tool_id: str) -> List[Callable]:
         available = get_available_toolsets()
         raise ValueError(f"Tool set '{tool_id}' not found. Available tool sets: {available}")
 
-    return TOOL_REGISTRY[tool_id]["tools"] 
+    return TOOL_REGISTRY[tool_id]["tools"]

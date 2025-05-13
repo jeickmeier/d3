@@ -1,4 +1,5 @@
 """Agent builder for YFinance Agent: constructs the agent with its prompts and financial data tools."""
+
 from pathlib import Path
 from typing import Optional
 

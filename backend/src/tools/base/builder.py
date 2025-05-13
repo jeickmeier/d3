@@ -4,6 +4,7 @@ This module defines the ToolConfig dataclass and the BaseToolBuilder class, prov
 an easy way to package together one or many callables that can be supplied to an
 Agno `Agent` or elsewhere.
 """
+
 from typing import List, Callable, Any, Optional
 
 from pydantic import BaseModel, Field
@@ -45,4 +46,4 @@ class BaseToolBuilder:
 
     def build(self) -> List[Callable[..., Any]]:
         """Return the list of tool callables defined in the config."""
-        return self.cfg.tool_functions 
+        return self.cfg.tool_functions

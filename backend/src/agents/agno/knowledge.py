@@ -1,4 +1,5 @@
 """Module providing knowledge configuration for the Agno Assist agent."""
+
 from agno.agent import AgentKnowledge
 from agno.embedder.openai import OpenAIEmbedder
 from agno.knowledge.url import UrlKnowledge

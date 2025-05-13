@@ -1,11 +1,12 @@
 """Module to discover and register tool builder modules and maintain a registry of available tool sets."""
+
 from __future__ import annotations
 
 import importlib
 import logging
 import pkgutil
 from pathlib import Path
-from typing import Dict, Any, List, Callable
+from typing import Dict, Any
 
 logger = logging.getLogger(__name__)
 
@@ -60,4 +61,4 @@ def discover_and_register_tools() -> None:
 
 # Run discovery at import time
 
-discover_and_register_tools() 
+discover_and_register_tools()
