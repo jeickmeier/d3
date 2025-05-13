@@ -9,6 +9,8 @@ import json
 from typing import List
 
 import httpx
+from agno.exceptions import RetryAgentRun
+from agno.utils.log import logger
 
 from tools.base.builder import ToolConfig, BaseToolBuilder
 
@@ -31,22 +33,27 @@ def get_top_hackernews_stories(num_stories: int = 10) -> str:  # noqa: D401
         A JSON encoded list of objects as returned by the HackerNews API.
     """
 
-    # Fetch top story IDs
-    response = httpx.get("https://hacker-news.firebaseio.com/v0/topstories.json")
-    response.raise_for_status()
+    try:
+        response = httpx.get("https://hacker-news.firebaseio.com/v0/topstories.json")
+        response.raise_for_status()
+    except httpx.HTTPError as e:
+        logger.warning(f"Failed to fetch top story IDs: {e}")
+        raise RetryAgentRun(f"Failed to fetch top story IDs due to error: {e}. Please retry.")
     story_ids: List[int] = response.json()
 
     # Fetch story details
     stories = []
     for story_id in story_ids[:num_stories]:
-        story_response = httpx.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json")
-        story_response.raise_for_status()
-        story = story_response.json()
-
+        try:
+            story_response = httpx.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json")
+            story_response.raise_for_status()
+            story = story_response.json()
+        except httpx.HTTPError as e:
+            logger.warning(f"Failed to fetch story {story_id}: {e}")
+            raise RetryAgentRun(f"Failed to fetch story {story_id} due to error: {e}. Please retry.")
         # Remove large text fields that are usually not needed for summarisation
         story.pop("text", None)
         stories.append(story)
-
     return json.dumps(stories)
 
 
