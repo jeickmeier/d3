@@ -1,0 +1,243 @@
+---
+description: How to do authentication of users
+globs: 
+alwaysApply: false
+---
+
+# Authentication Guide
+
+This document provides guidance on the authentication system used in this project, which is built with better-auth.
+
+## Authentication Setup
+
+This project uses [better-auth](mdc:https:/github.com/better-auth/better-auth) for authentication, with Drizzle ORM as the database adapter. The authentication configuration is defined in `src/lib/auth/auth.ts` and client-side utilities in `src/lib/auth/auth-client.ts`.
+
+## Server-Side Authentication
+
+The server-side authentication is configured in `src/lib/auth/auth.ts`:
+
+```typescript
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { db } from "@db/db"; // your drizzle instance
+import { nextCookies } from "better-auth/next-js";
+import { organization } from "better-auth/plugins"
+
+export const auth = betterAuth({
+    emailAndPassword: {  
+        enabled: true
+    },
+    database: drizzleAdapter(db, {
+        provider: "pg", // or "mysql", "sqlite"
+    }),
+    session: {
+        cookieCache: {
+            enabled: true,
+            maxAge: 3600,
+        }
+    },
+    account: {
+        accountLinking: {
+            trustedProviders: ["email-password", "github"],
+        },
+    },
+    socialProviders: {
+        github: {
+            clientId: process.env.GITHUB_CLIENT_ID! as string,
+            clientSecret: process.env.GITHUB_CLIENT_SECRET! as string,
+        }
+    },
+    plugins: [nextCookies(), organization()]
+});
+```
+
+## Client-Side Authentication
+
+The client-side authentication is configured in `src/lib/auth/auth-client.ts`:
+
+```typescript
+import { createAuthClient } from "better-auth/react"
+import { organizationClient } from "better-auth/client/plugins"
+
+export const authClient = createAuthClient({
+    baseURL: process.env.BETTER_AUTH_URL!,
+    plugins: [ 
+        organizationClient() 
+    ] 
+})
+
+export const {
+    signUp,
+    signIn,
+    signOut,
+    useSession,
+    getSession
+} = authClient;
+```
+
+## Middleware Protection
+
+Route protection is implemented using Next.js middleware in `src/middleware.ts`:
+
+```typescript
+import { NextRequest, NextResponse } from "next/server";
+import { auth } from "@/lib/auth/auth";
+
+export async function middleware(request: NextRequest) {
+    try {
+        const session = await auth.api.getSession({
+            headers: request.headers
+        });
+        
+        if (!session) {
+            return NextResponse.redirect(new URL("/login", request.url));
+        }
+ 
+        return NextResponse.next();
+    } catch (error) {
+        // On error, redirect to login as a fallback
+        return NextResponse.redirect(new URL("/login", request.url));
+    }
+}
+
+export const config = {
+    matcher: [
+        '/((?!api/auth|login|_next/static|_next/image|favicon.ico).*)'
+    ]
+};
+```
+
+## Authentication Components
+
+The project includes several authentication-related components:
+
+- `SignIn.tsx` - Email/password and social login
+- `SignUp.tsx` - User registration
+- `CreateOrg.tsx` - Organization creation
+- `UserProfile.tsx` - User profile management
+
+## Usage Patterns
+
+### Checking Authentication Status
+
+```typescript
+import { useSession } from "@/lib/auth/auth-client";
+
+export default function ProtectedPage() {
+    const { session, isLoading } = useSession();
+    
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+    
+    if (!session) {
+        return <div>Not authenticated</div>;
+    }
+    
+    return <div>Welcome, {session.user.name}</div>;
+}
+```
+
+### Email/Password Sign In
+
+```typescript
+import { signIn } from "@/lib/auth/auth-client";
+
+const handleSignIn = async () => {
+    await signIn.email({ 
+        email, 
+        password 
+    }, {
+        onSuccess: () => { 
+            router.push("/dashboard");
+        }, 
+        onError: (ctx) => { 
+            alert(ctx.error.message); 
+        }, 
+    });
+};
+```
+
+### Social Sign In
+
+```typescript
+import { signIn } from "@/lib/auth/auth-client";
+
+const handleGithubSignIn = async () => {
+    await signIn.social({
+        provider: "github"
+    }, {
+        onSuccess: () => {
+            router.push("/dashboard");
+        },
+        onError: (ctx) => {
+            alert(ctx.error.message);
+        }
+    });
+};
+```
+
+### Sign Up
+
+```typescript
+import { signUp } from "@/lib/auth/auth-client";
+
+const handleSignUp = async () => {
+    await signUp.email({
+        email,
+        password,
+        name
+    }, {
+        onSuccess: () => {
+            router.push("/dashboard");
+        },
+        onError: (ctx) => {
+            alert(ctx.error.message);
+        }
+    });
+};
+```
+
+### Sign Out
+
+```typescript
+import { signOut } from "@/lib/auth/auth-client";
+
+const handleSignOut = async () => {
+    await signOut({
+        onSuccess: () => {
+            router.push("/login");
+        }
+    });
+};
+```
+
+## Organization Management
+
+The project includes organization management features through the better-auth organization plugin:
+
+```typescript
+import { authClient } from "@/lib/auth/auth-client";
+
+// Create organization
+const createOrg = async () => {
+    await authClient.organization.create({
+        name: orgName,
+        slug: orgSlug
+    });
+};
+
+// Get user organizations
+const { organizations } = await authClient.organization.list();
+
+// Switch active organization
+await authClient.organization.setActive(orgId);
+```
+
+## Environment Variables
+
+The following environment variables are used for authentication configuration:
+
+- `BETTER_AUTH_URL`: The base URL for better-auth API
+- `GITHUB_CLIENT_ID`: GitHub OAuth client ID
+- `GITHUB_CLIENT_SECRET`: GitHub OAuth client secret 

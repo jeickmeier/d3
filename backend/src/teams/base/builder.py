@@ -13,6 +13,7 @@ from agno.models.openai import OpenAIChat
 from agno.storage.postgres import PostgresStorage
 from db.session import db_url
 
+
 class TeamConfig(BaseModel):
     team_id: str = Field(..., description="Unique identifier for the team.")
     name: str = Field(..., description="Display name of the team.")

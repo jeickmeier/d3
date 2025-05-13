@@ -1,0 +1,150 @@
+---
+description: Principles for building and editing APIs
+globs: 
+alwaysApply: false
+---
+# API Principles Guide
+
+This document provides guidance on the API design principles and best practices for building and maintaining API routes in this project using Next.js 13 App Router.
+
+## Standard Imports
+
+Each route handler should include the following imports:
+
+```typescript
+import { NextRequest, NextResponse } from 'next/server'
+import { auth } from '@/lib/auth/auth'
+import { logger } from '@/lib/utils/logger'
+import { z } from 'zod'
+```
+
+## File Structure & Routing
+
+- Organize API routes under `src/app/api` following folder-based routing with `route.ts` files.
+- Use resource-based folders (e.g. `/users`, `/organizations`) and dynamic segments for parameters (e.g. `[id]`).
+- Name nested actions using kebab-case (e.g. `check-slug`, `update-profile`).
+
+## HTTP Method Handlers
+
+- Export `async` functions matching HTTP methods you support:
+  ```typescript
+  export async function GET(request: NextRequest) { /* ... */ }
+  export async function POST(request: NextRequest) { /* ... */ }
+  ```
+- Accept a `NextRequest` and return a `NextResponse`.
+- Add JSDoc comments above each handler to describe its purpose, parameters, and return values.
+
+## Request Handling
+
+- Parse JSON bodies using `await request.json()`.
+- Extract query parameters via `request.nextUrl.searchParams`.
+- Always validate and sanitize input before using it (see Input Validation).
+
+## Response Handling
+
+- Return JSON responses with `NextResponse.json(data, { status })`.
+- Use appropriate HTTP status codes:
+  - `200 OK` for successful reads
+  - `201 Created` for new resources
+  - `204 No Content` for successful deletions
+  - `400 Bad Request` for validation errors
+  - `401 Unauthorized` for missing authentication
+  - `403 Forbidden` for insufficient permissions
+  - `404 Not Found` for missing resources
+  - `500 Internal Server Error` for unhandled errors
+
+## Input Validation
+
+- Leverage [Zod](mdc:https:/github.com/colinhacks/zod) for schema validation.
+- Return `400 Bad Request` with error details when validation fails.
+
+### Example:
+```typescript
+const schema = z.object({ name: z.string(), age: z.number().int() });
+
+export async function POST(request: NextRequest) {
+  const payload = await request.json();
+  const result = schema.safeParse(payload);
+  if (!result.success) {
+    return NextResponse.json(
+      { error: result.error.errors },
+      { status: 400 }
+    );
+  }
+  // proceed with valid data in result.data
+}
+```
+
+## Authentication & Authorization
+
+- Protect secure routes by checking session:
+  ```typescript
+  const session = await auth.api.getSession({ headers: request.headers });
+  if (!session) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+  ```
+- Enforce user roles or resource ownership and return `403 Forbidden` when appropriate.
+
+## Error Handling & Logging
+
+- Wrap handler logic in `try-catch` blocks.
+- Log unexpected errors with the `logger` utility:
+  ```typescript
+  logger.error('Error fetching items', error);
+  ```
+- Return user-friendly error messages without leaking internal details:
+  ```typescript
+  return NextResponse.json(
+    { error: 'Failed to process request' },
+    { status: 500 }
+  );
+  ```
+
+## Business Logic Separation
+
+- Delegate database and business operations to service functions under `src/lib/services` or `src/server`.
+- Keep route handlers focused on request parsing, validation, authorization, and response formatting.
+
+## Naming Conventions
+
+- Follow RESTful, resource-centric routes:
+  ```text
+  GET     /api/users
+  POST    /api/users
+  GET     /api/users/[id]
+  PUT     /api/users/[id]
+  PATCH   /api/users/[id]
+  DELETE  /api/users/[id]
+  ```
+- Use kebab-case for custom actions: `/api/organizations/check-slug`.
+
+## Versioning
+
+- If breaking changes are introduced, prefix routes with a version segment, e.g. `/api/v1/users`.
+- Maintain older versions alongside new ones until deprecation.
+
+## Pagination & Filtering
+
+- Support pagination via query parameters, e.g. `?page=1&limit=20`.
+- Support filtering and sorting with query parameters and validate them.
+
+## CORS & Security
+
+- Enforce CORS policies if exposing APIs to external origins.
+- Sanitize all inputs to prevent injection attacks.
+- Ensure APIs are served over HTTPS in production environments.
+
+## Documentation
+
+- Use JSDoc for handler documentation.
+- Consider generating OpenAPI/Swagger specs for comprehensive API docs.
+
+## Environment Variables
+
+The API routes rely on environment variables documented in other guides:
+
+- `DATABASE_URL`
+- `BETTER_AUTH_URL`
+- `GITHUB_CLIENT_ID`
+- `GITHUB_CLIENT_SECRET`

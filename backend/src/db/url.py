@@ -1,4 +1,5 @@
-from os import getenv
+from os import environ
+
 
 def get_db_url() -> str:
-    return getenv("DATABASE_URL")
+    return environ["DATABASE_URL"]

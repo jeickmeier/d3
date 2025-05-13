@@ -1,0 +1,79 @@
+---
+description: UI components design guide
+globs: 
+alwaysApply: false
+---
+# UI Components Guide
+
+This document provides guidance on the UI components used in this project.
+
+## Component Library
+
+This project uses [Shadcn UI](mdc:https:/ui.shadcn.com) components, which are built on top of [Radix UI](mdc:https:/www.radix-ui.com) primitives. The components are styled using Tailwind CSS with the New York style variant.
+
+## Key Components
+
+### Layout Components
+- `Card` (@/components/ui/card.tsx) - Container component with variants
+- `Separator` (@/components/ui/separator.tsx) - Visual divider
+- `Tabs` (@/components/ui/tabs.tsx) - Tabbed interface
+
+### Input Components
+- `Button` (@/components/ui/button.tsx) - Various button styles and variants
+- `Input` (@/components/ui/input.tsx) - Text input field
+- `Select` (@/components/ui/select.tsx) - Dropdown selection
+- `Calendar` (@/components/ui/calendar.tsx) - Date picker
+
+### Navigation Components
+- `Sidebar` (@/components/ui/sidebar.tsx) - Main navigation sidebar
+- `Breadcrumb` (@/components/ui/breadcrumb.tsx) - Breadcrumb navigation
+- `DropdownMenu` (@/components/ui/dropdown-menu.tsx) - Dropdown menu
+
+### Overlay Components
+- `Dialog` (@/components/ui/dialog.tsx) - Modal dialogs
+- `Popover` (@/components/ui/popover.tsx) - Popover content
+- `Sheet` (@/components/ui/sheet.tsx) - Slide-in panel
+- `Tooltip` (@/components/ui/tooltip.tsx) - Contextual information
+
+### Data Display
+- `Table` (@/components/ui/table.tsx) - Data tables using TanStack Table
+- `Avatar` (@/components/ui/avatar.tsx) - User avatars
+- `Skeleton` (@/components/ui/skeleton.tsx) - Loading placeholders
+
+## Usage Guidelines
+
+### Component Imports
+Import components from the aliased paths:
+```tsx
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+```
+
+### Styling
+- Use Tailwind classes for styling
+- For component variants, use the built-in variant props
+- For custom styling, use the `className` prop with `cn()` utility:
+```tsx
+import { cn } from "@/lib/utils";
+
+<Button className={cn("custom-class", isActive && "active-class")}>
+  Click me
+</Button>
+```
+
+### Icons
+This project uses [Lucide React](mdc:https:/lucide.dev) for icons:
+```tsx
+import { Search } from "lucide-react";
+
+<Button>
+  <Search className="h-4 w-4 mr-2" />
+  Search
+</Button>
+```
+
+## Component Customization
+
+To customize components, refer to the source files in `src/components/ui/`. Each component is built with composition in mind and can be extended as needed.
+
+For more complex customizations, consider creating wrapper components in a domain-specific folder rather than modifying the base UI components. Examples include `src/components/date_picker` and `src\components\sidebar`

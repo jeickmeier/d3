@@ -2,8 +2,8 @@
 
 import os
 
-# Determine workspace root (assumes script is in workspace root)
-workspace_root = os.path.dirname(__file__)
+# Determine workspace root (one level up from the script directory)
+workspace_root = os.path.abspath(os.path.join(os.path.dirname(__file__), os.pardir))
 
 # Dynamically discover all Python files in the fin_statement_model directory
 file_paths = []

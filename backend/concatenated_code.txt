@@ -1,0 +1,1372 @@
+# --- START FILE: src/agents/__init__.py ---
+
+# --- END FILE: src/agents/__init__.py ---
+
+# --- START FILE: src/agents/agno/__init__.py ---
+
+# --- END FILE: src/agents/agno/__init__.py ---
+
+# --- START FILE: src/agents/agno/builder.py ---
+"""Agent builder for Agno Assist: constructs the agent with its prompts, tools, and knowledge."""
+
+from pathlib import Path
+from typing import Optional
+
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agents.base.builder import AgentConfig, BaseAgentBuilder
+from agno.agent import Agent
+from .knowledge import get_knowledge
+
+# Load prompts
+PROMPT_DIR = Path(__file__).parent / "prompts"
+DESCRIPTION = (PROMPT_DIR / "description.md").read_text()
+INSTRUCTIONS = (PROMPT_DIR / "instructions.md").read_text()
+
+cfg = AgentConfig(
+    agent_id="agno_agent",
+    name="Agno Assist",
+    description=DESCRIPTION,
+    instructions=INSTRUCTIONS,
+    tools=[DuckDuckGoTools()],
+    knowledge=get_knowledge(),
+    search_knowledge=True,
+)
+
+
+def get_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    """
+    Instantiate and return the Agno Assist agent with specified model and context.
+
+    Args:
+        model_id (str): Identifier of the language model to use. Defaults to "gpt-4.1".
+        user_id (Optional[str]): Identifier for the user context.
+        session_id (Optional[str]): Identifier for the session context.
+        debug_mode (bool): Whether to enable debug logging.
+
+    Returns:
+        Agent: An instance of the Agno Assist agent.
+    """
+    cfg.model_id = model_id
+    cfg.debug_mode = debug_mode
+    return BaseAgentBuilder(cfg, user_id, session_id).build()
+
+# --- END FILE: src/agents/agno/builder.py ---
+
+# --- START FILE: src/agents/agno/knowledge.py ---
+"""Module providing knowledge configuration for the Agno Assist agent."""
+
+from agno.agent import AgentKnowledge
+from agno.embedder.openai import OpenAIEmbedder
+from agno.knowledge.url import UrlKnowledge
+from agno.vectordb.pgvector import PgVector, SearchType
+from db.session import db_url
+
+
+def get_knowledge() -> AgentKnowledge:
+    """
+    Create and return an AgentKnowledge instance configured with UrlKnowledge and OpenAIEmbedder.
+
+    Returns:
+        AgentKnowledge: Configured knowledge base for the Agno Assist agent.
+    """
+    return UrlKnowledge(
+        urls=["https://docs.agno.com/llms-full.txt"],
+        vector_db=PgVector(
+            db_url=db_url,
+            table_name="agno_assist_knowledge",
+            search_type=SearchType.hybrid,
+            embedder=OpenAIEmbedder(id="text-embedding-3-small"),
+        ),
+    )
+
+# --- END FILE: src/agents/agno/knowledge.py ---
+
+# --- START FILE: src/agents/base/__init__.py ---
+__all__ = ["BaseAgentBuilder", "AgentConfig"]
+
+# --- END FILE: src/agents/base/__init__.py ---
+
+# --- START FILE: src/agents/base/builder.py ---
+"""Module defining the base agent builder and AgentConfig dataclass for constructing agents."""
+
+from typing import List, Optional, Any
+from pydantic import BaseModel, Field
+
+from agno.agent import Agent
+from agno.memory.v2.memory import Memory
+from agno.memory.v2.db.postgres import PostgresMemoryDb
+from agno.models.openai import OpenAIChat
+from agno.storage.agent.postgres import PostgresAgentStorage
+
+
+class AgentConfig(BaseModel):
+    agent_id: str = Field(..., description="Unique identifier for the agent.")
+    name: str = Field(..., description="Display name of the agent.")
+    tools: List[Any] = Field(..., description="List of tools available to the agent.")
+    description: str = Field(..., description="Description of the agent's purpose.")
+    instructions: str = Field(..., description="Instructions guiding the agent's behavior.")
+    model_id: str = Field("gpt-4.1", description="Language model identifier used by the agent.")
+    history_runs: int = Field(3, description="Number of conversation history turns to include.")
+    table_prefix: str = Field("", description="Prefix for database table names.")
+    enable_memory: bool = Field(True, description="Whether to enable memory for the agent.")
+    markdown: bool = Field(True, description="Whether to format responses in markdown.")
+    debug_mode: bool = Field(False, description="Whether to enable debug mode.")
+    knowledge: Optional[Any] = Field(None, description="Additional knowledge source for the agent.")
+    search_knowledge: bool = Field(False, description="Whether to search knowledge base during execution.")
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class BaseAgentBuilder:
+    """
+    Builder for creating Agent instances based on an AgentConfig.
+
+    The builder sets up the agent with model, tools, storage, memory, and other configurations.
+    """
+
+    def __init__(self, cfg: AgentConfig, user_id: Optional[str] = None, session_id: Optional[str] = None):
+        self.cfg = cfg
+        self.user_id = user_id
+        self.session_id = session_id
+
+    def build(self) -> Agent:
+        """
+        Build and return an Agent instance using the provided configuration and context.
+
+        Returns:
+            Agent: The constructed agent instance.
+        """
+        from db.session import db_url
+
+        return Agent(
+            name=self.cfg.name,
+            agent_id=self.cfg.agent_id,
+            description=self.cfg.description,
+            instructions=self.cfg.instructions,
+            knowledge=self.cfg.knowledge,
+            search_knowledge=self.cfg.search_knowledge,
+            model=OpenAIChat(id=self.cfg.model_id),
+            tools=self.cfg.tools,
+            user_id=self.user_id,
+            session_id=self.session_id,
+            storage=PostgresAgentStorage(
+                table_name="agent_sessions",
+                db_url=db_url,  
+            ),
+            add_history_to_messages=True,
+            num_history_runs=self.cfg.history_runs,
+            read_chat_history=True,
+            markdown=self.cfg.markdown,
+            memory=self._memory() if self.cfg.enable_memory else None,
+            enable_agentic_memory=self.cfg.enable_memory,
+            add_state_in_messages=True,
+            add_datetime_to_instructions=True,
+            debug_mode=self.cfg.debug_mode,
+        )
+
+    def _memory(self) -> Memory:
+        """
+        Create and return a Memory instance for the agent.
+
+        Returns:
+            Memory: Configured memory component for the agent.
+        """
+        from db.session import db_url
+
+        return Memory(
+            model=OpenAIChat(id=self.cfg.model_id),
+            db=PostgresMemoryDb(table_name="user_memories", db_url=db_url),
+            delete_memories=False,
+            clear_memories=False,
+        )
+
+# --- END FILE: src/agents/base/builder.py ---
+
+# --- START FILE: src/agents/hackernews/__init__.py ---
+
+# --- END FILE: src/agents/hackernews/__init__.py ---
+
+# --- START FILE: src/agents/hackernews/builder.py ---
+"""Agent builder for the HackerNews Researcher: constructs the agent with its prompts and HN tools."""
+
+from pathlib import Path
+from typing import Optional
+
+from tools.hackernews.builder import get_tools as get_top_hackernews_stories
+from agents.base.builder import AgentConfig, BaseAgentBuilder
+from agno.agent import Agent
+
+# Load prompts
+PROMPT_DIR = Path(__file__).parent / "prompts"
+DESCRIPTION = (PROMPT_DIR / "description.md").read_text()
+INSTRUCTIONS = (PROMPT_DIR / "instructions.md").read_text()
+
+cfg = AgentConfig(
+    agent_id="hacker_news_agent",
+    name="HackerNews Researcher",
+    description=DESCRIPTION,
+    instructions=INSTRUCTIONS,
+    tools=get_top_hackernews_stories(),
+)
+
+
+def get_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    """
+    Instantiate and return the HackerNews Researcher agent with specified model and context.
+
+    Args:
+        model_id (str): Identifier of the language model to use. Defaults to "gpt-4.1".
+        user_id (Optional[str]): Identifier for the user context.
+        session_id (Optional[str]): Identifier for the session context.
+        debug_mode (bool): Whether to enable debug logging.
+
+    Returns:
+        Agent: An instance of the HackerNews Researcher agent.
+    """
+    cfg.model_id = model_id
+    cfg.debug_mode = debug_mode
+    return BaseAgentBuilder(cfg, user_id, session_id).build()
+
+# --- END FILE: src/agents/hackernews/builder.py ---
+
+# --- START FILE: src/agents/registry.py ---
+"""Module to discover and register agent builder modules and maintain a registry of available agents."""
+
+import pkgutil
+import importlib
+from pathlib import Path
+from typing import Dict, Any
+import logging
+
+
+logger = logging.getLogger(__name__)
+
+# Structure: {'agent_id': {'module_path': str, 'agent_getter': Callable, 'knowledge_getter': Optional[Callable]}}
+AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {}
+
+
+def discover_and_register_agents():
+    """
+    Scans the agents package for builder modules and registers their get_agent functions.
+    """
+    pkg_path = Path(__file__).parent
+    logger.info(f"Starting agent discovery in: {pkg_path}")
+
+    for module_info in pkgutil.walk_packages([str(pkg_path)], prefix="agents."):
+        # Skip the base abstraction module
+        if module_info.name.startswith("agents.base."):
+            continue
+        if not module_info.name.endswith(".builder"):
+            continue
+        try:
+            module = importlib.import_module(module_info.name)
+            if hasattr(module, "get_agent"):
+                agent_id = getattr(module, "cfg").agent_id  # type: ignore
+                agent_getter = getattr(module, "get_agent")
+                knowledge_getter = getattr(module, "get_knowledge", None)
+                AGENT_REGISTRY[agent_id] = {
+                    "module_path": module_info.name,
+                    "agent_getter": agent_getter,
+                    "knowledge_getter": knowledge_getter if callable(knowledge_getter) else None,
+                }
+                logger.info(f"Registered agent '{agent_id}' from {module_info.name}")
+        except Exception as e:
+            logger.error(f"Failed to register agent from {module_info.name}: {e}", exc_info=True)
+
+    logger.info(f"Agent discovery complete. Registered agents: {list(AGENT_REGISTRY.keys())}")
+
+
+# Run discovery when this module is imported
+discover_and_register_agents()
+
+# --- END FILE: src/agents/registry.py ---
+
+# --- START FILE: src/agents/selector.py ---
+"""Module providing utilities to list and instantiate available agents from the agent registry."""
+
+import logging
+from typing import List, Optional
+
+from agno.agent import Agent
+from .registry import AGENT_REGISTRY
+
+logger = logging.getLogger(__name__)
+
+
+def get_available_agents() -> List[str]:
+    """Returns a list of all available agent IDs."""
+    return list(AGENT_REGISTRY.keys())
+
+
+def get_agent(
+    agent_id: str,
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    """
+    Instantiate and return an Agent instance given its ID and configuration parameters.
+
+    Args:
+        agent_id (str): The unique identifier of the agent to instantiate.
+        model_id (str): The model identifier to use for the agent. Defaults to "gpt-4.1".
+        user_id (Optional[str]): The user identifier associated with the agent session.
+        session_id (Optional[str]): The session identifier for grouping agent interactions.
+        debug_mode (bool): If true, enables debug logging for the agent.
+
+    Returns:
+        Agent: An instance of the requested agent.
+
+    Raises:
+        ValueError: If the agent ID is not found in the registry or instantiation fails.
+    """
+    if agent_id not in AGENT_REGISTRY:
+        available = get_available_agents()
+        raise ValueError(f"Agent '{agent_id}' not found. Available agents: {available}")
+
+    registration_info = AGENT_REGISTRY[agent_id]
+    agent_getter = registration_info["agent_getter"]
+
+    try:
+        agent_instance = agent_getter(model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode)
+        return agent_instance
+    except Exception as e:
+        logger.error(f"Error instantiating agent '{agent_id}' using its getter: {e}", exc_info=True)
+        raise ValueError(f"Failed to instantiate agent '{agent_id}'. Check agent's get_agent function.") from e
+
+# --- END FILE: src/agents/selector.py ---
+
+# --- START FILE: src/agents/web/__init__.py ---
+
+# --- END FILE: src/agents/web/__init__.py ---
+
+# --- START FILE: src/agents/web/builder.py ---
+"""Agent builder for the Web Search Agent: constructs the agent with its prompts and web search tools."""
+
+from pathlib import Path
+from typing import Optional
+
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agents.base.builder import AgentConfig, BaseAgentBuilder
+from agno.agent import Agent
+
+# Load prompts
+PROMPT_DIR = Path(__file__).parent / "prompts"
+DESCRIPTION = (PROMPT_DIR / "description.md").read_text()
+INSTRUCTIONS = (PROMPT_DIR / "instructions.md").read_text()
+
+cfg = AgentConfig(
+    agent_id="web_agent",
+    name="Web Search Agent",
+    description=DESCRIPTION,
+    instructions=INSTRUCTIONS,
+    tools=[DuckDuckGoTools()],
+)
+
+
+def get_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    """
+    Instantiate and return the Web Search agent with specified model and context.
+
+    Args:
+        model_id (str): Identifier of the language model to use. Defaults to "gpt-4.1".
+        user_id (Optional[str]): Identifier for the user context.
+        session_id (Optional[str]): Identifier for the session context.
+        debug_mode (bool): Whether to enable debug logging.
+
+    Returns:
+        Agent: An instance of the Web Search agent.
+    """
+    cfg.model_id = model_id
+    cfg.debug_mode = debug_mode
+    return BaseAgentBuilder(cfg, user_id, session_id).build()
+
+# --- END FILE: src/agents/web/builder.py ---
+
+# --- START FILE: src/agents/yfinance/__init__.py ---
+
+# --- END FILE: src/agents/yfinance/__init__.py ---
+
+# --- START FILE: src/agents/yfinance/builder.py ---
+"""Agent builder for YFinance Agent: constructs the agent with its prompts and financial data tools."""
+
+from pathlib import Path
+from typing import Optional
+
+from agno.tools.duckduckgo import DuckDuckGoTools
+from agno.tools.yfinance import YFinanceTools
+from agents.base.builder import AgentConfig, BaseAgentBuilder
+from agno.agent import Agent
+
+# Load prompts
+PROMPT_DIR = Path(__file__).parent / "prompts"
+DESCRIPTION = (PROMPT_DIR / "description.md").read_text()
+INSTRUCTIONS = (PROMPT_DIR / "instructions.md").read_text()
+
+cfg = AgentConfig(
+    agent_id="yfinance_agent",
+    name="YFinance Agent",
+    description=DESCRIPTION,
+    instructions=INSTRUCTIONS,
+    tools=[
+        DuckDuckGoTools(),
+        YFinanceTools(
+            stock_price=True,
+            analyst_recommendations=True,
+            stock_fundamentals=True,
+            historical_prices=True,
+            company_info=True,
+            company_news=True,
+        ),
+    ],
+)
+
+
+def get_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Agent:
+    """
+    Instantiate and return the YFinance Agent with specified model and context.
+
+    Args:
+        model_id (str): Identifier of the language model to use. Defaults to "gpt-4.1".
+        user_id (Optional[str]): Identifier for the user context.
+        session_id (Optional[str]): Identifier for the session context.
+        debug_mode (bool): Whether to enable debug logging.
+
+    Returns:
+        Agent: An instance of the YFinance Agent.
+    """
+    cfg.model_id = model_id
+    cfg.debug_mode = debug_mode
+    return BaseAgentBuilder(cfg, user_id, session_id).build()
+
+# --- END FILE: src/agents/yfinance/builder.py ---
+
+# --- START FILE: src/api/__init__.py ---
+
+# --- END FILE: src/api/__init__.py ---
+
+# --- START FILE: src/api/main.py ---
+from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
+from dotenv import load_dotenv
+# Load environment variables from .env file
+load_dotenv()
+
+import logging # noqa: E402
+from api.settings import api_settings # noqa: E402
+level = api_settings.log_level.upper()
+logging.basicConfig(level=level)
+logging.getLogger("uvicorn.error").setLevel(level)
+logging.getLogger("uvicorn.access").setLevel(level)
+
+from api.routes.v1_router import v1_router # noqa: E402
+
+def create_app() -> FastAPI:
+    """Create a FastAPI App"""
+
+    # Create FastAPI App
+    app: FastAPI = FastAPI(
+        title=api_settings.title,
+        version=api_settings.version,
+        docs_url="/docs" if api_settings.docs_enabled else None,
+        redoc_url="/redoc" if api_settings.docs_enabled else None,
+        openapi_url="/openapi.json" if api_settings.docs_enabled else None,
+    )
+
+    # Add v1 router
+    app.include_router(v1_router)
+
+    # Add Middlewares
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=api_settings.cors_origin_list,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    return app
+
+
+# Create a FastAPI app
+app = create_app()
+
+# --- END FILE: src/api/main.py ---
+
+# --- START FILE: src/api/routes/__init__.py ---
+
+# --- END FILE: src/api/routes/__init__.py ---
+
+# --- START FILE: src/api/routes/agents.py ---
+from enum import Enum
+from logging import getLogger
+from typing import AsyncGenerator, List, Optional
+
+from agno.agent import Agent
+from fastapi import APIRouter, status
+from fastapi.responses import StreamingResponse
+from pydantic import BaseModel
+
+from agents.selector import get_agent, get_available_agents
+
+logger = getLogger(__name__)
+
+######################################################
+## Routes for the Agent Interface
+######################################################
+
+agents_router = APIRouter(prefix="/agents", tags=["Agents"])
+
+
+class Model(str, Enum):
+    gpt_4_1 = "gpt-4.1"
+    o4_mini = "o4-mini"
+    o3 = "o3"
+
+
+@agents_router.get("", response_model=List[str])
+async def list_agents():
+    """
+    Returns a list of all available agent IDs.
+
+    Returns:
+        List[str]: List of agent identifiers
+    """
+    return get_available_agents()
+
+
+async def chat_response_streamer(agent: Agent, message: str) -> AsyncGenerator:
+    """
+    Stream agent responses chunk by chunk.
+
+    Args:
+        agent: The agent instance to interact with
+        message: User message to process
+
+    Yields:
+        Text chunks from the agent response
+    """
+    run_response = await agent.arun(message, stream=True)
+    async for chunk in run_response:
+        # chunk.content only contains the text response from the Agent.
+        # For advanced use cases, we should yield the entire chunk
+        # that contains the tool calls and intermediate steps.
+        yield chunk.content
+
+
+class RunRequest(BaseModel):
+    """Request model for an running an agent"""
+
+    message: str
+    stream: bool = True
+    model: Model = Model.gpt_4_1
+    user_id: Optional[str] = None
+    session_id: Optional[str] = None
+
+
+@agents_router.post("/{agent_id}/runs", status_code=status.HTTP_200_OK)
+async def create_agent_run(agent_id: str, body: RunRequest):
+    """
+    Sends a message to a specific agent and returns the response.
+
+    Args:
+        agent_id: The ID of the agent to interact with
+        body: Request parameters including the message
+
+    Returns:
+        Either a streaming response or the complete agent response
+    """
+    logger.debug(f"RunRequest: {body}")
+
+    agent: Agent = get_agent(
+        model_id=body.model.value,
+        agent_id=agent_id,
+        user_id=body.user_id,
+        session_id=body.session_id,
+    )
+
+    if body.stream:
+        return StreamingResponse(
+            chat_response_streamer(agent, body.message),
+            media_type="text/event-stream",
+        )
+    else:
+        response = await agent.arun(body.message, stream=False)
+        # In this case, the response.content only contains the text response from the Agent.
+        # For advanced use cases, we should yield the entire response
+        # that contains the tool calls and intermediate steps.
+        return response.content
+
+# --- END FILE: src/api/routes/agents.py ---
+
+# --- START FILE: src/api/routes/health.py ---
+from fastapi import APIRouter
+
+######################################################
+## Routes for the API Health
+######################################################
+
+health_router = APIRouter(tags=["Health"])
+
+
+@health_router.get("/health")
+def get_health():
+    """Check the health of the Api"""
+
+    return {
+        "status": "success",
+    }
+
+# --- END FILE: src/api/routes/health.py ---
+
+# --- START FILE: src/api/routes/playground.py ---
+from agno.playground import Playground  # needed before first usage
+
+from agents.registry import AGENT_REGISTRY
+import logging
+from api.settings import api_settings  # import settings for log level
+
+from teams.selector import get_available_teams, get_team
+
+logger = logging.getLogger(__name__)
+# Determine debug mode based on LOG_LEVEL
+debug_mode_flag = api_settings.log_level.upper() == "DEBUG"
+
+######################################################
+## Routes for the Playground Interface
+######################################################
+
+# Get Agents to serve in the playground by calling their registered getters
+playground_agents = []
+for agent_id, registration_info in AGENT_REGISTRY.items():
+    try:
+        agent_getter = registration_info["agent_getter"]
+        agent_instance = agent_getter(debug_mode=debug_mode_flag)
+        playground_agents.append(agent_instance)
+        logger.info(f"Successfully instantiated agent '{agent_id}' for playground.")
+    except Exception as e:
+        # Log a warning if an agent fails to instantiate for the playground
+        logger.warning(f"Could not instantiate agent '{agent_id}' for playground: {e}", exc_info=True)
+        # Optionally, decide whether to continue without this agent or raise an error
+
+# Get Teams to serve in the playground by calling their registered getters
+playground_teams = []
+for team_id in get_available_teams():
+    try:
+        team_instance = get_team(team_id, debug_mode=debug_mode_flag)
+        playground_teams.append(team_instance)
+        logger.info(f"Successfully instantiated team '{team_id}' for playground.")
+    except Exception as e:
+        logger.warning(f"Could not instantiate team '{team_id}' for playground: {e}", exc_info=True)
+
+# Create a playground instance with our custom adapter that handles team response models correctly
+playground = Playground(agents=playground_agents, teams=playground_teams)
+
+# Get the router for the playground
+playground_router = playground.get_async_router()
+
+# --- END FILE: src/api/routes/playground.py ---
+
+# --- START FILE: src/api/routes/v1_router.py ---
+from fastapi import APIRouter
+
+from api.routes.agents import agents_router
+from api.routes.health import health_router
+from api.routes.playground import playground_router
+
+
+v1_router = APIRouter(prefix="/v1")
+v1_router.include_router(health_router)
+v1_router.include_router(agents_router)
+v1_router.include_router(playground_router)
+
+# --- END FILE: src/api/routes/v1_router.py ---
+
+# --- START FILE: src/api/settings.py ---
+from typing import List, Optional
+
+from pydantic import Field, field_validator
+from pydantic_core.core_schema import FieldValidationInfo
+from pydantic_settings import BaseSettings
+
+
+class ApiSettings(BaseSettings):
+    """Api settings that are set using environment variables."""
+
+    title: str = "backend-api"
+    version: str = "1.0"
+
+    # Set to False to disable docs at /docs and /redoc
+    docs_enabled: bool = True
+
+    # Cors origin list to allow requests from.
+    # This list is set using the set_cors_origin_list validator
+    # which uses the runtime_env variable to set the
+    # default cors origin list.
+    cors_origin_list: Optional[List[str]] = Field(None, validate_default=True)
+
+    log_level: str = Field("info", env = "LOG_LEVEL")
+
+    @field_validator("cors_origin_list", mode="before")
+    def set_cors_origin_list(cls, cors_origin_list, info: FieldValidationInfo):
+        valid_cors = cors_origin_list or []
+
+        # Add app.agno.com to cors to allow requests from the Agno playground.
+        valid_cors.append("https://app.agno.com")
+        # Add localhost to cors to allow requests from the local environment.
+        valid_cors.append("http://localhost")
+        # Add localhost:3000 to cors to allow requests from local Agent UI.
+        valid_cors.append("http://localhost:3000")
+
+        return valid_cors
+
+
+# Create ApiSettings object
+api_settings = ApiSettings()
+
+# --- END FILE: src/api/settings.py ---
+
+# --- START FILE: src/db/__init__.py ---
+
+# --- END FILE: src/db/__init__.py ---
+
+# --- START FILE: src/db/session.py ---
+from typing import Generator
+
+from sqlalchemy.engine import Engine, create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from db.url import get_db_url
+
+# Create SQLAlchemy Engine using a database URL
+db_url: str = get_db_url()
+db_engine: Engine = create_engine(db_url, pool_pre_ping=True)
+
+# Create a SessionLocal class
+SessionLocal: sessionmaker[Session] = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
+
+
+def get_db() -> Generator[Session, None, None]:
+    """
+    Dependency to get a database session.
+
+    Yields:
+        Session: An SQLAlchemy database session.
+    """
+    db: Session = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
+
+# --- END FILE: src/db/session.py ---
+
+# --- START FILE: src/db/url.py ---
+from os import getenv
+
+def get_db_url() -> str:
+    return getenv("DATABASE_URL")
+
+# --- END FILE: src/db/url.py ---
+
+# --- START FILE: src/teams/__init__.py ---
+
+# --- END FILE: src/teams/__init__.py ---
+
+# --- START FILE: src/teams/base/__init__.py ---
+# This package contains base classes for team builders
+
+# --- END FILE: src/teams/base/__init__.py ---
+
+# --- START FILE: src/teams/base/builder.py ---
+"""
+Base abstractions for constructing AI teams.
+
+This module defines the TeamConfig dataclass and the BaseTeamBuilder class, which together specify team setup and instantiate Team objects with configured member agents.
+"""
+
+from typing import List, Callable, Optional, Union, Dict, Any, Literal
+from pydantic import BaseModel, Field
+
+from agno.agent import Agent
+from agno.team import Team
+from agno.models.openai import OpenAIChat
+from agno.storage.postgres import PostgresStorage
+from db.session import db_url
+
+class TeamConfig(BaseModel):
+    team_id: str = Field(..., description="Unique identifier for the team.")
+    name: str = Field(..., description="Display name of the team.")
+    description: str = Field(..., description="Description of the team's purpose.")
+    instructions: Union[List[str], str] = Field(
+        ..., description="Guidance or instructions for the team; can be a list of strings or a single string."
+    )
+    mode: Literal["route", "coordinate", "collaborate"] = Field(..., description="Coordination mode for the team.")
+    member_builders: List[Callable[..., Agent]] = Field(..., description="Callables to construct agent members.")
+    model_id: str = Field("gpt-4.1", description="Default model identifier.")
+    markdown: bool = Field(True, description="Whether to format outputs in Markdown.")
+    debug_mode: bool = Field(False, description="Whether to enable debug logging.")
+    show_tool_calls: bool = Field(True, description="Whether to include tool call traces.")
+    show_members_responses: bool = Field(True, description="Whether to include raw member responses.")
+    extra_kwargs: Optional[Dict[str, Any]] = Field(
+        None, description="Additional keyword arguments for Team constructor."
+    )
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class BaseTeamBuilder:
+    """Builder for assembling Team objects from TeamConfig.
+
+    Encapsulates logic to construct agent members and wrap them into a Team.
+    """
+
+    def __init__(
+        self,
+        cfg: TeamConfig,
+        user_id: Optional[str] = None,
+        session_id: Optional[str] = None,
+    ):
+        self.cfg = cfg
+        self.user_id = user_id
+        self.session_id = session_id
+
+    def build(self) -> Team:
+        """Constructs and returns a Team instance using the configuration.
+
+        Instantiates each agent via member_builders and packages them into a Team.
+
+        Returns:
+            Team: The fully built team with all members and settings.
+        """
+        members: List[Agent | Team] = [
+            builder(
+                model_id=self.cfg.model_id,
+                user_id=self.user_id,
+                session_id=self.session_id,
+                debug_mode=self.cfg.debug_mode,
+            )
+            for builder in self.cfg.member_builders
+        ]
+        return Team(
+            name=self.cfg.name,
+            team_id=self.cfg.team_id,
+            members=members,
+            mode=self.cfg.mode,
+            model=OpenAIChat(id=self.cfg.model_id),
+            instructions=self.cfg.instructions,
+            user_id=self.user_id,
+            session_id=self.session_id,
+            markdown=self.cfg.markdown,
+            show_tool_calls=self.cfg.show_tool_calls,
+            show_members_responses=self.cfg.show_members_responses,
+            debug_mode=self.cfg.debug_mode,
+            storage=PostgresStorage(
+                table_name="team_sessions",
+                db_url=db_url,
+            ),
+            **(self.cfg.extra_kwargs or {}),
+        )
+
+# --- END FILE: src/teams/base/builder.py ---
+
+# --- START FILE: src/teams/hackernews/__init__.py ---
+# Package for HackerNews team
+
+# --- END FILE: src/teams/hackernews/__init__.py ---
+
+# --- START FILE: src/teams/hackernews/builder.py ---
+"""
+Module for building and retrieving the HackerNews AI team.
+
+Defines builder functions for creating member agents (Hacker News and Web), configures the HackerNews team via TeamConfig, and provides get_team to instantiate the assembled team.
+"""
+
+from pathlib import Path
+from typing import Optional
+
+from agents.selector import get_agent
+from teams.base.builder import TeamConfig, BaseTeamBuilder
+from agno.team import Team
+
+# Load prompts
+PROMPT_DIR = Path(__file__).parent / "prompts"
+DESCRIPTION = (PROMPT_DIR / "description.md").read_text()
+INSTRUCTIONS = (PROMPT_DIR / "instructions.md").read_text()
+
+
+# Builder functions for member agents
+def build_hn_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+):
+    """Builds and returns the Hacker News agent.
+
+    Args:
+        model_id (str, optional): Model identifier to use; defaults to "gpt-4.1".
+        user_id (str, optional): User ID for context; defaults to None.
+        session_id (str, optional): Session ID for context; defaults to None.
+        debug_mode (bool, optional): Enables debug mode; defaults to True.
+
+    Returns:
+        Agent: An instance of the Hacker News agent.
+    """
+    return get_agent(
+        "hacker_news_agent", model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode
+    )
+
+
+def build_web_agent(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+):
+    """Builds and returns the Web browsing agent.
+
+    Args:
+        model_id (str, optional): Model identifier; defaults to "gpt-4.1".
+        user_id (str, optional): User ID; defaults to None.
+        session_id (str, optional): Session ID; defaults to None.
+        debug_mode (bool, optional): Enables debug mode; defaults to True.
+
+    Returns:
+        Agent: An instance of the Web browsing agent.
+    """
+    return get_agent("web_agent", model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode)
+
+
+# Team configuration
+cfg = TeamConfig(
+    team_id="hn_team",
+    name="HackerNews Team",
+    description=DESCRIPTION,
+    instructions=INSTRUCTIONS.splitlines(),
+    mode="coordinate",
+    member_builders=[build_hn_agent, build_web_agent],
+)
+
+
+def get_team(
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Team:
+    """Retrieves and constructs the HackerNews Team instance.
+
+    Updates runtime parameters in cfg and uses BaseTeamBuilder to assemble the team.
+
+    Args:
+        model_id (str, optional): Model identifier; defaults to "gpt-4.1".
+        user_id (str, optional): User ID; defaults to None.
+        session_id (str, optional): Session ID; defaults to None.
+        debug_mode (bool, optional): Enables debug mode; defaults to True.
+
+    Returns:
+        Team: The assembled team object.
+    """
+    # Update runtime parameters
+    cfg.model_id = model_id
+    cfg.debug_mode = debug_mode
+    return BaseTeamBuilder(cfg, user_id, session_id).build()
+
+# --- END FILE: src/teams/hackernews/builder.py ---
+
+# --- START FILE: src/teams/registry.py ---
+import pkgutil
+import importlib
+from pathlib import Path
+from typing import Dict, Any
+import logging
+
+logger = logging.getLogger(__name__)
+
+"""
+Registry for discovery and registration of AI teams.
+
+This module scans the teams package for builder modules and registers their get_team functions into TEAM_REGISTRY, which maps team IDs to their corresponding module path and team getter functions.
+"""
+
+# Structure: {'team_id': {'module_path': str, 'team_getter': Callable}}
+TEAM_REGISTRY: Dict[str, Dict[str, Any]] = {}
+
+
+def discover_and_register_teams():
+    """
+    Scans the teams package for builder modules and registers their get_team functions.
+    """
+    pkg_path = Path(__file__).parent
+    logger.info(f"Starting team discovery in: {pkg_path}")
+
+    for module_info in pkgutil.walk_packages([str(pkg_path)], prefix="teams."):
+        # Skip the base abstraction module
+        if module_info.name.startswith("teams.base."):
+            continue
+        if not module_info.name.endswith(".builder"):
+            continue
+        try:
+            module = importlib.import_module(module_info.name)
+            if hasattr(module, "get_team") and hasattr(module, "cfg"):
+                team_id = getattr(module, "cfg").team_id  # type: ignore
+                team_getter = getattr(module, "get_team")
+                TEAM_REGISTRY[team_id] = {
+                    "module_path": module_info.name,
+                    "team_getter": team_getter,
+                }
+                logger.info(f"Registered team '{team_id}' from {module_info.name}")
+        except Exception as e:
+            logger.error(f"Failed to register team from {module_info.name}: {e}", exc_info=True)
+
+    logger.info(f"Team discovery complete. Registered teams: {list(TEAM_REGISTRY.keys())}")
+
+
+# Run discovery when this module is imported
+
+discover_and_register_teams()
+
+# --- END FILE: src/teams/registry.py ---
+
+# --- START FILE: src/teams/selector.py ---
+"""
+Module for selecting and retrieving AI team instances.
+
+This module provides functions to list available teams and instantiate them by ID from the TEAM_REGISTRY.
+"""
+
+import logging
+from typing import List, Optional
+
+from agno.team import Team
+from .registry import TEAM_REGISTRY
+
+logger = logging.getLogger(__name__)
+
+
+def get_available_teams() -> List[str]:
+    """Returns a list of all available team IDs."""
+    return list(TEAM_REGISTRY.keys())
+
+
+def get_team(
+    team_id: str,
+    model_id: str = "gpt-4.1",
+    user_id: Optional[str] = None,
+    session_id: Optional[str] = None,
+    debug_mode: bool = True,
+) -> Team:
+    """Retrieve and instantiate a Team by its ID.
+
+    Args:
+        team_id (str): The unique identifier of the team to instantiate.
+        model_id (str, optional): The model identifier to use; defaults to "gpt-4.1".
+        user_id (str, optional): The ID of the user; defaults to None.
+        session_id (str, optional): The session identifier; defaults to None.
+        debug_mode (bool, optional): Whether to enable debug mode; defaults to True.
+
+    Returns:
+        Team: An instantiated Team object.
+
+    Raises:
+        ValueError: If the team_id is not found or instantiation fails.
+    """
+    if team_id not in TEAM_REGISTRY:
+        available = get_available_teams()
+        raise ValueError(f"Team '{team_id}' not found. Available teams: {available}")
+    team_getter = TEAM_REGISTRY[team_id]["team_getter"]
+    try:
+        team_instance = team_getter(
+            model_id=model_id,
+            user_id=user_id,
+            session_id=session_id,
+            debug_mode=debug_mode,
+        )
+        return team_instance
+    except Exception as e:
+        logger.error(f"Error instantiating team '{team_id}': {e}", exc_info=True)
+        raise ValueError(f"Failed to instantiate team '{team_id}'.") from e
+
+# --- END FILE: src/teams/selector.py ---
+
+# --- START FILE: src/tools/__init__.py ---
+"""Public interface for the `tools` package.
+
+Importing this package will trigger discovery of tool sets via the registry
+module and make the ``TOOL_REGISTRY`` symbol available at package level.
+"""
+
+from .registry import TOOL_REGISTRY  # noqa: F401
+
+# --- END FILE: src/tools/__init__.py ---
+
+# --- START FILE: src/tools/base/__init__.py ---
+from .builder import ToolConfig, BaseToolBuilder  # noqa: F401
+
+# --- END FILE: src/tools/base/__init__.py ---
+
+# --- START FILE: src/tools/base/builder.py ---
+"""Base abstractions for constructing tool sets.
+
+This module defines the ToolConfig dataclass and the BaseToolBuilder class, providing
+an easy way to package together one or many callables that can be supplied to an
+Agno `Agent` or elsewhere.
+"""
+
+from typing import List, Callable, Any, Optional
+
+from pydantic import BaseModel, Field
+
+
+class ToolConfig(BaseModel):
+    """Configuration for a tool set.
+
+    Attributes
+    ----------
+    tool_id : str
+        Unique identifier that will be used in the tool registry.
+    name : str
+        Human-friendly name of the tool set.
+    description : str | None
+        A short description of what the tool set can do.
+    tool_functions : List[Callable]
+        A list with the callables that constitute the tool set. Each callable
+        should already fulfil Agno's tool signature requirements.
+    extra: Any
+        Optional place holder for additional metadata.
+    """
+
+    tool_id: str = Field(..., description="Unique identifier for the tool set.")
+    name: str = Field(..., description="Display name of the tool set.")
+    description: Optional[str] = Field(None, description="Description of the tool set.")
+    tool_functions: List[Callable[..., Any]] = Field(..., description="Callables that make up the tool set.")
+    extra: Optional[dict] = Field(None, description="Optional extra metadata.")
+
+    class Config:
+        arbitrary_types_allowed = True
+
+
+class BaseToolBuilder:
+    """Builder that simply returns the list of tool callables from the config."""
+
+    def __init__(self, cfg: ToolConfig):
+        self.cfg = cfg
+
+    def build(self) -> List[Callable[..., Any]]:
+        """Return the list of tool callables defined in the config."""
+        return self.cfg.tool_functions
+
+# --- END FILE: src/tools/base/builder.py ---
+
+# --- START FILE: src/tools/hackernews/__init__.py ---
+
+# --- END FILE: src/tools/hackernews/__init__.py ---
+
+# --- START FILE: src/tools/hackernews/builder.py ---
+"""Builder module defining the HackerNews tool set.
+
+This also serves as a concrete example of how to structure tool-builder modules so
+that they are automatically discovered by `tools.registry`.
+"""
+
+from __future__ import annotations
+
+import json
+from typing import List
+
+import httpx
+from agno.exceptions import RetryAgentRun
+from agno.utils.log import logger
+
+from tools.base.builder import ToolConfig, BaseToolBuilder
+
+
+# -----------------------------------------------------------------------------
+# Tool functions
+# -----------------------------------------------------------------------------
+
+
+def get_top_hackernews_stories(num_stories: int = 10) -> str:  # noqa: D401
+    """Return the top *num_stories* from Hacker News as a JSON string.
+
+    Parameters
+    ----------
+    num_stories : int, optional
+        How many stories to return. Defaults to 10.
+
+    Returns
+    -------
+    str
+        A JSON encoded list of objects as returned by the HackerNews API.
+    """
+
+    try:
+        response = httpx.get("https://hacker-news.firebaseio.com/v0/topstories.json")
+        response.raise_for_status()
+    except httpx.HTTPError as e:
+        logger.warning(f"Failed to fetch top story IDs: {e}")
+        raise RetryAgentRun(f"Failed to fetch top story IDs due to error: {e}. Please retry.")
+    story_ids: List[int] = response.json()
+
+    # Fetch story details
+    stories = []
+    for story_id in story_ids[:num_stories]:
+        try:
+            story_response = httpx.get(f"https://hacker-news.firebaseio.com/v0/item/{story_id}.json")
+            story_response.raise_for_status()
+            story = story_response.json()
+        except httpx.HTTPError as e:
+            logger.warning(f"Failed to fetch story {story_id}: {e}")
+            raise RetryAgentRun(f"Failed to fetch story {story_id} due to error: {e}. Please retry.")
+        # Remove large text fields that are usually not needed for summarisation
+        story.pop("text", None)
+        stories.append(story)
+    return json.dumps(stories)
+
+
+# -----------------------------------------------------------------------------
+# Config & builder entrypoints – required by tools.registry
+# -----------------------------------------------------------------------------
+
+cfg = ToolConfig(
+    tool_id="hacker_news_tools",
+    name="HackerNews Tools",
+    description="Utilities for interacting with the Hacker News API.",
+    tool_functions=[get_top_hackernews_stories],
+)
+
+
+def get_tools():
+    """Return the list of HackerNews tool callables.
+
+    The registry expects a function with this exact name in order to be able to
+    register the tool set automatically.
+    """
+
+    return BaseToolBuilder(cfg).build()
+
+# --- END FILE: src/tools/hackernews/builder.py ---
+
+# --- START FILE: src/tools/registry.py ---
+"""Module to discover and register tool builder modules and maintain a registry of available tool sets."""
+
+from __future__ import annotations
+
+import importlib
+import logging
+import pkgutil
+from pathlib import Path
+from typing import Dict, Any
+
+logger = logging.getLogger(__name__)
+
+# Registry structure: {"tool_id": {"module_path": str, "tools": List[Callable]}}
+TOOL_REGISTRY: Dict[str, Dict[str, Any]] = {}
+
+
+def discover_and_register_tools() -> None:
+    """Discover builder modules inside the ``tools`` package and register their tool sets.
+
+    Each builder module must:
+    * Live somewhere inside the ``tools`` Python package (``src/tools`` directory).
+    * Have a filename that ends with ``builder.py``.
+    * Expose a global ``cfg`` variable which is an instance of ``tools.base.builder.ToolConfig``.
+    * Expose a ``get_tools`` callable returning an *iterable* of tool callables.
+    """
+
+    pkg_path = Path(__file__).parent
+    logger.info("Starting tool discovery in: %s", pkg_path)
+
+    # Iterate over every python module in sub-packages of ``tools``
+    for module_info in pkgutil.walk_packages([str(pkg_path)], prefix="tools."):
+        # Skip the base abstractions package
+        if module_info.name.startswith("tools.base."):
+            continue
+        if not module_info.name.endswith(".builder"):
+            continue
+
+        try:
+            module = importlib.import_module(module_info.name)
+
+            # Basic validation
+            if not hasattr(module, "get_tools") or not hasattr(module, "cfg"):
+                continue
+
+            cfg = getattr(module, "cfg")  # ToolConfig instance
+            tool_id = getattr(cfg, "tool_id", None)
+            if not tool_id:
+                continue
+
+            tools_list = getattr(module, "get_tools")()
+            TOOL_REGISTRY[tool_id] = {
+                "module_path": module_info.name,
+                "tools": list(tools_list),
+            }
+            logger.info("Registered tool set '%s' from %s", tool_id, module_info.name)
+        except Exception as exc:
+            logger.error("Failed to register tool set from %s: %s", module_info.name, exc, exc_info=True)
+
+    logger.info("Tool discovery complete. Registered tool sets: %s", list(TOOL_REGISTRY.keys()))
+
+
+# Run discovery at import time
+
+discover_and_register_tools()
+
+# --- END FILE: src/tools/registry.py ---
+
+# --- START FILE: src/tools/selector.py ---
+"""Utilities to access tool sets registered in tools.registry."""
+
+from __future__ import annotations
+
+from typing import List, Callable
+
+from .registry import TOOL_REGISTRY
+
+
+def get_available_toolsets() -> List[str]:
+    """Return the IDs for all discovered tool sets."""
+    return list(TOOL_REGISTRY.keys())
+
+
+def get_tools(tool_id: str) -> List[Callable]:
+    """Return the list of tool callables for *tool_id*.
+
+    Raises
+    ------
+    ValueError
+        If *tool_id* is not present in the registry.
+    """
+    if tool_id not in TOOL_REGISTRY:
+        available = get_available_toolsets()
+        raise ValueError(f"Tool set '{tool_id}' not found. Available tool sets: {available}")
+
+    return TOOL_REGISTRY[tool_id]["tools"]
+
+# --- END FILE: src/tools/selector.py ---
+

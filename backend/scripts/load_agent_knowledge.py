@@ -22,6 +22,7 @@ sys.path.insert(0, os.path.join(project_root, "src"))
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
+
 async def load_knowledge(agent_id: str) -> int:
     if agent_id not in AGENT_REGISTRY:
         logger.error(f"Agent '{agent_id}' not found in registry.")
@@ -31,9 +32,7 @@ async def load_knowledge(agent_id: str) -> int:
     knowledge_getter = registration_info.get("knowledge_getter")
 
     if not knowledge_getter:
-        logger.error(
-            f"Agent '{agent_id}' does not have a registered knowledge base getter (get_knowledge)."
-        )
+        logger.error(f"Agent '{agent_id}' does not have a registered knowledge base getter (get_knowledge).")
         return 1
 
     try:
@@ -46,17 +45,15 @@ async def load_knowledge(agent_id: str) -> int:
     logger.info(f"Knowledge base for '{agent_id}' loaded successfully.")
     return 0
 
+
 def main():
-    parser = argparse.ArgumentParser(
-        description="Load the knowledge base for a specific agent."
-    )
-    parser.add_argument(
-        "agent_id", help="The ID of the agent to load knowledge for."
-    )
+    parser = argparse.ArgumentParser(description="Load the knowledge base for a specific agent.")
+    parser.add_argument("agent_id", help="The ID of the agent to load knowledge for.")
     args = parser.parse_args()
 
     exit_code = asyncio.run(load_knowledge(args.agent_id))
     sys.exit(exit_code)
 
+
 if __name__ == "__main__":
-    main() 
+    main()

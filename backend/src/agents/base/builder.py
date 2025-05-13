@@ -63,7 +63,7 @@ class BaseAgentBuilder:
             session_id=self.session_id,
             storage=PostgresAgentStorage(
                 table_name="agent_sessions",
-                db_url=db_url,  
+                db_url=db_url,
             ),
             add_history_to_messages=True,
             num_history_runs=self.cfg.history_runs,

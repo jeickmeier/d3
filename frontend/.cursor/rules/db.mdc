@@ -1,0 +1,121 @@
+---
+description: Database Access and Drizzle ORM Guide
+globs: 
+alwaysApply: false
+---
+
+# Database Access Guide
+
+This document provides guidance on database access patterns and the Drizzle ORM setup in this project.
+
+## Database Setup
+
+This project uses PostgreSQL with Drizzle ORM for database access. The database connection is configured in `db/db.ts` and the schema is defined in `db/schema.ts`.
+
+## Schema Definition
+
+The database schema is defined using Drizzle's schema definition syntax in `db/schema.ts`. The schema includes the following tables:
+
+- `user` - User accounts
+- `session` - User sessions
+- `account` - Authentication accounts
+- `verification` - Email verification tokens
+- `organization` - Organizations
+- `member` - Organization members
+- `invitation` - Organization invitations
+
+## Database Connection
+
+The database connection is established in `db/db.ts` using Drizzle with postgres.js:
+
+```typescript
+import { drizzle } from 'drizzle-orm/postgres-js';
+import postgres from 'postgres';
+import * as schema from '@db/schema';
+
+const connectionString = process.env.DATABASE_URL!;
+const client = postgres(connectionString);
+export const db = drizzle(client, { schema });
+```
+
+## Drizzle Configuration
+
+Drizzle is configured in `drizzle.config.ts` with the following settings:
+
+- Dialect: PostgreSQL
+- Schema location: `./db/schema.ts`
+- Migration output: `./db/drizzle`
+
+## Usage Patterns
+
+### Importing the Database Client
+
+```typescript
+import { db } from '@db/db';
+```
+
+### Querying Data
+
+```typescript
+// Select all users
+const users = await db.select().from(user);
+
+// Select a user by ID
+const user = await db.select().from(user).where(eq(user.id, userId));
+
+// Join tables
+const membersWithUsers = await db
+  .select()
+  .from(member)
+  .innerJoin(user, eq(member.userId, user.id))
+  .where(eq(member.organizationId, orgId));
+```
+
+### Inserting Data
+
+```typescript
+// Insert a new user
+const newUser = await db.insert(user).values({
+  id: generateId(),
+  name: 'John Doe',
+  email: 'john@example.com',
+}).returning();
+```
+
+### Updating Data
+
+```typescript
+// Update a user
+await db.update(user)
+  .set({ name: 'Jane Doe' })
+  .where(eq(user.id, userId));
+```
+
+### Deleting Data
+
+```typescript
+// Delete a user
+await db.delete(user).where(eq(user.id, userId));
+```
+
+## Migrations
+
+Database migrations are managed using Drizzle Kit. The following commands are available:
+
+- Generate migrations: `npx drizzle-kit generate`
+- Apply migrations: `npx drizzle-kit migrate`
+
+## Best Practices
+
+1. Always use parameterized queries to prevent SQL injection
+2. Use transactions for operations that require atomicity
+3. Keep database logic in dedicated service files
+4. Use proper error handling for database operations
+5. Validate input data before sending to the database
+
+## Environment Variables
+
+The following environment variables are used for database configuration:
+
+- `DATABASE_URL`: The PostgreSQL connection string
+- `AUTH_DRIZZLE_URL`: The connection string used by Drizzle Kit

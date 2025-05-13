@@ -1,0 +1,86 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Tech Stack Setup
+
+This document provides an overview of the core dependencies and code quality tooling used in this project.
+
+## 1. Packages
+
+We use `pnpm` (lockfile: `pnpm-lock.yaml`) to manage dependencies defined in `package.json`. Key dependencies:
+
+- **next**@15.3.2: Framework for server-rendered React applications
+- **react**@19.1.0 & **react-dom**@19.1.0: UI library
+- **typescript**@5.8.3: Static typing
+- **tailwindcss**@4.1.6: Utility-first CSS framework
+- **drizzle-orm**@0.43.1 & **postgres**@3.4.5: Database ORM and driver
+- **better-auth**@1.2.7: Authentication support
+- **@tanstack/react-table**@8.21.3: Data table utilities
+- **@radix-ui/react-***: Headless UI primitives
+- **lucide-react**@0.510.0: Icon library
+- **date-fns**@4.1.0: Date utilities
+- **sonner**@2.0.3: Toast notifications
+
+Dev dependencies:
+
+- **eslint**@9.26.0 & **@eslint/eslintrc**@3.3.1: Linting engine and Flat Config
+- **eslint-config-next**: Next.js lint rules
+- **typescript-eslint** & **eslint-plugin-react**: TS and React linting
+- **prettier**@3.5.3 & **eslint-plugin-prettier**: Code formatting
+- **drizzle-kit**@0.31.1: Migrations & schema generation
+- **ts-node**, **tsx**: TypeScript execution
+
+## 2. ESLint
+
+Configuration lives in `eslint.config.mjs`, utilizing the Flat Config API:
+
+- Base: `js/recommended`
+- TypeScript: `typescript-eslint` recommended
+- React: `eslint-plugin-react` with JSX and prop-types adjustments
+- Next.js: `next/core-web-vitals`
+- Prettier integration: `plugin:prettier/recommended`
+
+Run lint checks with:
+```bash
+npm run lint
+```
+
+### Adjusting rules
+Edit `eslint.config.mjs` and follow existing file globs, plugin order, and rule declarations.
+
+## 3. Prettier
+
+Prettier is enabled via the ESLint Prettier plugin. Format code using:
+```bash
+npm run format
+```
+
+Default formatting rules include:
+- 2-space indentation
+- Semicolons
+- Single quotes where possible
+- Trailing commas in multi-line constructs
+
+Customize options in a `.prettierrc` file if needed.
+
+## 4. Code Style Guidelines
+
+- Use modern ESNext syntax (async/await, optional chaining).
+- Naming conventions:
+  - Components: `PascalCase` (e.g., `MyComponent.tsx`)
+  - Hooks & utilities: `camelCase` (e.g., `useFetch.ts`)
+- Aliases:
+  - `@/` → `src/`
+  - `@db/` → `db/`
+- Layout:
+  - React components in `src/components`
+  - Page routes under `src/app`
+- Styling:
+  - Use Tailwind CSS classes and the `cn()` helper for conditional styling
+  - Keep utility classes concise and semantic
+- Directory structure:
+  - Business logic and database schemas in `/db`
+  - TS Helpers and utilities in `/src/lib`
+  - UI components in `/src/components`

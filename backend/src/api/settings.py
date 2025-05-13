@@ -20,7 +20,7 @@ class ApiSettings(BaseSettings):
     # default cors origin list.
     cors_origin_list: Optional[List[str]] = Field(None, validate_default=True)
 
-    log_level: str = Field("info", env = "LOG_LEVEL")
+    log_level: str = "info"
 
     @field_validator("cors_origin_list", mode="before")
     def set_cors_origin_list(cls, cors_origin_list, info: FieldValidationInfo):
