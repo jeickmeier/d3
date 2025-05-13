@@ -39,8 +39,6 @@ services:
       - ./backend/src:/app
     environment:
       OPENAI_API_KEY: ${OPENAI_API_KEY}
-      # AGNO_MONITOR: "True"
-      # AGNO_API_KEY: ${AGNO_API_KEY}
       DB_HOST: d3-db
       DB_PORT: 5432
       DB_USER: ${DB_USER:-ai}
