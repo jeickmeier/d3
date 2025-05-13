@@ -2,7 +2,7 @@
 from pathlib import Path
 from typing import Optional
 
-from agno.tools.hackernews import HackerNewsTools
+from tools.hackernews.builder import get_tools as get_top_hackernews_stories
 from agents.base.builder import AgentConfig, BaseAgentBuilder
 from agno.agent import Agent
 
@@ -16,7 +16,7 @@ cfg = AgentConfig(
     name="HackerNews Researcher",
     description=DESCRIPTION,
     instructions=INSTRUCTIONS,
-    tools=[HackerNewsTools()],
+    tools=get_top_hackernews_stories(),
 )
 
 
