@@ -7,6 +7,7 @@ from agno.memory.v2.db.postgres import PostgresMemoryDb
 from agno.models.openai import OpenAIChat
 from agno.storage.agent.postgres import PostgresAgentStorage
 
+
 @dataclass
 class AgentConfig:
     agent_id: str
@@ -23,6 +24,7 @@ class AgentConfig:
     knowledge: Optional[Any] = None
     search_knowledge: bool = False
 
+
 class BaseAgentBuilder:
     def __init__(self, cfg: AgentConfig, user_id: Optional[str] = None, session_id: Optional[str] = None):
         self.cfg = cfg
@@ -31,6 +33,7 @@ class BaseAgentBuilder:
 
     def build(self) -> Agent:
         from db.session import db_url
+
         return Agent(
             name=self.cfg.name,
             agent_id=self.cfg.agent_id,
@@ -59,9 +62,10 @@ class BaseAgentBuilder:
 
     def _memory(self) -> Memory:
         from db.session import db_url
+
         return Memory(
             model=OpenAIChat(id=self.cfg.model_id),
             db=PostgresMemoryDb(table_name="user_memories", db_url=db_url),
             delete_memories=True,
             clear_memories=True,
-        ) 
+        )

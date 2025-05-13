@@ -10,6 +10,7 @@ logger = logging.getLogger(__name__)
 # Structure: {'agent_id': {'module_path': str, 'agent_getter': Callable, 'knowledge_getter': Optional[Callable]}}
 AGENT_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
+
 def discover_and_register_agents():
     """
     Scans the agents package for builder modules and registers their get_agent functions.
@@ -40,5 +41,6 @@ def discover_and_register_agents():
 
     logger.info(f"Agent discovery complete. Registered agents: {list(AGENT_REGISTRY.keys())}")
 
+
 # Run discovery when this module is imported
-discover_and_register_agents() 
+discover_and_register_agents()

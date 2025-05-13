@@ -14,4 +14,4 @@ def get_knowledge() -> AgentKnowledge:
             search_type=SearchType.hybrid,
             embedder=OpenAIEmbedder(id="text-embedding-3-small"),
         ),
-    ) 
+    )

@@ -6,6 +6,7 @@ from .registry import AGENT_REGISTRY
 
 logger = logging.getLogger(__name__)
 
+
 def get_available_agents() -> List[str]:
     """Returns a list of all available agent IDs."""
     return list(AGENT_REGISTRY.keys())
@@ -23,15 +24,10 @@ def get_agent(
         raise ValueError(f"Agent '{agent_id}' not found. Available agents: {available}")
 
     registration_info = AGENT_REGISTRY[agent_id]
-    agent_getter = registration_info['agent_getter']
+    agent_getter = registration_info["agent_getter"]
 
     try:
-        agent_instance = agent_getter(
-            model_id=model_id,
-            user_id=user_id,
-            session_id=session_id,
-            debug_mode=debug_mode
-        )
+        agent_instance = agent_getter(model_id=model_id, user_id=user_id, session_id=session_id, debug_mode=debug_mode)
         return agent_instance
     except Exception as e:
         logger.error(f"Error instantiating agent '{agent_id}' using its getter: {e}", exc_info=True)

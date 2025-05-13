@@ -1,1 +1,1 @@
-__all__ = ['BaseAgentBuilder', 'AgentConfig']
+__all__ = ["BaseAgentBuilder", "AgentConfig"]

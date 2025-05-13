@@ -114,7 +114,7 @@ async def load_agent_knowledge(agent_id: str):
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail=f"Agent '{agent_id}' not found.")
 
     registration_info = AGENT_REGISTRY[agent_id]
-    knowledge_getter = registration_info.get('knowledge_getter')
+    knowledge_getter = registration_info.get("knowledge_getter")
 
     if not knowledge_getter:
         raise HTTPException(

@@ -22,6 +22,7 @@ cfg = AgentConfig(
     table_prefix="agno_assist_",
 )
 
+
 def get_agent(
     model_id: str = "gpt-4.1",
     user_id: Optional[str] = None,
@@ -30,4 +31,4 @@ def get_agent(
 ) -> Agent:
     cfg.model_id = model_id
     cfg.debug_mode = debug_mode
-    return BaseAgentBuilder(cfg, user_id, session_id).build() 
+    return BaseAgentBuilder(cfg, user_id, session_id).build()
