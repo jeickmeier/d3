@@ -1,3 +1,4 @@
+"""Module providing utilities to list and instantiate available agents from the agent registry."""
 import logging
 from typing import List, Optional
 
@@ -19,6 +20,22 @@ def get_agent(
     session_id: Optional[str] = None,
     debug_mode: bool = True,
 ) -> Agent:
+    """
+    Instantiate and return an Agent instance given its ID and configuration parameters.
+
+    Args:
+        agent_id (str): The unique identifier of the agent to instantiate.
+        model_id (str): The model identifier to use for the agent. Defaults to "gpt-4.1".
+        user_id (Optional[str]): The user identifier associated with the agent session.
+        session_id (Optional[str]): The session identifier for grouping agent interactions.
+        debug_mode (bool): If true, enables debug logging for the agent.
+
+    Returns:
+        Agent: An instance of the requested agent.
+
+    Raises:
+        ValueError: If the agent ID is not found in the registry or instantiation fails.
+    """
     if agent_id not in AGENT_REGISTRY:
         available = get_available_agents()
         raise ValueError(f"Agent '{agent_id}' not found. Available agents: {available}")

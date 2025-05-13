@@ -1,3 +1,4 @@
+"""Module to discover and register agent builder modules and maintain a registry of available agents."""
 import pkgutil
 import importlib
 from pathlib import Path

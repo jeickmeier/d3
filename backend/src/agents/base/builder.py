@@ -1,3 +1,4 @@
+"""Module defining the base agent builder and AgentConfig dataclass for constructing agents."""
 from dataclasses import dataclass
 from typing import List, Optional, Any
 
@@ -10,6 +11,24 @@ from agno.storage.agent.postgres import PostgresAgentStorage
 
 @dataclass
 class AgentConfig:
+    """
+    Configuration for an agent.
+
+    Attributes:
+        agent_id (str): Unique identifier for the agent.
+        name (str): Display name of the agent.
+        tools (List): List of tools available to the agent.
+        description (str): Description of the agent's purpose.
+        instructions (str): Instructions guiding the agent's behavior.
+        model_id (str): Language model identifier used by the agent.
+        history_runs (int): Number of conversation history turns to include.
+        table_prefix (str): Prefix for database table names.
+        enable_memory (bool): Whether to enable memory for the agent.
+        markdown (bool): Whether to format responses in markdown.
+        debug_mode (bool): Whether to enable debug mode.
+        knowledge (Optional[Any]): Additional knowledge source for the agent.
+        search_knowledge (bool): Whether to search knowledge base during execution.
+    """
     agent_id: str
     name: str
     tools: List
@@ -26,12 +45,23 @@ class AgentConfig:
 
 
 class BaseAgentBuilder:
+    """
+    Builder for creating Agent instances based on an AgentConfig.
+
+    The builder sets up the agent with model, tools, storage, memory, and other configurations.
+    """
     def __init__(self, cfg: AgentConfig, user_id: Optional[str] = None, session_id: Optional[str] = None):
         self.cfg = cfg
         self.user_id = user_id
         self.session_id = session_id
 
     def build(self) -> Agent:
+        """
+        Build and return an Agent instance using the provided configuration and context.
+
+        Returns:
+            Agent: The constructed agent instance.
+        """
         from db.session import db_url
 
         return Agent(
@@ -61,6 +91,12 @@ class BaseAgentBuilder:
         )
 
     def _memory(self) -> Memory:
+        """
+        Create and return a Memory instance for the agent.
+
+        Returns:
+            Memory: Configured memory component for the agent.
+        """
         from db.session import db_url
 
         return Memory(
