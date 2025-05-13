@@ -1,6 +1,6 @@
 """Module defining the base agent builder and AgentConfig dataclass for constructing agents."""
-from dataclasses import dataclass
-from typing import List, Optional, Any
+from typing import List, Optional, Any, Dict
+from pydantic import BaseModel, Field
 
 from agno.agent import Agent
 from agno.memory.v2.memory import Memory
@@ -9,39 +9,23 @@ from agno.models.openai import OpenAIChat
 from agno.storage.agent.postgres import PostgresAgentStorage
 
 
-@dataclass
-class AgentConfig:
-    """
-    Configuration for an agent.
+class AgentConfig(BaseModel):
+    agent_id: str = Field(..., description="Unique identifier for the agent.")
+    name: str = Field(..., description="Display name of the agent.")
+    tools: List[Any] = Field(..., description="List of tools available to the agent.")
+    description: str = Field(..., description="Description of the agent's purpose.")
+    instructions: str = Field(..., description="Instructions guiding the agent's behavior.")
+    model_id: str = Field("gpt-4.1", description="Language model identifier used by the agent.")
+    history_runs: int = Field(3, description="Number of conversation history turns to include.")
+    table_prefix: str = Field("", description="Prefix for database table names.")
+    enable_memory: bool = Field(True, description="Whether to enable memory for the agent.")
+    markdown: bool = Field(True, description="Whether to format responses in markdown.")
+    debug_mode: bool = Field(False, description="Whether to enable debug mode.")
+    knowledge: Optional[Any] = Field(None, description="Additional knowledge source for the agent.")
+    search_knowledge: bool = Field(False, description="Whether to search knowledge base during execution.")
 
-    Attributes:
-        agent_id (str): Unique identifier for the agent.
-        name (str): Display name of the agent.
-        tools (List): List of tools available to the agent.
-        description (str): Description of the agent's purpose.
-        instructions (str): Instructions guiding the agent's behavior.
-        model_id (str): Language model identifier used by the agent.
-        history_runs (int): Number of conversation history turns to include.
-        table_prefix (str): Prefix for database table names.
-        enable_memory (bool): Whether to enable memory for the agent.
-        markdown (bool): Whether to format responses in markdown.
-        debug_mode (bool): Whether to enable debug mode.
-        knowledge (Optional[Any]): Additional knowledge source for the agent.
-        search_knowledge (bool): Whether to search knowledge base during execution.
-    """
-    agent_id: str
-    name: str
-    tools: List
-    description: str
-    instructions: str
-    model_id: str = "gpt-4.1"
-    history_runs: int = 3
-    table_prefix: str = ""
-    enable_memory: bool = True
-    markdown: bool = True
-    debug_mode: bool = False
-    knowledge: Optional[Any] = None
-    search_knowledge: bool = False
+    class Config:
+        arbitrary_types_allowed = True
 
 
 class BaseAgentBuilder:

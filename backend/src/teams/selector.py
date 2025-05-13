@@ -1,3 +1,9 @@
+"""
+Module for selecting and retrieving AI team instances.
+
+This module provides functions to list available teams and instantiate them by ID from the TEAM_REGISTRY.
+"""
+
 import logging
 from typing import List, Optional
 
@@ -19,6 +25,21 @@ def get_team(
     session_id: Optional[str] = None,
     debug_mode: bool = True,
 ) -> Team:
+    """Retrieve and instantiate a Team by its ID.
+
+    Args:
+        team_id (str): The unique identifier of the team to instantiate.
+        model_id (str, optional): The model identifier to use; defaults to "gpt-4.1".
+        user_id (str, optional): The ID of the user; defaults to None.
+        session_id (str, optional): The session identifier; defaults to None.
+        debug_mode (bool, optional): Whether to enable debug mode; defaults to True.
+
+    Returns:
+        Team: An instantiated Team object.
+
+    Raises:
+        ValueError: If the team_id is not found or instantiation fails.
+    """
     if team_id not in TEAM_REGISTRY:
         available = get_available_teams()
         raise ValueError(f"Team '{team_id}' not found. Available teams: {available}")

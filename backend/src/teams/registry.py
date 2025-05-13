@@ -6,6 +6,12 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+"""
+Registry for discovery and registration of AI teams.
+
+This module scans the teams package for builder modules and registers their get_team functions into TEAM_REGISTRY, which maps team IDs to their corresponding module path and team getter functions.
+"""
+
 # Structure: {'team_id': {'module_path': str, 'team_getter': Callable}}
 TEAM_REGISTRY: Dict[str, Dict[str, Any]] = {}
 
