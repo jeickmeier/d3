@@ -10,7 +10,8 @@ from pydantic import BaseModel, Field
 from agno.agent import Agent
 from agno.team import Team
 from agno.models.openai import OpenAIChat
-
+from agno.storage.postgres import PostgresStorage
+from db.session import db_url
 
 class TeamConfig(BaseModel):
     team_id: str = Field(..., description="Unique identifier for the team.")
@@ -80,5 +81,9 @@ class BaseTeamBuilder:
             show_tool_calls=self.cfg.show_tool_calls,
             show_members_responses=self.cfg.show_members_responses,
             debug_mode=self.cfg.debug_mode,
+            storage=PostgresStorage(
+                table_name="team_sessions",
+                db_url=db_url,
+            ),
             **(self.cfg.extra_kwargs or {}),
         )

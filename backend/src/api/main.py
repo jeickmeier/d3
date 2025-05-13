@@ -1,11 +1,10 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from dotenv import load_dotenv
-import logging
-
 # Load environment variables from .env file
 load_dotenv()
 
+import logging # noqa: E402
 from api.settings import api_settings # noqa: E402
 level = api_settings.log_level.upper()
 logging.basicConfig(level=level)

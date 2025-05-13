@@ -1,0 +1,32 @@
+{
+    "session_state": {
+        "current_user_id": "me_c99f",
+        "current_session_id": "50701882-8532-4605-a1cb-0009db5d6281"
+    },
+    "session_metrics": {
+        "time": 3.5112420020013815,
+        "timer": null,
+        "audio_tokens": 0,
+        "input_tokens": 529,
+        "total_tokens": 710,
+        "cached_tokens": 0,
+        "output_tokens": 181,
+        "prompt_tokens": 529,
+        "reasoning_tokens": 0,
+        "completion_tokens": 181,
+        "additional_metrics": null,
+        "input_audio_tokens": 0,
+        "output_audio_tokens": 0,
+        "time_to_first_token": 0.7618492920009885,
+        "prompt_tokens_details": {
+            "audio_tokens": 0,
+            "cached_tokens": 0
+        },
+        "completion_tokens_details": {
+            "audio_tokens": 0,
+            "reasoning_tokens": 0,
+            "accepted_prediction_tokens": 0,
+            "rejected_prediction_tokens": 0
+        }
+    }
+}

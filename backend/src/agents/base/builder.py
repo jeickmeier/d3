@@ -62,8 +62,8 @@ class BaseAgentBuilder:
             user_id=self.user_id,
             session_id=self.session_id,
             storage=PostgresAgentStorage(
-                table_name=f"{self.cfg.table_prefix}{self.cfg.agent_id}_sessions",
-                db_url=db_url,
+                table_name="agent_sessions",
+                db_url=db_url,  
             ),
             add_history_to_messages=True,
             num_history_runs=self.cfg.history_runs,
@@ -88,6 +88,6 @@ class BaseAgentBuilder:
         return Memory(
             model=OpenAIChat(id=self.cfg.model_id),
             db=PostgresMemoryDb(table_name="user_memories", db_url=db_url),
-            delete_memories=True,
-            clear_memories=True,
+            delete_memories=False,
+            clear_memories=False,
         )

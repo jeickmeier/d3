@@ -1,0 +1,71 @@
+{
+    "mode": "coordinate",
+    "name": "HackerNews Team",
+    "model": {
+        "id": "gpt-4.1",
+        "name": "OpenAIChat",
+        "tools": [
+            {
+                "type": "function",
+                "function": {
+                    "name": "atransfer_task_to_member",
+                    "parameters": {
+                        "type": "object",
+                        "required": [
+                            "member_id",
+                            "task_description"
+                        ],
+                        "properties": {
+                            "member_id": {
+                                "type": "string",
+                                "description": "(str) The ID of the member to transfer the task to."
+                            },
+                            "expected_output": {
+                                "type": "string",
+                                "description": "(str) The expected output from the member (optional)."
+                            },
+                            "task_description": {
+                                "type": "string",
+                                "description": "(str) A clear and concise description of the task the member should achieve."
+                            }
+                        },
+                        "additionalProperties": false
+                    },
+                    "description": "Use this function to transfer a task to the selected team member.\nYou must provide a clear and concise description of the task the member should achieve AND the expected output."
+                }
+            }
+        ],
+        "provider": "OpenAI",
+        "functions": {
+            "atransfer_task_to_member": {
+                "name": "atransfer_task_to_member",
+                "parameters": {
+                    "type": "object",
+                    "required": [
+                        "member_id",
+                        "task_description"
+                    ],
+                    "properties": {
+                        "member_id": {
+                            "type": "string",
+                            "description": "(str) The ID of the member to transfer the task to."
+                        },
+                        "expected_output": {
+                            "type": "string",
+                            "description": "(str) The expected output from the member (optional)."
+                        },
+                        "task_description": {
+                            "type": "string",
+                            "description": "(str) A clear and concise description of the task the member should achieve."
+                        }
+                    },
+                    "additionalProperties": false
+                },
+                "description": "Use this function to transfer a task to the selected team member.\nYou must provide a clear and concise description of the task the member should achieve AND the expected output."
+            }
+        },
+        "tool_choice": "auto",
+        "response_format": "None"
+    },
+    "team_id": "hn_team"
+}

@@ -14,14 +14,13 @@ DESCRIPTION = (PROMPT_DIR / "description.md").read_text()
 INSTRUCTIONS = (PROMPT_DIR / "instructions.md").read_text()
 
 cfg = AgentConfig(
-    agent_id="agno_assist",
+    agent_id="agno_agent",
     name="Agno Assist",
     description=DESCRIPTION,
     instructions=INSTRUCTIONS,
     tools=[DuckDuckGoTools()],
     knowledge=get_knowledge(),
     search_knowledge=True,
-    table_prefix="agno_assist_",
 )
 
 
