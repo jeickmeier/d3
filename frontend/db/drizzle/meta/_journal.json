@@ -8,6 +8,13 @@
       "when": 1747143454827,
       "tag": "0000_nosy_hellcat",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1747225586392,
+      "tag": "0001_bouncy_raider",
+      "breakpoints": true
     }
   ]
 }

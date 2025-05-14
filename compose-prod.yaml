@@ -1,5 +1,6 @@
 services:
   d3-db:
+    container_name: d3-db
     build:
       context: .
       dockerfile: db/Dockerfile.pgvectorscale
@@ -26,6 +27,7 @@ services:
       - d3-network
 
   d3-backend:
+    container_name: d3-backend
     build:
       context: ./backend
       dockerfile: docker/Dockerfile_prod
@@ -54,6 +56,7 @@ services:
       - "host.docker.internal:host-gateway"
 
   d3-frontend:
+    container_name: d3-frontend
     build:
       context: ./frontend
       dockerfile: docker/Dockerfile_prod
@@ -66,6 +69,28 @@ services:
       - d3-network
     depends_on:
       - d3-backend
+
+  d3-minio:
+    image: minio/minio:latest
+    container_name: d3-minio-server # Optional: a friendly name
+    ports:
+      - "9000:9000"  # API port for S3 clients
+      - "9001:9001"  # MinIO Console (web UI) port
+    volumes:
+      - minio_data:/data # Persist MinIO data using a named volume
+    environment:
+      MINIO_ROOT_USER: minioadmin123 
+      MINIO_ROOT_PASSWORD: K8x#mP9vL2@nQ5 
+      # MINIO_DOMAIN: minio # Optional: if you want to access it via http://minio:9000 from other containers
+    command: server /data --console-address ":9001"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    networks:
+      - d3-network
+
 
 networks:
   d3-network:

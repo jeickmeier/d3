@@ -1,6 +1,7 @@
 "use client";
 
 import { ChevronsUpDown, LogOut, Settings, CircleUser } from "lucide-react";
+import * as React from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
@@ -23,15 +24,15 @@ import { useRouter } from "next/navigation";
 
 import { authClient } from "@/lib/auth/auth-client";
 
-export function NavUser({
-  user,
-}: {
+interface NavUserProps {
   user: {
     name: string;
     email: string;
     image: string | null | undefined;
   };
-}) {
+}
+
+export const NavUser = React.memo(function NavUser({ user }: NavUserProps) {
   const { isMobile } = useSidebar();
   const router = useRouter();
 
@@ -121,4 +122,4 @@ export function NavUser({
       </SidebarMenuItem>
     </SidebarMenu>
   );
-}
+});

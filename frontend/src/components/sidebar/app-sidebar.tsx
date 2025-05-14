@@ -1,6 +1,7 @@
 "use client";
 
 import * as React from "react";
+import { useEffect, useState } from "react";
 
 import { Menu } from "lucide-react";
 
@@ -25,23 +26,46 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { open } = useSidebar();
-
   const { data: session, isPending } = authClient.useSession();
+  const [isClient, setIsClient] = useState(false);
+  const previousSessionRef = React.useRef<typeof session | undefined>(
+    undefined,
+  );
 
-  let user;
-  if (isPending || !session) {
-    user = {
-      name: "Loading...",
-      email: "Please wait",
-      image: null,
-    };
-  } else {
-    user = {
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  useEffect(() => {
+    if (typeof previousSessionRef.current !== "undefined") {
+      console.log(
+        "AppSidebar: session object reference is the same?",
+        previousSessionRef.current === session,
+      );
+    }
+    previousSessionRef.current = session;
+  }, [session]);
+
+  console.log("AppSidebar: isPending", isPending);
+  console.log(
+    "AppSidebar: session content",
+    session ? JSON.stringify(session) : String(session),
+  );
+
+  const user = React.useMemo(() => {
+    if (isPending || !session) {
+      return {
+        name: "Loading...",
+        email: "Please wait",
+        image: null,
+      };
+    }
+    return {
       name: session?.user?.name || "",
       email: session?.user?.email || "",
       image: session?.user?.image || "",
     };
-  }
+  }, [session, isPending]);
 
   return (
     <Sidebar collapsible="icon" {...props}>
@@ -54,7 +78,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain items={data.navMain} />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={user} />
+        {isClient && !isPending && session ? (
+          <NavUser user={user} />
+        ) : (
+          <div>Loading User...</div>
+        )}
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

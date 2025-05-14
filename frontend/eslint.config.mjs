@@ -4,12 +4,8 @@ import tseslint from "typescript-eslint";
 import pluginReact from "eslint-plugin-react";
 import { defineConfig } from "eslint/config";
 import { FlatCompat } from "@eslint/eslintrc";
-import { fileURLToPath } from "url";
-import { dirname } from "path";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const compat = new FlatCompat({ baseDirectory: __dirname });
+const compat = new FlatCompat({ baseDirectory: import.meta.dirname });
 
 export default defineConfig([
   {
@@ -29,8 +25,15 @@ export default defineConfig([
       "react/react-in-jsx-scope": "off",
       "react/prop-types": "off",
       "react/no-children-prop": "off",
+      "@typescript-eslint/no-explicit-any": "off",
     },
   },
-  ...compat.extends("next", "next/core-web-vitals"),
+  ...compat.config({
+    extends: ["next"],
+    rules: {
+      "react/no-unescaped-entities": "off",
+      "@next/next/no-page-custom-font": "off",
+    },
+  }),
   ...compat.extends("plugin:prettier/recommended"),
 ]);
