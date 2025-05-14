@@ -10,8 +10,8 @@ import {
   VideoPlugin,
 } from "@udecode/plate-media/react";
 
-import { ImagePreview } from "@/components/editor/ui/image-preview";
-import { MediaUploadToast } from "@/components/editor/ui/media-upload-toast";
+import { ImagePreview } from "@/components/editor/ui/features/media/image-preview";
+import { MediaUploadToast } from "@/components/editor/ui/features/media/media-upload-toast";
 
 export const mediaPlugins = [
   ImagePlugin.extend({

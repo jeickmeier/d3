@@ -11,8 +11,11 @@ import { ParagraphPlugin } from "@udecode/plate/react";
 import {
   FireLiComponent,
   FireMarker,
-} from "@/components/editor/ui/indent-fire-marker";
-import { TodoLi, TodoMarker } from "@/components/editor/ui/indent-todo-marker";
+} from "@/components/editor/ui/features/indentation/indent-fire-marker";
+import {
+  TodoLi,
+  TodoMarker,
+} from "@/components/editor/ui/features/indentation/indent-todo-marker";
 
 export const indentListPlugins = [
   IndentPlugin.extend({

@@ -54,8 +54,8 @@ import {
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-import { DEFAULT_COLORS } from "./color-constants";
-import { ColorDropdownMenuItems } from "./common/color-picker/color-dropdown-menu-items";
+import { DEFAULT_COLORS } from "@/components/editor/ui/constants/color-constants";
+import { ColorDropdownMenuItems } from "@/components/editor/ui/common/color-picker/color-dropdown-menu-items";
 import {
   BorderAll,
   BorderBottom,
@@ -63,7 +63,7 @@ import {
   BorderNone,
   BorderRight,
   BorderTop,
-} from "./table-icons";
+} from "@/components/editor/ui/features/table/table-icons";
 import {
   Toolbar,
   ToolbarButton,

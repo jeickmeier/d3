@@ -12,13 +12,13 @@ import { PlateElement, withHOC } from "@udecode/plate/react";
 
 import { cn } from "@/lib/utils";
 
-import { Caption, CaptionTextarea } from "./caption";
-import { MediaPopover } from "./media-popover";
+import { Caption, CaptionTextarea } from "@/components/editor/ui/core/caption";
+import { MediaPopover } from "@/components/editor/ui/features/media/media-popover";
 import {
   mediaResizeHandleVariants,
   Resizable,
   ResizeHandle,
-} from "./common/resize-handle";
+} from "@/components/editor/ui/common/resize-handle";
 
 export const ImageElement = withHOC(
   ResizableProvider,

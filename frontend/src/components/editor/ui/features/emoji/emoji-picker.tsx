@@ -8,11 +8,11 @@ import { EmojiSettings } from "@udecode/plate-emoji";
 
 import { cn } from "@/lib/utils";
 
-import { EmojiPickerContent } from "./emoji-picker-content";
-import { EmojiPickerNavigation } from "./emoji-picker-navigation";
-import { EmojiPickerPreview } from "./emoji-picker-preview";
-import { EmojiPickerSearchAndClear } from "./emoji-picker-search-and-clear";
-import { EmojiPickerSearchBar } from "./emoji-picker-search-bar";
+import { EmojiPickerContent } from "@/components/editor/ui/features/emoji/emoji-picker-content";
+import { EmojiPickerNavigation } from "@/components/editor/ui/features/emoji/emoji-picker-navigation";
+import { EmojiPickerPreview } from "@/components/editor/ui/features/emoji/emoji-picker-preview";
+import { EmojiPickerSearchAndClear } from "@/components/editor/ui/features/emoji/emoji-picker-search-and-clear";
+import { EmojiPickerSearchBar } from "@/components/editor/ui/features/emoji/emoji-picker-search-bar";
 
 export function EmojiPicker({
   clearSearch,

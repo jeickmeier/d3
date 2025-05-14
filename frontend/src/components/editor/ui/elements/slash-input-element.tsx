@@ -57,7 +57,7 @@ import {
   InlineComboboxGroupLabel,
   InlineComboboxInput,
   InlineComboboxItem,
-} from "./inline-combobox";
+} from "@/components/editor/ui/menus/inline-combobox";
 
 type Group = {
   group: string;

@@ -75,7 +75,7 @@ import { CodeLineElementStatic } from "@/components/editor/ui/code/code-line-ele
 import { CodeSyntaxLeafStatic } from "@/components/editor/ui/code/code-syntax-leaf-static";
 import { ColumnElementStatic } from "@/components/editor/ui/elements/layout/column-element-static";
 import { ColumnGroupElementStatic } from "@/components/editor/ui/elements/layout/column-group-element-static";
-import { DateElement } from "@/components/editor/ui/elements/date-element";
+import { DateElementStatic } from "@/components/editor/ui/elements/date-element-static";
 import { EditorStatic } from "@/components/editor/ui/core/editor-static";
 import { EquationElementStatic } from "@/components/editor/ui/elements/equation-element-static";
 import { HeadingElementStatic } from "@/components/editor/ui/elements/heading-element-static";
@@ -83,7 +83,7 @@ import { HighlightLeafStatic } from "@/components/editor/ui/leafs/highlight-leaf
 import { HrElementStatic } from "@/components/editor/ui/elements/hr-element-static";
 import { ImageElementStatic } from "@/components/editor/ui/elements/image-element-static";
 import { InlineEquationElementStatic } from "@/components/editor/ui/elements/inline-equation-element-static";
-import { KbdLeaf } from "@/components/editor/ui/leafs/kbd-leaf";
+import { KbdLeafStatic } from "@/components/editor/ui/leafs/kbd-leaf-static";
 import { LinkElementStatic } from "@/components/editor/ui/elements/link-element-static";
 import { MediaAudioElementStatic } from "@/components/editor/ui/elements/media/media-audio-element-static";
 import { MediaFileElementStatic } from "@/components/editor/ui/elements/media/media-file-element-static";
@@ -109,7 +109,7 @@ const components = {
   [BaseCodeSyntaxPlugin.key]: CodeSyntaxLeafStatic,
   [BaseColumnItemPlugin.key]: ColumnElementStatic,
   [BaseColumnPlugin.key]: ColumnGroupElementStatic,
-  [BaseDatePlugin.key]: DateElement,
+  [BaseDatePlugin.key]: DateElementStatic,
   [BaseEquationPlugin.key]: EquationElementStatic,
   [BaseFilePlugin.key]: MediaFileElementStatic,
   [BaseHighlightPlugin.key]: HighlightLeafStatic,
@@ -117,7 +117,7 @@ const components = {
   [BaseImagePlugin.key]: ImageElementStatic,
   [BaseInlineEquationPlugin.key]: InlineEquationElementStatic,
   [BaseItalicPlugin.key]: withProps(SlateLeaf, { as: "em" }),
-  [BaseKbdPlugin.key]: KbdLeaf,
+  [BaseKbdPlugin.key]: KbdLeafStatic,
   [BaseLinkPlugin.key]: LinkElementStatic,
   [BaseMentionPlugin.key]: MentionElementStatic,
   [BaseParagraphPlugin.key]: ParagraphElementStatic,

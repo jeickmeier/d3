@@ -10,8 +10,8 @@ import { AIChatPlugin, AIPlugin, useChatChunk } from "@udecode/plate-ai/react";
 import { usePluginOption } from "@udecode/plate/react";
 
 import { markdownPlugin } from "@/components/editor/plugins/markdown-plugin";
-import { AILoadingBar } from "@/components/editor/ui/ai-loading-bar";
-import { AIMenu } from "@/components/editor/ui/ai-menu";
+import { AILoadingBar } from "@/components/editor/ui/features/ai/ai-loading-bar";
+import { AIMenu } from "@/components/editor/ui/features/ai/ai-menu";
 
 import { cursorOverlayPlugin } from "./cursor-overlay-plugin";
 

@@ -22,7 +22,7 @@ import { TrailingBlockPlugin } from "@udecode/plate-trailing-block";
 
 import { FixedToolbarPlugin } from "@/components/editor/plugins/fixed-toolbar-plugin";
 import { FloatingToolbarPlugin } from "@/components/editor/plugins/floating-toolbar-plugin";
-import { SuggestionBelowNodes } from "@/components/editor/ui/suggestion-line-break";
+import { SuggestionBelowNodes } from "@/components/editor/ui/features/comments-suggestions/suggestion-line-break";
 
 import { aiPlugins } from "./ai-plugins";
 import { alignPlugin } from "./align-plugin";

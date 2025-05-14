@@ -10,7 +10,7 @@ import { ResizableProvider } from "@udecode/plate-resizable";
 import { PlateElement, useReadOnly, withHOC } from "@udecode/plate/react";
 import { FileUp } from "lucide-react";
 
-import { Caption, CaptionTextarea } from "./caption";
+import { Caption, CaptionTextarea } from "@/components/editor/ui/core/caption";
 
 export const MediaFileElement = withHOC(
   ResizableProvider,
