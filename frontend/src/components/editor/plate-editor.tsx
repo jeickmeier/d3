@@ -10,8 +10,16 @@ import { useCreateEditor } from "./core/use-create-editor";
 import { SettingsDialog } from "./settings";
 import { Editor, EditorContainer } from "./ui/primitives/editor";
 
-export function PlateEditor() {
-  const editor = useCreateEditor();
+interface PlateEditorProps {
+  currentUser?: {
+    id: string;
+    name?: string;
+    avatarUrl?: string;
+  };
+}
+
+export function PlateEditor({ currentUser }: PlateEditorProps) {
+  const editor = useCreateEditor({ currentUser });
 
   return (
     <DndProvider backend={HTML5Backend}>

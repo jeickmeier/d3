@@ -6,7 +6,7 @@ import { EraserIcon } from "lucide-react";
 
 import { DropdownMenuItem } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { ToolbarMenuGroup } from "../../../menus/toolbars/toolbar";
+import { ToolbarMenuGroup } from "../../menus/toolbars/toolbar";
 
 import {
   type TColor,

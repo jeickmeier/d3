@@ -1,0 +1,5 @@
+export function useEditorRef() {
+  // memoize the selector to avoid infinite loop in Jotai-x
+  const getEditor = React.useCallback((s) => s.editor, []);
+  return useAtomStoreValue(editorStore, getEditor);
+} 

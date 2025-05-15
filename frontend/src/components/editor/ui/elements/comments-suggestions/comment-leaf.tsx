@@ -13,7 +13,7 @@ import {
 } from "@udecode/plate/react";
 
 import { cn } from "@/lib/utils";
-import { commentsPlugin } from "../../../plugins/comments-plugin";
+import { commentsPlugin } from "../../../plugins/comments/comments-plugin";
 
 export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
   const { children, leaf } = props;

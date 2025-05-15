@@ -1,21 +1,30 @@
-"use client";
+import type { TDiscussion } from "../plugins/comments/discussion-plugin";
 
-import type { TComment } from "../ui/elements/comments-suggestions/comment";
+export const avatarUrl = (seed: string) =>
+  `https://api.dicebear.com/9.x/glass/svg?seed=${seed}`;
 
-import { createPlatePlugin } from "@udecode/plate/react";
+export const usersData: Record<
+  string,
+  { id: string; avatarUrl: string; name: string; hue?: number }
+> = {
+  alice: {
+    id: "alice",
+    avatarUrl: avatarUrl("alice6"),
+    name: "Alice",
+  },
+  bob: {
+    id: "bob",
+    avatarUrl: avatarUrl("bob4"),
+    name: "Bob",
+  },
+  charlie: {
+    id: "jeickmeier",
+    avatarUrl: avatarUrl("charlie2"),
+    name: "Jon Eickmeier",
+  },
+};
 
-import { BlockDiscussion } from "../ui/elements/comments-suggestions/block-discussion";
-
-export interface TDiscussion {
-  id: string;
-  comments: TComment[];
-  createdAt: Date;
-  isResolved: boolean;
-  userId: string;
-  documentContent?: string;
-}
-
-const discussionsData: TDiscussion[] = [
+export const discussionsData: TDiscussion[] = [
   {
     id: "discussion1",
     comments: [
@@ -215,50 +224,3 @@ const discussionsData: TDiscussion[] = [
     userId: "bob",
   },
 ];
-
-const avatarUrl = (seed: string) =>
-  `https://api.dicebear.com/9.x/glass/svg?seed=${seed}`;
-
-const usersData: Record<
-  string,
-  { id: string; avatarUrl: string; name: string; hue?: number }
-> = {
-  alice: {
-    id: "alice",
-    avatarUrl: avatarUrl("alice6"),
-    name: "Alice",
-  },
-  bob: {
-    id: "bob",
-    avatarUrl: avatarUrl("bob4"),
-    name: "Bob",
-  },
-  charlie: {
-    id: "charlie",
-    avatarUrl: avatarUrl("charlie2"),
-    name: "Charlie",
-  },
-};
-
-// This plugin is purely UI. It's only used to store the discussions and users data
-export const discussionPlugin = createPlatePlugin({
-  key: "discussion",
-  options: {
-    currentUserId: "alice",
-    discussions: discussionsData,
-    users: usersData,
-  },
-  node: {
-    isElement: true,
-  },
-})
-  .configure({
-    render: { aboveNodes: BlockDiscussion },
-  })
-  .extendSelectors(({ getOption }) => ({
-    currentUser: () => getOption("users")[getOption("currentUserId")],
-    user: (id: string) => getOption("users")[id],
-  }));
-
-// TODO: For a real application, you would fetch discussions and users from your API
-// And currentUserId from your auth provider

@@ -27,7 +27,7 @@ import { cva } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
 import { blockSelectionVariants } from "../../primitives/block-selection";
-import { ResizeHandle } from "../../primitives/common/resize-handle";
+import { ResizeHandle } from "../../primitives/resize-handle";
 
 export function TableCellElement({
   isHeader,

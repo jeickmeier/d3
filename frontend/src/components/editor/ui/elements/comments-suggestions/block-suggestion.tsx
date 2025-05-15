@@ -55,8 +55,8 @@ import { cn } from "@/lib/utils";
 import {
   type TDiscussion,
   discussionPlugin,
-} from "@/components/editor/plugins/discussion-plugin";
-import { suggestionPlugin } from "@/components/editor/plugins/suggestion-plugin";
+} from "../../../plugins/comments/discussion-plugin";
+import { suggestionPlugin } from "../../../plugins/comments/suggestion-plugin";
 
 import { type TComment, Comment, formatCommentDate } from "./comment";
 import { CommentCreateForm } from "./comment-create-form";
@@ -287,36 +287,40 @@ export const useResolveSuggestion = (
   blockPath: Path,
 ) => {
   const discussions = usePluginOption(discussionPlugin, "discussions");
+  const { api, editor, getOption, setOption } = useEditorPlugin(suggestionPlugin);
 
-  const { api, editor, getOption, setOption } =
-    useEditorPlugin(suggestionPlugin);
+  React.useEffect(() => {
+    let changed = false;
+    const currentMap = getOption("uniquePathMap");
+    const newMap = new Map(currentMap);
 
-  suggestionNodes.forEach(([node]) => {
-    const id = api.suggestion.nodeId(node);
-    const map = getOption("uniquePathMap");
+    suggestionNodes.forEach(([node]) => {
+      const id = api.suggestion.nodeId(node);
+      if (!id) return;
 
-    if (!id) return;
+      const previousPath = newMap.get(id);
 
-    const previousPath = map.get(id);
-
-    // If there are no suggestion nodes in the corresponding path in the map, then update it.
-    if (PathApi.isPath(previousPath)) {
-      const nodes = api.suggestion.node({ id, at: previousPath, isText: true });
-      const parentNode = api.node(previousPath);
-      let lineBreakId: string | null = null;
-
-      if (parentNode && ElementApi.isElement(parentNode[0])) {
-        lineBreakId = api.suggestion.nodeId(parentNode[0]) ?? null;
+      if (PathApi.isPath(previousPath)) {
+        const nodesAtPath = api.suggestion.node({ id, at: previousPath, isText: true });
+        let lineBreakId: string | null = null;
+        const parentNode = api.node(previousPath);
+        if (parentNode && ElementApi.isElement(parentNode[0])) {
+          lineBreakId = api.suggestion.nodeId(parentNode[0]) ?? null;
+        }
+        if (!nodesAtPath && lineBreakId !== id) {
+          newMap.set(id, blockPath);
+          changed = true;
+        }
+      } else {
+        newMap.set(id, blockPath);
+        changed = true;
       }
+    });
 
-      if (!nodes && lineBreakId !== id) {
-        return setOption("uniquePathMap", new Map(map).set(id, blockPath));
-      }
-
-      return;
+    if (changed) {
+      setOption("uniquePathMap", newMap);
     }
-    setOption("uniquePathMap", new Map(map).set(id, blockPath));
-  });
+  }, [suggestionNodes, blockPath, api, getOption, setOption]);
 
   const resolvedSuggestion: ResolvedSuggestion[] = React.useMemo(() => {
     const map = getOption("uniquePathMap");
@@ -372,8 +376,8 @@ export const useResolveSuggestion = (
 
       let newText = "";
       let text = "";
-      let properties: Record<string, unknown> = {};
-      let newProperties: Record<string, unknown> = {};
+      let properties: any = {};
+      let newProperties: any = {};
 
       // overlapping suggestion
       entries.forEach(([node]) => {
@@ -418,21 +422,14 @@ export const useResolveSuggestion = (
             : undefined;
 
           if (lineBreakData?.id !== keyId2SuggestionId(id)) return;
-
-          let nodeTypeText = `Unknown Block Type: ${node.type}`;
-          const typeTextGenerator = TYPE_TEXT_MAP[node.type];
-          if (typeof typeTextGenerator === "function") {
-            nodeTypeText = typeTextGenerator(node);
-          }
-
           if (lineBreakData.type === "insert") {
             newText += lineBreakData.isLineBreak
               ? BLOCK_SUGGESTION
-              : BLOCK_SUGGESTION + nodeTypeText;
+              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type](node);
           } else if (lineBreakData.type === "remove") {
             text += lineBreakData.isLineBreak
               ? BLOCK_SUGGESTION
-              : BLOCK_SUGGESTION + nodeTypeText;
+              : BLOCK_SUGGESTION + TYPE_TEXT_MAP[node.type](node);
           }
         }
       });

@@ -4,7 +4,7 @@ import { DndPlugin } from "@udecode/plate-dnd";
 import { PlaceholderPlugin } from "@udecode/plate-media/react";
 import { NodeIdPlugin } from "@udecode/plate-node-id";
 
-import { DraggableAboveNodes } from "../ui/primitives/common/draggable";
+import { DraggableAboveNodes } from "../ui/primitives/draggable";
 
 export const dndPlugins = [
   NodeIdPlugin,

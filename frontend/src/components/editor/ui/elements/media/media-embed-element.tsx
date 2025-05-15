@@ -20,7 +20,7 @@ import {
   mediaResizeHandleVariants,
   Resizable,
   ResizeHandle,
-} from "../../primitives/common/resize-handle";
+} from "../../primitives/resize-handle";
 
 export const MediaEmbedElement = withHOC(
   ResizableProvider,

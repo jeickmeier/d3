@@ -22,22 +22,22 @@ import {
   WandSparklesIcon,
 } from "lucide-react";
 
-import { MoreDropdownMenu } from "../../../menus/more-dropdown-menu";
+import { MoreDropdownMenu } from "../../menus/more-dropdown-menu";
 
 import { AIToolbarButton } from "./ai-toolbar-button";
-import { AlignDropdownMenu } from "../../../menus/align-dropdown-menu";
-import { ColorDropdownMenu } from "../../../primitives/common/color-picker/color-dropdown-menu";
+import { AlignDropdownMenu } from "../../menus/align-dropdown-menu";
+import { ColorDropdownMenu } from "../../primitives/color-picker/color-dropdown-menu";
 import { CommentToolbarButton } from "./comment-toolbar-button";
 import { FontSizeToolbarButton } from "./font-size-toolbar-button";
 import { RedoToolbarButton, UndoToolbarButton } from "./history-toolbar-button";
-import { InsertDropdownMenu } from "../../../menus/insert-dropdown-menu";
+import { InsertDropdownMenu } from "../../menus/insert-dropdown-menu";
 import { LinkToolbarButton } from "./link-toolbar-button";
 import { MarkToolbarButton } from "./mark-toolbar-button";
 import { MediaToolbarButton } from "./media-toolbar-button";
-import { ModeDropdownMenu } from "../../../menus/mode-dropdown-menu";
-import { TableDropdownMenu } from "../../../menus/table-dropdown-menu";
-import { ToolbarGroup } from "../toolbar";
-import { EmojiDropdownMenu } from "../../../menus/emoji/emoji-dropdown-menu";
+import { ModeDropdownMenu } from "../../menus/mode-dropdown-menu";
+import { TableDropdownMenu } from "../../menus/table-dropdown-menu";
+import { ToolbarGroup } from "../../menus/toolbars/toolbar";
+import { EmojiDropdownMenu } from "../../menus/emoji/emoji-dropdown-menu";
 
 export function FixedToolbarButtons() {
   const readOnly = useEditorReadOnly();

@@ -8,7 +8,7 @@ import {
 } from "@udecode/plate-toggle/react";
 import { ListCollapseIcon } from "lucide-react";
 
-import { ToolbarButton } from "../toolbar";
+import { ToolbarButton } from "../../menus/toolbars/toolbar";
 
 export function ToggleToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>,

@@ -1,6 +1,6 @@
 "use client";
 
-import emojiMartData, { type EmojiMartData } from "@emoji-mart/data";
+import emojiMartData from "@emoji-mart/data";
 import { CalloutPlugin } from "@udecode/plate-callout/react";
 import { CodeBlockPlugin } from "@udecode/plate-code-block/react";
 import { DatePlugin } from "@udecode/plate-date/react";
@@ -20,34 +20,34 @@ import { SlashPlugin } from "@udecode/plate-slash-command/react";
 import { TogglePlugin } from "@udecode/plate-toggle/react";
 import { TrailingBlockPlugin } from "@udecode/plate-trailing-block";
 
-import { FixedToolbarPlugin } from "./fixed-toolbar-plugin";
-import { FloatingToolbarPlugin } from "./floating-toolbar-plugin";
-import { SuggestionBelowNodes } from "../ui/elements/comments-suggestions/suggestion-line-break";
+import { FixedToolbarPlugin } from "@/components/editor/plugins/fixed-toolbar-plugin";
+import { FloatingToolbarPlugin } from "@/components/editor/plugins/floating-toolbar-plugin";
+import { SuggestionBelowNodes } from "@/components/editor/ui/elements/comments-suggestions/suggestion-line-break";
 
-import { aiPlugins } from "./ai-plugins";
-import { alignPlugin } from "./align-plugin";
-import { autoformatPlugin } from "./autoformat-plugin";
-import { basicNodesPlugins } from "./basic-nodes-plugins";
-import { blockMenuPlugins } from "./block-menu-plugins";
-import { commentsPlugin } from "./comments-plugin";
-import { cursorOverlayPlugin } from "./cursor-overlay-plugin";
-import { deletePlugins } from "./delete-plugins";
-import { discussionPlugin } from "./discussion-plugin";
-import { dndPlugins } from "./dnd-plugins";
-import { equationPlugins } from "./equation-plugins";
-import { exitBreakPlugin } from "./exit-break-plugin";
-import { indentListPlugins } from "./indent-list-plugins";
-import { lineHeightPlugin } from "./line-height-plugin";
-import { linkPlugin } from "./link-plugin";
-import { markdownPlugin } from "./markdown-plugin";
-import { mediaPlugins } from "./media-plugins";
-import { mentionPlugin } from "./mention-plugin";
-import { resetBlockTypePlugin } from "./reset-block-type-plugin";
-import { skipMarkPlugin } from "./skip-mark-plugin";
-import { softBreakPlugin } from "./soft-break-plugin";
-import { suggestionPlugin } from "./suggestion-plugin";
-import { tablePlugin } from "./table-plugin";
-import { tocPlugin } from "./toc-plugin";
+import { aiPlugins } from "../plugins/ai-plugins";
+import { alignPlugin } from "../plugins/align-plugin";
+import { autoformatPlugin } from "../plugins/autoformat-plugin";
+import { basicNodesPlugins } from "../plugins/basic-nodes-plugins";
+import { blockMenuPlugins } from "../plugins/block-menu-plugins";
+import { commentsPlugin } from "../plugins/comments/comments-plugin";
+import { cursorOverlayPlugin } from "../plugins/cursor-overlay-plugin";
+import { deletePlugins } from "../plugins/delete-plugins";
+import { discussionPlugin } from "../plugins/comments/discussion-plugin";
+import { dndPlugins } from "../plugins/dnd-plugins";
+import { equationPlugins } from "../plugins/equation-plugins";
+import { exitBreakPlugin } from "../plugins/exit-break-plugin";
+import { indentListPlugins } from "../plugins/indent-list-plugins";
+import { lineHeightPlugin } from "../plugins/line-height-plugin";
+import { linkPlugin } from "../plugins/link-plugin";
+import { markdownPlugin } from "../plugins/markdown-plugin";
+import { mediaPlugins } from "../plugins/media-plugins";
+import { mentionPlugin } from "../plugins/mention-plugin";
+import { resetBlockTypePlugin } from "../plugins/reset-block-type-plugin";
+import { skipMarkPlugin } from "../plugins/skip-mark-plugin";
+import { softBreakPlugin } from "../plugins/soft-break-plugin";
+import { suggestionPlugin } from "../plugins/comments/suggestion-plugin";
+import { tablePlugin } from "../plugins/table-plugin";
+import { tocPlugin } from "../plugins/toc-plugin";
 
 export const viewPlugins = [
   ...basicNodesPlugins,
@@ -94,7 +94,6 @@ export const editorPlugins = [
   // Functionality
   SlashPlugin.extend({
     options: {
-      // Disable slash commands within code blocks to prevent conflicts with code input.
       triggerQuery(editor) {
         return !editor.api.some({
           match: { type: editor.getType(CodeBlockPlugin) },
@@ -106,7 +105,7 @@ export const editorPlugins = [
   cursorOverlayPlugin,
   ...blockMenuPlugins,
   ...dndPlugins,
-  EmojiPlugin.configure({ options: { data: emojiMartData as EmojiMartData } }),
+  EmojiPlugin.configure({ options: { data: emojiMartData as any } }),
   exitBreakPlugin,
   resetBlockTypePlugin,
   ...deletePlugins,

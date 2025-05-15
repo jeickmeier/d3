@@ -46,7 +46,7 @@ import {
   ToolbarSplitButton,
   ToolbarSplitButtonPrimary,
   ToolbarSplitButtonSecondary,
-} from "../toolbar";
+} from "../../menus/toolbars/toolbar";
 
 const MEDIA_CONFIG: Record<
   string,

@@ -37,12 +37,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { commentsPlugin } from "@/components/editor/plugins/comments-plugin";
+import { commentsPlugin } from "../../../plugins/comments/comments-plugin";
 import {
   type TDiscussion,
   discussionPlugin,
-} from "@/components/editor/plugins/discussion-plugin";
-import { suggestionPlugin } from "@/components/editor/plugins/suggestion-plugin";
+} from "../../../plugins/comments/discussion-plugin";
+import { suggestionPlugin } from "../../../plugins/comments/suggestion-plugin";
 
 import {
   BlockSuggestionCard,
@@ -55,63 +55,11 @@ import { CommentCreateForm } from "./comment-create-form";
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;
 
-  if (!editor || !editor.api) {
-    console.error("BlockDiscussion: editor or editor.api is undefined.", {
-      editorExists: !!editor,
-      apiExists: !!editor?.api,
-    });
-    return;
-  }
-
-  if (!element) {
-    console.error("BlockDiscussion: element prop is undefined or null.");
-    return;
-  }
-
-  let blockPath;
-  try {
-    blockPath = editor.api.findPath(element);
-  } catch (e: any) {
-    let safeElementLog = "Could not stringify element";
-    try {
-      safeElementLog = JSON.stringify(element).substring(0, 200) + "...";
-    } catch {
-      // ignore stringifyError, safeElementLog will retain its default error message
-    }
-    console.error(
-      "BlockDiscussion: Call to editor.api.findPath(element) failed.",
-      "Error Name:",
-      e.name,
-      "Error Message:",
-      e.message,
-      "Element Type:",
-      (element as any)?.type,
-      // "Is Slate Element:", editor.isElement(element), // Temporarily commented out due to type issue
-      "Element Snippet:",
-      safeElementLog,
-      "Stack:",
-      e.stack,
-    );
-    return;
-  }
-
-  const commentsPluginInstance = editor.getApi(CommentsPlugin);
-  if (!commentsPluginInstance || !commentsPluginInstance.comment) {
-    console.error(
-      "BlockDiscussion: CommentsPlugin API or .comment is not available.",
-      {
-        commentsPluginExists: !!commentsPluginInstance,
-        commentPropertyExists: !!commentsPluginInstance?.comment,
-      },
-    );
-    return;
-  }
-  const commentsApi = commentsPluginInstance.comment;
+  const commentsApi = editor.getApi(CommentsPlugin).comment;
+  const blockPath = editor.api.findPath(element);
 
   // avoid duplicate in table or column
-  if (!blockPath || blockPath.length > 1) {
-    return;
-  }
+  if (!blockPath || blockPath.length > 1) return;
 
   const draftCommentNode = commentsApi.node({ at: blockPath, isDraft: true });
 
@@ -129,19 +77,18 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
     return;
   }
 
-  // Give the returned component a name
-  const BlockDiscussionContentWrapper = (contentProps: PlateElementProps) => (
+  const BlockDiscussionComponent = (props: PlateElementProps) => (
     <BlockCommentsContent
       blockPath={blockPath}
       commentNodes={commentNodes}
       draftCommentNode={draftCommentNode}
       suggestionNodes={suggestionNodes}
-      {...contentProps} // Use the props passed to this wrapper
+      {...props}
     />
   );
-  BlockDiscussionContentWrapper.displayName = "BlockDiscussionContentWrapper";
+  BlockDiscussionComponent.displayName = "BlockDiscussionComponent";
 
-  return BlockDiscussionContentWrapper; // Return the named component
+  return BlockDiscussionComponent;
 };
 
 const BlockCommentsContent = ({
@@ -343,8 +290,6 @@ const BlockCommentsContent = ({
   );
 };
 
-BlockCommentsContent.displayName = "BlockCommentsContent";
-
 export const BlockComment = ({
   discussion,
   isLast,
@@ -382,43 +327,45 @@ export const useResolvedDiscussion = (
   blockPath: Path,
 ) => {
   const { api, getOption, setOption } = useEditorPlugin(commentsPlugin);
-
   const discussions = usePluginOption(discussionPlugin, "discussions");
 
-  commentNodes.forEach(([node]) => {
-    const id = api.comment.nodeId(node);
-    const map = getOption("uniquePathMap");
+  React.useEffect(() => {
+    let changed = false;
+    const currentMap = getOption("uniquePathMap");
+    const newMap = new Map(currentMap);
 
-    if (!id) return;
+    commentNodes.forEach(([node]) => {
+      const id = api.comment.nodeId(node);
+      if (!id) return;
 
-    const previousPath = map.get(id);
-
-    // If there are no comment nodes in the corresponding path in the map, then update it.
-    if (PathApi.isPath(previousPath)) {
-      const nodes = api.comment.node({ id, at: previousPath });
-
-      if (!nodes) {
-        setOption("uniquePathMap", new Map(map).set(id, blockPath));
-        return;
+      const previousPath = newMap.get(id);
+      if (PathApi.isPath(previousPath)) {
+        const nodesAtPath = api.comment.node({ id, at: previousPath });
+        if (!nodesAtPath) {
+          newMap.set(id, blockPath);
+          changed = true;
+        }
+      } else {
+        newMap.set(id, blockPath);
+        changed = true;
       }
+    });
 
-      return;
+    if (changed) {
+      setOption("uniquePathMap", newMap);
     }
-    // TODO: fix throw error
-    setOption("uniquePathMap", new Map(map).set(id, blockPath));
-  });
+  }, [commentNodes, blockPath, api.comment, getOption, setOption]);
 
   const commentsIds = new Set(
     commentNodes.map(([node]) => api.comment.nodeId(node)).filter(Boolean),
   );
 
-  const resolvedDiscussions = discussions
+  const resolvedDiscussions = React.useMemo(() => discussions
     .map((d: TDiscussion) => ({
       ...d,
       createdAt: new Date(d.createdAt),
     }))
     .filter((item: TDiscussion) => {
-      /** If comment cross blocks just show it in the first block */
       const commentsPathMap = getOption("uniquePathMap");
       const firstBlockPath = commentsPathMap.get(item.id);
 
@@ -430,7 +377,7 @@ export const useResolvedDiscussion = (
         commentsIds.has(item.id) &&
         !item.isResolved
       );
-    });
+    }), [discussions, getOption, blockPath, api.comment, commentsIds]);
 
   return resolvedDiscussions;
 };

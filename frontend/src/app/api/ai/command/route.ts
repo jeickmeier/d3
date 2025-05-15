@@ -91,8 +91,6 @@ function smoothStream<TOOLS extends ToolSet>({
     return new TransformStream<TextStreamPart<TOOLS>, TextStreamPart<TOOLS>>({
       async transform(chunk, controller) {
         if (chunk.type !== "text-delta") {
-          console.log(buffer, "finished");
-
           if (buffer.length > 0) {
             controller.enqueue({ textDelta: buffer, type: "text-delta" });
             buffer = "";

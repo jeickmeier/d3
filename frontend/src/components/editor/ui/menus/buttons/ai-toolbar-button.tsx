@@ -5,7 +5,7 @@ import * as React from "react";
 import { AIChatPlugin } from "@udecode/plate-ai/react";
 import { useEditorPlugin } from "@udecode/plate/react";
 
-import { ToolbarButton } from "../toolbar";
+import { ToolbarButton } from "../../menus/toolbars/toolbar";
 
 export function AIToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>,

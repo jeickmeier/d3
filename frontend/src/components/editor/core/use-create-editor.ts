@@ -1,11 +1,9 @@
 "use client";
 
 import type { Value } from "@udecode/plate";
-import * as React from "react";
-import { useMemo } from "react";
 
 import { withProps } from "@udecode/cn";
-import { AIPlugin } from "@udecode/plate-ai/react";
+import { AIChatPlugin, AIPlugin } from "@udecode/plate-ai/react";
 import {
   BoldPlugin,
   CodePlugin,
@@ -25,7 +23,6 @@ import {
 import { CommentsPlugin } from "@udecode/plate-comments/react";
 import { DatePlugin } from "@udecode/plate-date/react";
 import { EmojiInputPlugin } from "@udecode/plate-emoji/react";
-import { ExcalidrawPlugin } from "@udecode/plate-excalidraw/react";
 import { HEADING_KEYS } from "@udecode/plate-heading";
 import { TocPlugin } from "@udecode/plate-heading/react";
 import { HighlightPlugin } from "@udecode/plate-highlight/react";
@@ -59,59 +56,78 @@ import {
 } from "@udecode/plate-table/react";
 import { TogglePlugin } from "@udecode/plate-toggle/react";
 import {
+  type CreatePlateEditorOptions,
   ParagraphPlugin,
   PlateLeaf,
   usePlateEditor,
-  type PlatePlugin,
 } from "@udecode/plate/react";
 
-import { editorPlugins } from "../plugins/editor-plugins";
-import { AILeaf } from "../ui/elements/ai/ai-leaf";
-import { BlockquoteElement } from "../ui/elements/blockquote/blockquote-element";
-import { CalloutElement } from "../ui/elements/callout/callout-element";
-import { CodeBlockElement } from "../ui/elements/code/code-block-element";
-import { CodeLeaf } from "../ui/elements/code/code-leaf";
-import { CodeLineElement } from "../ui/elements/code/code-line-element";
-import { CodeSyntaxLeaf } from "../ui/elements/code/code-syntax-leaf";
-import { ColumnElement } from "../ui/elements/layout/column-element";
-import { ColumnGroupElement } from "../ui/elements/layout/column-group-element";
-import { CommentLeaf } from "../ui/elements/comments-suggestions/comment-leaf";
-import { DateElement } from "../ui/elements/date/date-element";
-import { EmojiInputElement } from "../ui/menus/emoji/emoji-input-element";
-import { EquationElement } from "../ui/elements/equation/equation-element";
-import { ExcalidrawElement } from "../ui/elements/excalidraw/excalidraw-element";
-import { HeadingElement } from "../ui/elements/heading/heading-element";
-import { HighlightLeaf } from "../ui/elements/leafs/highlight-leaf";
-import { HrElement } from "../ui/elements/heading/hr-element";
-import { ImageElement } from "../ui/elements/image/image-element";
-import { InlineEquationElement } from "../ui/elements/equation/inline-equation-element";
-import { KbdLeaf } from "../ui/elements/leafs/kbd-leaf";
-import { LinkElement } from "../ui/elements/link/link-element";
-import { MediaAudioElement } from "../ui/elements/media/media-audio-element";
-import { MediaEmbedElement } from "../ui/elements/media/media-embed-element";
-import { MediaFileElement } from "../ui/elements/media/media-file-element";
-import { MediaPlaceholderElement } from "../ui/elements/media/media-placeholder-element";
-import { MediaVideoElement } from "../ui/elements/media/media-video-element";
-import { MentionElement } from "../ui/elements/mention/mention-element";
-import { MentionInputElement } from "../ui/elements/mention/mention-input-element";
-import { ParagraphElement } from "../ui/elements/paragraph/paragraph-element";
-import { withPlaceholders } from "../ui/primitives/common/placeholder";
-import { SlashInputElement } from "../ui/elements/slash-input/slash-input-element";
-import { SuggestionLeaf } from "../ui/elements/leafs/suggestion-leaf";
+import { AIAnchorElement } from "@/components/editor/ui/elements/ai/ai-anchor-element";
+import { AILeaf } from "@/components/editor/ui/elements/ai/ai-leaf";
+import { BlockquoteElement } from "@/components/editor/ui/elements/blockquote/blockquote-element";
+import { CalloutElement } from "@/components/editor/ui/elements/callout/callout-element";
+import { CodeBlockElement } from "@/components/editor/ui/elements/code/code-block-element";
+import { CodeLeaf } from "@/components/editor/ui/elements/code/code-leaf";
+import { CodeLineElement } from "@/components/editor/ui/elements/code/code-line-element";
+import { CodeSyntaxLeaf } from "@/components/editor/ui/elements/code/code-syntax-leaf";
+import { ColumnElement } from "@/components/editor/ui/elements/layout/column-element";
+import { ColumnGroupElement } from "@/components/editor/ui/elements/layout/column-group-element";
+import { CommentLeaf } from "@/components/editor/ui/elements/comments-suggestions/comment-leaf";
+import { DateElement } from "@/components/editor/ui/elements/date/date-element";
+import { EmojiInputElement } from "@/components/editor/ui/menus/emoji/emoji-input-element";
+import { EquationElement } from "@/components/editor/ui/elements/equation/equation-element";
+import { HeadingElement } from "@/components/editor/ui/elements/heading/heading-element";
+import { HighlightLeaf } from "@/components/editor/ui/elements/leafs/highlight-leaf";
+import { HrElement } from "@/components/editor/ui/elements/heading/hr-element";
+import { ImageElement } from "@/components/editor/ui/elements/image/image-element";
+import { InlineEquationElement } from "@/components/editor/ui/elements/equation/inline-equation-element";
+import { KbdLeaf } from "@/components/editor/ui/elements/leafs/kbd-leaf";
+import { LinkElement } from "@/components/editor/ui/elements/link/link-element";
+import { MediaAudioElement } from "@/components/editor/ui/elements/media/media-audio-element";
+import { MediaEmbedElement } from "@/components/editor/ui/elements/media/media-embed-element";
+import { MediaFileElement } from "@/components/editor/ui/elements/media/media-file-element";
+import { MediaPlaceholderElement } from "@/components/editor/ui/elements/media/media-placeholder-element";
+import { MediaVideoElement } from "@/components/editor/ui/elements/media/media-video-element";
+import { MentionElement } from "@/components/editor/ui/elements/mention/mention-element";
+import { MentionInputElement } from "@/components/editor/ui/elements/mention/mention-input-element";
+import { ParagraphElement } from "@/components/editor/ui/elements/paragraph/paragraph-element";
+import { withPlaceholders } from "@/components/editor/ui/primitives/placeholder";
+import { SlashInputElement } from "@/components/editor/ui/elements/slash-input/slash-input-element";
+import { SuggestionLeaf } from "@/components/editor/ui/elements/leafs/suggestion-leaf";
 import {
   TableCellElement,
   TableCellHeaderElement,
-} from "../ui/elements/table/table-cell-element";
-import { TableElement } from "../ui/elements/table/table-element";
-import { TableRowElement } from "../ui/elements/table/table-row-element";
-import { TocElement } from "../ui/elements/toc/toc-element";
-import { ToggleElement } from "../ui/elements/toggle/toggle-element";
+} from "@/components/editor/ui/elements/table/table-cell-element";
+import { TableElement } from "@/components/editor/ui/elements/table/table-element";
+import { TableRowElement } from "@/components/editor/ui/elements/table/table-row-element";
+import { TocElement } from "@/components/editor/ui/elements/toc/toc-element";
+import { ToggleElement } from "@/components/editor/ui/elements/toggle/toggle-element";
 
-import { authClient } from "@/lib/auth/auth-client";
-import { discussionPlugin, TDiscussion } from "../plugins/discussion-plugin";
-import { MyValue } from "../plate-types";
+import {
+  discussionPlugin,
+  importedUsersData,
+} from "../plugins/comments/discussion-plugin";
+import { editorPlugins, viewPlugins } from "./editor-plugins";
+
+// Define a more specific type for currentUser based on PlateEditorProps if available,
+// or define it inline if PlateEditorProps is not directly accessible/relevant here.
+// Assuming PlateEditorProps is defined in plate-editor.tsx and has a similar structure.
+interface CurrentUserType {
+  id: string;
+  name?: string;
+  avatarUrl?: string;
+}
+
+interface UseCreateEditorHookOptions
+  extends Omit<CreatePlateEditorOptions, "plugins"> {
+  placeholders?: boolean;
+  plugins?: any[]; // This allows passing modified plugins if needed directly
+  readOnly?: boolean;
+  currentUser?: CurrentUserType;
+}
 
 export const viewComponents = {
+  [AIChatPlugin.key]: AIAnchorElement,
   [AudioPlugin.key]: MediaAudioElement,
   [BlockquotePlugin.key]: BlockquoteElement,
   [BoldPlugin.key]: withProps(PlateLeaf, { as: "strong" }),
@@ -125,7 +141,6 @@ export const viewComponents = {
   [CommentsPlugin.key]: CommentLeaf,
   [DatePlugin.key]: DateElement,
   [EquationPlugin.key]: EquationElement,
-  [ExcalidrawPlugin.key]: ExcalidrawElement,
   [FilePlugin.key]: MediaFileElement,
   [HEADING_KEYS.h1]: withProps(HeadingElement, { variant: "h1" }),
   [HEADING_KEYS.h2]: withProps(HeadingElement, { variant: "h2" }),
@@ -166,123 +181,59 @@ export const editorComponents = {
   [SlashInputPlugin.key]: SlashInputElement,
 };
 
-// Placeholder for initial discussions, actual data might come from API or props
-const initialDiscussions: TDiscussion[] = [];
-
-// Define a more flexible type for hookOptions based on common usePlateEditor props
-interface UseCreateEditorProps {
-  id?: string;
-  initialValue?: Value;
-  plugins?: any[]; // Reverted to any[] due to complex type issues
-  components?: Record<string, React.ComponentType<any>>;
-  override?: Record<string, any>;
-  readOnly?: boolean;
-  placeholders?: boolean;
-  // Add other common Plate editor options if needed
-}
-
 export const useCreateEditor = (
-  hookOptions: UseCreateEditorProps = {},
-  deps: React.DependencyList = [],
+  options: UseCreateEditorHookOptions = {},
+  deps: any[] = [],
 ) => {
-  const { data: session } = authClient.useSession();
-
   const {
-    id = "main",
-    initialValue: initialValueProp,
-    plugins: hookGivenPlugins,
-    components: hookGivenComponents,
-    override,
-    readOnly = false,
+    components,
     placeholders = true,
-    ...restHookOptions
-  } = hookOptions;
+    readOnly,
+    currentUser, // Destructure currentUser
+    ...plateEditorOptions // Renamed from options to avoid conflict
+  } = options;
 
-  const currentUserId = session?.user?.id;
-  const currentUserName = session?.user?.name || "Anonymous";
-  const avatarUrl = (seed: string) =>
-    `https://api.dicebear.com/9.x/glass/svg?seed=${seed}`;
-  const currentUserAvatar =
-    session?.user?.image || avatarUrl(currentUserId || "default-user");
-
-  const memoizedPlugins = useMemo(() => {
-    let newPlugins = hookGivenPlugins || editorPlugins;
-
-    // Dynamically configure the discussion plugin with current user data
-    if (currentUserId) {
-      const discussionPluginIndex = newPlugins.findIndex(
-        (p: PlatePlugin) => p.key === discussionPlugin.key,
-      );
-      const baseDiscussionPluginOptions = discussionPlugin.options || {};
-      const baseUsers = baseDiscussionPluginOptions.users || {};
-      const baseDiscussions =
-        baseDiscussionPluginOptions.discussions || initialDiscussions;
-
-      const configuredDiscussionPlugin = discussionPlugin.extend({
-        options: {
-          ...baseDiscussionPluginOptions,
-          currentUserId: currentUserId,
-          users: {
-            ...baseUsers,
-            [currentUserId]: {
-              id: currentUserId,
-              name: currentUserName,
-              avatarUrl: currentUserAvatar,
-            },
-          },
-          discussions: baseDiscussions,
-        },
-      });
-
-      if (discussionPluginIndex > -1) {
-        newPlugins = [...newPlugins]; // Create a new array instance for immutability
-        newPlugins[discussionPluginIndex] = configuredDiscussionPlugin;
-      } else {
-        // If discussionPlugin wasn't in the initial set, add the configured version.
-        // This might occur if hookGivenPlugins is provided and doesn't include it.
-        newPlugins = [...newPlugins, configuredDiscussionPlugin];
-      }
-    }
-    return newPlugins;
-  }, [hookGivenPlugins, currentUserId, currentUserName, currentUserAvatar]); // Added editorPlugins to dependency array and formatted
-
-  const resolvedComponents = useMemo(() => {
-    const baseComps = readOnly
-      ? viewComponents
-      : placeholders
-        ? withPlaceholders(editorComponents)
-        : editorComponents;
-    return { ...baseComps, ...hookGivenComponents };
-  }, [readOnly, placeholders, hookGivenComponents]);
-
-  const defaultValue = React.useMemo<MyValue>(
-    () => [
-      {
-        type: ParagraphPlugin.key,
-        children: [{ text: "Start typing..." }],
+  let discussionPluginOptionsOverride;
+  if (currentUser) {
+    const combinedUsers = {
+      ...importedUsersData, // Combine with existing users
+      [currentUser.id]: {
+        id: currentUser.id,
+        name: currentUser.name || currentUser.id,
+        avatarUrl: currentUser.avatarUrl,
       },
-    ],
-    [],
-  );
+    };
+    discussionPluginOptionsOverride = {
+      options: {
+        currentUserId: currentUser.id,
+        users: combinedUsers,
+      },
+    };
+  }
 
-  const editor = usePlateEditor(
+  return usePlateEditor<Value, (typeof editorPlugins)[number]>(
     {
-      id,
-      value: initialValueProp ?? defaultValue,
-      plugins: memoizedPlugins,
-      components: resolvedComponents,
-      override,
-      ...restHookOptions,
+      components: {
+        ...(readOnly
+          ? viewComponents
+          : placeholders
+            ? withPlaceholders(editorComponents)
+            : editorComponents),
+        ...components,
+      },
+      plugins: (readOnly ? viewPlugins : editorPlugins) as any,
+      override:
+        currentUser && discussionPluginOptionsOverride
+          ? {
+              plugins: {
+                [discussionPlugin.key]: discussionPluginOptionsOverride,
+              },
+            }
+          : undefined,
+      ...plateEditorOptions,
     },
-    [
-      id,
-      initialValueProp,
-      memoizedPlugins,
-      resolvedComponents,
-      override,
-      ...deps,
-    ],
+    // Add currentUser to deps for usePlateEditor if it's present
+    // This ensures the editor re-initializes if currentUser changes.
+    currentUser ? [...deps, currentUser] : deps,
   );
-
-  return editor;
 };

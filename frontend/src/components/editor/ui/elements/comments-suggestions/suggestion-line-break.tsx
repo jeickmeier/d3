@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import {
   type SuggestionConfig,
   suggestionPlugin,
-} from "../../../plugins/suggestion-plugin";
+} from "../../../plugins/comments/suggestion-plugin";
 
 export const SuggestionBelowNodes: RenderNodeWrapper<SuggestionConfig> = ({
   api,

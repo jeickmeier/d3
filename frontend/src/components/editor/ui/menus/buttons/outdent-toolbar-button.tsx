@@ -5,7 +5,7 @@ import * as React from "react";
 import { useOutdentButton } from "@udecode/plate-indent/react";
 import { Outdent } from "lucide-react";
 
-import { ToolbarButton } from "../toolbar";
+import { ToolbarButton } from "../../menus/toolbars/toolbar";
 
 export function OutdentToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>,

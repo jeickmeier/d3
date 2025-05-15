@@ -8,7 +8,7 @@ import {
 } from "@udecode/plate-indent-list/react";
 import { ListTodoIcon } from "lucide-react";
 
-import { ToolbarButton } from "../toolbar";
+import { ToolbarButton } from "../../menus/toolbars/toolbar";
 
 export function IndentTodoToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>,

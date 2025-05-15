@@ -55,7 +55,7 @@ import { Popover, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 import { DEFAULT_COLORS } from "../../../constants/color-constants";
-import { ColorDropdownMenuItems } from "../../primitives/common/color-picker/color-dropdown-menu-items";
+import { ColorDropdownMenuItems } from "../../primitives/color-picker/color-dropdown-menu-items";
 import {
   Toolbar,
   ToolbarButton,

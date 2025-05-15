@@ -32,7 +32,7 @@ import { cn } from "@/lib/utils";
 import {
   type TDiscussion,
   discussionPlugin,
-} from "../../../plugins/discussion-plugin";
+} from "../../../plugins/comments/discussion-plugin";
 import { useCreateEditor } from "../../../core/use-create-editor";
 
 import type { TComment } from "./comment";
@@ -48,7 +48,7 @@ import { MentionInputElement } from "../mention/mention-input-element";
 
 export const useCommentEditor = (
   options: Omit<CreatePlateEditorOptions, "plugins"> = {},
-  deps: React.DependencyList = [],
+  deps: any[] = [],
 ) => {
   const commentEditor = useCreateEditor(
     {
@@ -239,7 +239,7 @@ export function CommentCreateForm({
             <Editor
               variant="comment"
               className="min-h-[25px] grow pt-0.5 pr-8"
-              onKeyDown={(e) => {
+              onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
                   onAddComment();

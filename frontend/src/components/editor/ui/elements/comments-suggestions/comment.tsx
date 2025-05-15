@@ -35,7 +35,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { discussionPlugin } from "@/components/editor/plugins/discussion-plugin";
+import { discussionPlugin } from "../../../plugins/comments/discussion-plugin";
 
 import { useCommentEditor } from "./comment-create-form";
 import { Editor, EditorContainer } from "../../primitives/editor";

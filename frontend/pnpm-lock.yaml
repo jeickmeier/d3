@@ -28,9 +28,6 @@ importers:
       "@emoji-mart/data":
         specifier: 1.2.1
         version: 1.2.1
-      "@faker-js/faker":
-        specifier: ^9.7.0
-        version: 9.7.0
       "@radix-ui/react-alert-dialog":
         specifier: ^1.1.13
         version: 1.1.13(@types/react-dom@19.1.5(@types/react@19.1.4))(@types/react@19.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -76,20 +73,14 @@ importers:
       "@radix-ui/react-tooltip":
         specifier: ^1.2.6
         version: 1.2.6(@types/react-dom@19.1.5(@types/react@19.1.4))(@types/react@19.1.4)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      "@tailwindcss/postcss":
-        specifier: ^4.1.6
-        version: 4.1.6
       "@tanstack/react-table":
         specifier: ^8.21.3
         version: 8.21.3(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      "@types/uuid":
-        specifier: ^10.0.0
-        version: 10.0.0
       "@udecode/cn":
-        specifier: ^48.0.3
+        specifier: ^48.0.2
         version: 48.0.3(@types/react@19.1.4)(class-variance-authority@0.7.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwind-merge@3.3.0)
       "@udecode/plate":
-        specifier: ^48.0.3
+        specifier: ^48.0.2
         version: 48.0.3(@types/react@19.1.4)(immer@10.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(scheduler@0.26.0)(slate-dom@0.114.0(slate@0.114.0))(slate@0.114.0)(use-sync-external-store@1.5.0(react@19.1.0))
       "@udecode/plate-ai":
         specifier: ^48.0.2
@@ -238,18 +229,21 @@ importers:
       date-fns:
         specifier: ^4.1.0
         version: 4.1.0
-      dotenv:
-        specifier: ^16.5.0
-        version: 16.5.0
       drizzle-orm:
         specifier: ^0.43.1
         version: 0.43.1(@opentelemetry/api@1.9.0)(@types/pg@8.15.1)(kysely@0.27.6)(pg@8.16.0)(postgres@3.4.5)
       html2canvas-pro:
         specifier: ^1.5.11
         version: 1.5.11
-      latest:
-        specifier: ^0.2.0
-        version: 0.2.0
+      jotai:
+        specifier: ^2.12.4
+        version: 2.12.4(@types/react@19.1.4)(react@19.1.0)
+      jotai-optics:
+        specifier: ^0.4.0
+        version: 0.4.0(jotai@2.12.4(@types/react@19.1.4)(react@19.1.0))(optics-ts@2.4.1)
+      jotai-x:
+        specifier: ^2.3.2
+        version: 2.3.2(@types/react@19.1.4)(jotai@2.12.4(@types/react@19.1.4)(react@19.1.0))(react@19.1.0)
       lightningcss:
         specifier: ^1.30.0
         version: 1.30.0
@@ -316,9 +310,6 @@ importers:
       tailwind-scrollbar-hide:
         specifier: ^2.0.0
         version: 2.0.0(tailwindcss@4.1.6)
-      tailwindcss:
-        specifier: ^4.1.6
-        version: 4.1.6
       tailwindcss-animate:
         specifier: ^1.0.7
         version: 1.0.7(tailwindcss@4.1.6)
@@ -341,6 +332,12 @@ importers:
       "@eslint/js":
         specifier: ^9.26.0
         version: 9.26.0
+      "@faker-js/faker":
+        specifier: ^9.7.0
+        version: 9.7.0
+      "@tailwindcss/postcss":
+        specifier: ^4.1.6
+        version: 4.1.6
       "@types/node":
         specifier: ^22.15.17
         version: 22.15.17
@@ -353,6 +350,12 @@ importers:
       "@types/react-dom":
         specifier: ^19.1.5
         version: 19.1.5(@types/react@19.1.4)
+      "@types/uuid":
+        specifier: ^10.0.0
+        version: 10.0.0
+      dotenv:
+        specifier: ^16.5.0
+        version: 16.5.0
       drizzle-kit:
         specifier: ^0.31.1
         version: 0.31.1
@@ -377,9 +380,15 @@ importers:
       globals:
         specifier: ^16.1.0
         version: 16.1.0
+      latest:
+        specifier: ^0.2.0
+        version: 0.2.0
       prettier:
         specifier: ^3.5.3
         version: 3.5.3
+      tailwindcss:
+        specifier: ^4.1.6
+        version: 4.1.6
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.15.17)(typescript@5.8.3)
@@ -5297,6 +5306,21 @@ packages:
     peerDependencies:
       "@types/react": ">=17.0.0"
       jotai: ">=2.0.0"
+      react: ">=17.0.0"
+    peerDependenciesMeta:
+      "@types/react":
+        optional: true
+      react:
+        optional: true
+
+  jotai@2.12.4:
+    resolution:
+      {
+        integrity: sha512-eFXLJol4oOLM8BS1+QV+XwaYQITG8n1tatBCFl4F5HE3zR5j2WIK8QpMt7VJIYmlogNUZfvB7wjwLoVk+umB9Q==,
+      }
+    engines: { node: ">=12.20.0" }
+    peerDependencies:
+      "@types/react": ">=17.0.0"
       react: ">=17.0.0"
     peerDependenciesMeta:
       "@types/react":
@@ -11262,14 +11286,31 @@ snapshots:
 
   jose@5.10.0: {}
 
+  jotai-optics@0.4.0(jotai@2.12.4(@types/react@19.1.4)(react@19.1.0))(optics-ts@2.4.1):
+    dependencies:
+      jotai: 2.12.4(@types/react@19.1.4)(react@19.1.0)
+      optics-ts: 2.4.1
+
   jotai-optics@0.4.0(jotai@2.8.4(@types/react@19.1.4)(react@19.1.0))(optics-ts@2.4.1):
     dependencies:
       jotai: 2.8.4(@types/react@19.1.4)(react@19.1.0)
       optics-ts: 2.4.1
 
+  jotai-x@2.3.2(@types/react@19.1.4)(jotai@2.12.4(@types/react@19.1.4)(react@19.1.0))(react@19.1.0):
+    dependencies:
+      jotai: 2.12.4(@types/react@19.1.4)(react@19.1.0)
+    optionalDependencies:
+      "@types/react": 19.1.4
+      react: 19.1.0
+
   jotai-x@2.3.2(@types/react@19.1.4)(jotai@2.8.4(@types/react@19.1.4)(react@19.1.0))(react@19.1.0):
     dependencies:
       jotai: 2.8.4(@types/react@19.1.4)(react@19.1.0)
+    optionalDependencies:
+      "@types/react": 19.1.4
+      react: 19.1.0
+
+  jotai@2.12.4(@types/react@19.1.4)(react@19.1.0):
     optionalDependencies:
       "@types/react": 19.1.4
       react: 19.1.0

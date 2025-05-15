@@ -8,7 +8,7 @@ import {
 } from "@udecode/plate-link/react";
 import { Link } from "lucide-react";
 
-import { ToolbarButton } from "../toolbar";
+import { ToolbarButton } from "../../menus/toolbars/toolbar";
 
 export function LinkToolbarButton(
   props: React.ComponentProps<typeof ToolbarButton>,

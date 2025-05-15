@@ -14,7 +14,7 @@ import {
 import { toTPlatePlugin } from "@udecode/plate/react";
 
 import { discussionPlugin } from "./discussion-plugin";
-import { BlockSuggestion } from "../ui/elements/comments-suggestions/block-suggestion";
+import { BlockSuggestion } from "../../ui/elements/comments-suggestions/block-suggestion";
 
 export type SuggestionConfig = ExtendConfig<
   BaseSuggestionConfig,
