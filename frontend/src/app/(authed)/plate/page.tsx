@@ -6,7 +6,6 @@ import { useEffect, useState, useMemo } from "react"; // Import useMemo
 import { PlateEditor } from "@/components/editor/plate-editor";
 import { SettingsProvider } from "@/components/editor/settings";
 import { CommentsSidebarProvider } from "@/components/editor/core/CommentsSidebarContext";
-import { SuggestionsSidebarProvider } from "@/components/editor/core/SuggestionsSidebarContext";
 // import { CommentsSidebar } from "@/components/editor/ui/sidebars/CommentsSidebar"; // Removed import
 import { useSharedSession } from "@/lib/auth/use-shared-session";
 
@@ -56,12 +55,10 @@ export default function Page() {
   return (
     <div className="h-screen w-full" data-registry="plate">
       <CommentsSidebarProvider>
-        <SuggestionsSidebarProvider>
-          <SettingsProvider>
-            {/* Pass the potentially undefined currentUser */}
-            <PlateEditor currentUser={currentUser} />
-          </SettingsProvider>
-        </SuggestionsSidebarProvider>
+        <SettingsProvider>
+          {/* Pass the potentially undefined currentUser */}
+          <PlateEditor currentUser={currentUser} />
+        </SettingsProvider>
       </CommentsSidebarProvider>
 
       <Toaster />

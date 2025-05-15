@@ -33,6 +33,7 @@ import {
   type TDiscussion,
   discussionPlugin,
 } from "../../../plugins/comments/discussion-plugin";
+import { userPlugin } from "../../../plugins/user-plugin";
 import { useCreateEditor } from "../../../core/use-create-editor";
 
 import type { TComment } from "./comment";
@@ -95,7 +96,7 @@ export function CommentCreateForm({
   const commentId = useCommentId();
   const discussionId = discussionIdProp ?? commentId;
 
-  const userInfo = usePluginOption(discussionPlugin, "currentUser");
+  const userInfo = usePluginOption(userPlugin, "currentUser");
   const [commentValue, setCommentValue] = React.useState<Value | undefined>();
   const commentContent = React.useMemo(
     () =>
@@ -129,12 +130,12 @@ export function CommentCreateForm({
               createdAt: new Date(),
               discussionId,
               isEdited: false,
-              userId: editor.getOption(discussionPlugin, "currentUserId"),
+              userId: editor.getOption(userPlugin, "currentUserId")!,
             },
           ],
           createdAt: new Date(),
           isResolved: false,
-          userId: editor.getOption(discussionPlugin, "currentUserId"),
+          userId: editor.getOption(userPlugin, "currentUserId")!,
         };
 
         editor.setOption(discussionPlugin, "discussions", [
@@ -151,7 +152,7 @@ export function CommentCreateForm({
         createdAt: new Date(),
         discussionId,
         isEdited: false,
-        userId: editor.getOption(discussionPlugin, "currentUserId"),
+        userId: editor.getOption(userPlugin, "currentUserId")!,
       };
 
       // Add reply to discussion comments
@@ -191,13 +192,13 @@ export function CommentCreateForm({
           createdAt: new Date(),
           discussionId: _discussionId,
           isEdited: false,
-          userId: editor.getOption(discussionPlugin, "currentUserId"),
+          userId: editor.getOption(userPlugin, "currentUserId")!,
         },
       ],
       createdAt: new Date(),
       documentContent,
       isResolved: false,
-      userId: editor.getOption(discussionPlugin, "currentUserId"),
+      userId: editor.getOption(userPlugin, "currentUserId")!,
     };
 
     editor.setOption(discussionPlugin, "discussions", [

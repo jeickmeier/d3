@@ -2,7 +2,6 @@
 
 import * as React from "react";
 
-import type { TSuggestionText } from "@udecode/plate-suggestion";
 import type {
   PlateElementProps,
   RenderNodeWrapper,
@@ -12,23 +11,16 @@ import {
   type AnyPluginConfig,
   type NodeEntry,
   type Path,
-  type TElement,
   PathApi,
-  TextApi,
 } from "@udecode/plate";
 import { type TCommentText, getDraftCommentKey } from "@udecode/plate-comments";
 import { CommentsPlugin } from "@udecode/plate-comments/react";
-import { SuggestionPlugin } from "@udecode/plate-suggestion/react";
 import {
   useEditorPlugin,
   useEditorRef,
   usePluginOption,
 } from "@udecode/plate/react";
-import {
-  MessageSquareTextIcon,
-  MessagesSquareIcon,
-  PencilLineIcon,
-} from "lucide-react";
+import { MessageSquareTextIcon } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -42,13 +34,6 @@ import {
   type TDiscussion,
   discussionPlugin,
 } from "../../../plugins/comments/discussion-plugin";
-import { suggestionPlugin } from "../../../plugins/comments/suggestion-plugin";
-
-import {
-  BlockSuggestionCard,
-  isResolvedSuggestion,
-  useResolveSuggestion,
-} from "./block-suggestion";
 import { Comment } from "./comment";
 import { CommentCreateForm } from "./comment-create-form";
 
@@ -65,15 +50,7 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
 
   const commentNodes = [...commentsApi.nodes({ at: blockPath })];
 
-  const suggestionNodes = [
-    ...editor.getApi(SuggestionPlugin).suggestion.nodes({ at: blockPath }),
-  ];
-
-  if (
-    commentNodes.length === 0 &&
-    suggestionNodes.length === 0 &&
-    !draftCommentNode
-  ) {
+  if (commentNodes.length === 0 && !draftCommentNode) {
     return;
   }
 
@@ -82,7 +59,6 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
       blockPath={blockPath}
       commentNodes={commentNodes}
       draftCommentNode={draftCommentNode}
-      suggestionNodes={suggestionNodes}
       {...props}
     />
   );
@@ -96,48 +72,31 @@ const BlockCommentsContent = ({
   children,
   commentNodes,
   draftCommentNode,
-  suggestionNodes,
 }: PlateElementProps & {
   blockPath: Path;
   commentNodes: NodeEntry<TCommentText>[];
   draftCommentNode: NodeEntry<TCommentText> | undefined;
-  suggestionNodes: NodeEntry<TElement | TSuggestionText>[];
 }) => {
   const editor = useEditorRef();
 
-  const resolvedSuggestions = useResolveSuggestion(suggestionNodes, blockPath);
   const resolvedDiscussions = useResolvedDiscussion(commentNodes, blockPath);
-
-  const suggestionsCount = resolvedSuggestions.length;
   const discussionsCount = resolvedDiscussions.length;
-  const totalCount = suggestionsCount + discussionsCount;
-
-  const activeSuggestionId = usePluginOption(suggestionPlugin, "activeId");
-  const activeSuggestion =
-    activeSuggestionId &&
-    resolvedSuggestions.find((s) => s.suggestionId === activeSuggestionId);
-
-  const commentingBlock = usePluginOption(commentsPlugin, "commentingBlock");
   const activeCommentId = usePluginOption(commentsPlugin, "activeId");
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
     activeCommentId &&
     resolvedDiscussions.find((d) => d.id === activeCommentId);
 
-  const noneActive = !activeSuggestion && !activeDiscussion;
+  const noneActive = !activeDiscussion;
 
-  const sortedMergedData = [
-    ...resolvedDiscussions,
-    ...resolvedSuggestions,
-  ].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+  const sortedData = resolvedDiscussions;
 
-  const selected =
-    resolvedDiscussions.some((d) => d.id === activeCommentId) ||
-    resolvedSuggestions.some((s) => s.suggestionId === activeSuggestionId);
+  const selected = resolvedDiscussions.some((d) => d.id === activeCommentId);
 
   const [_open, setOpen] = React.useState(selected);
 
   // in some cases, we may comment the multiple blocks
+  const commentingBlock = usePluginOption(commentsPlugin, "commentingBlock");
   const commentingCurrent =
     !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
 
@@ -148,15 +107,6 @@ const BlockCommentsContent = ({
 
   const anchorElement = React.useMemo(() => {
     let activeNode: NodeEntry | undefined;
-
-    if (activeSuggestion) {
-      activeNode = suggestionNodes.find(
-        ([node]) =>
-          TextApi.isText(node) &&
-          editor.getApi(SuggestionPlugin).suggestion.nodeId(node) ===
-            activeSuggestion.suggestionId,
-      );
-    }
 
     if (activeCommentId) {
       if (activeCommentId === getDraftCommentKey()) {
@@ -176,15 +126,13 @@ const BlockCommentsContent = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     open,
-    activeSuggestion,
     activeCommentId,
     editor.api,
-    suggestionNodes,
-    draftCommentNode,
     commentNodes,
+    draftCommentNode,
   ]);
 
-  if (suggestionsCount + resolvedDiscussions.length === 0 && !draftCommentNode)
+  if (discussionsCount === 0 && !draftCommentNode)
     return <div className="w-full">{children}</div>;
 
   return (
@@ -223,33 +171,15 @@ const BlockCommentsContent = ({
           ) : (
             <React.Fragment>
               {noneActive ? (
-                sortedMergedData.map((item, index) =>
-                  isResolvedSuggestion(item) ? (
-                    <BlockSuggestionCard
-                      key={item.suggestionId}
-                      idx={index}
-                      isLast={index === sortedMergedData.length - 1}
-                      suggestion={item}
-                    />
-                  ) : (
-                    <BlockComment
-                      key={item.id}
-                      discussion={item}
-                      isLast={index === sortedMergedData.length - 1}
-                    />
-                  ),
-                )
+                sortedData.map((item, index) => (
+                  <BlockComment
+                    key={item.id}
+                    discussion={item}
+                    isLast={index === sortedData.length - 1}
+                  />
+                ))
               ) : (
                 <React.Fragment>
-                  {activeSuggestion && (
-                    <BlockSuggestionCard
-                      key={activeSuggestion.suggestionId}
-                      idx={0}
-                      isLast={true}
-                      suggestion={activeSuggestion}
-                    />
-                  )}
-
                   {activeDiscussion && (
                     <BlockComment discussion={activeDiscussion} isLast={true} />
                   )}
@@ -259,7 +189,7 @@ const BlockCommentsContent = ({
           )}
         </PopoverContent>
 
-        {totalCount > 0 && (
+        {discussionsCount > 0 && (
           <div className="relative left-0 size-0 select-none">
             <PopoverTrigger asChild>
               <Button
@@ -268,19 +198,9 @@ const BlockCommentsContent = ({
                 data-active={open}
                 contentEditable={false}
               >
-                {suggestionsCount > 0 && discussionsCount === 0 && (
-                  <PencilLineIcon className="size-4 shrink-0" />
-                )}
+                <MessageSquareTextIcon className="size-4 shrink-0" />
 
-                {suggestionsCount === 0 && discussionsCount > 0 && (
-                  <MessageSquareTextIcon className="size-4 shrink-0" />
-                )}
-
-                {suggestionsCount > 0 && discussionsCount > 0 && (
-                  <MessagesSquareIcon className="size-4 shrink-0" />
-                )}
-
-                <span className="text-xs font-semibold">{totalCount}</span>
+                <span className="text-xs font-semibold">{discussionsCount}</span>
               </Button>
             </PopoverTrigger>
           </div>

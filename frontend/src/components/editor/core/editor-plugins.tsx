@@ -22,7 +22,6 @@ import { TrailingBlockPlugin } from "@udecode/plate-trailing-block";
 
 import { FixedToolbarPlugin } from "@/components/editor/plugins/fixed-toolbar-plugin";
 import { FloatingToolbarPlugin } from "@/components/editor/plugins/floating-toolbar-plugin";
-import { SuggestionBelowNodes } from "@/components/editor/ui/elements/comments-suggestions/suggestion-line-break";
 
 import { aiPlugins } from "../plugins/ai-plugins";
 import { alignPlugin } from "../plugins/align-plugin";
@@ -45,9 +44,9 @@ import { mentionPlugin } from "../plugins/mention-plugin";
 import { resetBlockTypePlugin } from "../plugins/reset-block-type-plugin";
 import { skipMarkPlugin } from "../plugins/skip-mark-plugin";
 import { softBreakPlugin } from "../plugins/soft-break-plugin";
-import { suggestionPlugin } from "../plugins/comments/suggestion-plugin";
 import { tablePlugin } from "../plugins/table-plugin";
 import { tocPlugin } from "../plugins/toc-plugin";
+import { userPlugin } from "../plugins/user-plugin";
 
 export const viewPlugins = [
   ...basicNodesPlugins,
@@ -77,11 +76,9 @@ export const viewPlugins = [
   lineHeightPlugin,
 
   // Collaboration
+  userPlugin,
   discussionPlugin,
   commentsPlugin,
-  suggestionPlugin.configure({
-    render: { belowNodes: SuggestionBelowNodes as any },
-  }),
 ] as const;
 
 export const editorPlugins = [

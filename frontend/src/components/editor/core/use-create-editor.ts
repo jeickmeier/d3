@@ -47,7 +47,6 @@ import {
   MentionPlugin,
 } from "@udecode/plate-mention/react";
 import { SlashInputPlugin } from "@udecode/plate-slash-command/react";
-import { SuggestionPlugin } from "@udecode/plate-suggestion/react";
 import {
   TableCellHeaderPlugin,
   TableCellPlugin,
@@ -93,7 +92,6 @@ import { MentionInputElement } from "@/components/editor/ui/elements/mention/men
 import { ParagraphElement } from "@/components/editor/ui/elements/paragraph/paragraph-element";
 import { withPlaceholders } from "@/components/editor/ui/primitives/placeholder";
 import { SlashInputElement } from "@/components/editor/ui/elements/slash-input/slash-input-element";
-import { SuggestionLeaf } from "@/components/editor/ui/elements/leafs/suggestion-leaf";
 import {
   TableCellElement,
   TableCellHeaderElement,
@@ -103,10 +101,7 @@ import { TableRowElement } from "@/components/editor/ui/elements/table/table-row
 import { TocElement } from "@/components/editor/ui/elements/toc/toc-element";
 import { ToggleElement } from "@/components/editor/ui/elements/toggle/toggle-element";
 
-import {
-  discussionPlugin,
-  importedUsersData,
-} from "../plugins/comments/discussion-plugin";
+import { userPlugin } from "../plugins/user-plugin";
 import { editorPlugins, viewPlugins } from "./editor-plugins";
 
 // Define a more specific type for currentUser based on PlateEditorProps if available,
@@ -161,7 +156,6 @@ export const viewComponents = {
   [PlaceholderPlugin.key]: MediaPlaceholderElement,
   [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: "s" }),
   [SubscriptPlugin.key]: withProps(PlateLeaf, { as: "sub" }),
-  [SuggestionPlugin.key]: SuggestionLeaf,
   [SuperscriptPlugin.key]: withProps(PlateLeaf, { as: "sup" }),
   [TableCellHeaderPlugin.key]: TableCellHeaderElement,
   [TableCellPlugin.key]: TableCellElement,
@@ -193,20 +187,23 @@ export const useCreateEditor = (
     ...plateEditorOptions // Renamed from options to avoid conflict
   } = options;
 
-  let discussionPluginOptionsOverride;
+  let pluginOverrides: Record<string, any> | undefined;
   if (currentUser) {
+    // Only include the current user in the users map
     const combinedUsers = {
-      ...importedUsersData, // Combine with existing users
       [currentUser.id]: {
         id: currentUser.id,
         name: currentUser.name || currentUser.id,
         avatarUrl: currentUser.avatarUrl,
       },
     };
-    discussionPluginOptionsOverride = {
-      options: {
-        currentUserId: currentUser.id,
-        users: combinedUsers,
+
+    pluginOverrides = {
+      [userPlugin.key]: {
+        options: {
+          currentUserId: currentUser.id,
+          users: combinedUsers,
+        },
       },
     };
   }
@@ -222,14 +219,9 @@ export const useCreateEditor = (
         ...components,
       },
       plugins: (readOnly ? viewPlugins : editorPlugins) as any,
-      override:
-        currentUser && discussionPluginOptionsOverride
-          ? {
-              plugins: {
-                [discussionPlugin.key]: discussionPluginOptionsOverride,
-              },
-            }
-          : undefined,
+      // If we have plugin overrides (i.e. the caller provided a currentUser),
+      // forward them to Plate so they are merged with the default config.
+      override: pluginOverrides ? { plugins: pluginOverrides } : undefined,
       ...plateEditorOptions,
     },
     // Add currentUser to deps for usePlateEditor if it's present

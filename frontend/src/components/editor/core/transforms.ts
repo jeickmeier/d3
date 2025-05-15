@@ -39,7 +39,6 @@ import {
   MediaEmbedPlugin,
   VideoPlugin,
 } from "@udecode/plate-media/react";
-import { SuggestionPlugin } from "@udecode/plate-suggestion/react";
 import {
   TableCellPlugin,
   TablePlugin,
@@ -140,9 +139,7 @@ export const insertBlock = (editor: PlateEditor, type: string) => {
       });
     }
     if (getBlockType(block[0]) !== type) {
-      editor.getApi(SuggestionPlugin).suggestion.withoutSuggestions(() => {
-        editor.tf.removeNodes({ previousEmptyBlock: true });
-      });
+      editor.tf.removeNodes({ previousEmptyBlock: true });
     }
   });
 };

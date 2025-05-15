@@ -17,6 +17,7 @@ import {
   discussionPlugin,
   type TDiscussion,
 } from "@/components/editor/plugins/comments/discussion-plugin";
+import { userPlugin } from "@/components/editor/plugins/user-plugin";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatCommentDate } from "@/components/editor/ui/elements/comments-suggestions/comment";
 import { nanoid } from "nanoid";
@@ -45,10 +46,10 @@ export const CommentsSidebar: React.FC = () => {
   // prettier-ignore
   const discussions = (usePluginOption(discussionPlugin, "discussions") ?? []) as TDiscussion[];
 
-  const users = usePluginOption(discussionPlugin, "users") ?? {};
+  const users = usePluginOption(userPlugin, "users") ?? {};
 
   const currentUserId: string | undefined = usePluginOption(
-    discussionPlugin,
+    userPlugin,
     "currentUserId",
   );
 

@@ -21,7 +21,6 @@ import {
   UnderlineIcon,
   WandSparklesIcon,
   MessageSquareTextIcon,
-  FileDiffIcon,
 } from "lucide-react";
 
 import { MoreDropdownMenu } from "../../menus/more-dropdown-menu";
@@ -30,7 +29,6 @@ import { AIToolbarButton } from "./ai-toolbar-button";
 import { AlignDropdownMenu } from "../../menus/align-dropdown-menu";
 import { ColorDropdownMenu } from "../../primitives/color-picker/color-dropdown-menu";
 import { useCommentsSidebar } from "@/components/editor/core/CommentsSidebarContext";
-import { useSuggestionsSidebar } from "@/components/editor/core/SuggestionsSidebarContext";
 import { FontSizeToolbarButton } from "./font-size-toolbar-button";
 import { RedoToolbarButton, UndoToolbarButton } from "./history-toolbar-button";
 import { InsertDropdownMenu } from "../../menus/insert-dropdown-menu";
@@ -45,7 +43,6 @@ import { EmojiDropdownMenu } from "../../menus/emoji/emoji-dropdown-menu";
 export function FixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
   const { setIsCommentsSidebarOpen } = useCommentsSidebar();
-  const { setIsSuggestionsSidebarOpen } = useSuggestionsSidebar();
 
   return (
     <div className="flex w-full">
@@ -117,13 +114,6 @@ export function FixedToolbarButtons() {
           tooltip="View Comments"
         >
           <MessageSquareTextIcon />
-        </ToolbarButton>
-        <ToolbarButton
-          onClick={() => setIsSuggestionsSidebarOpen(true)}
-          onMouseDown={(e) => e.preventDefault()}
-          tooltip="View Suggestions"
-        >
-          <FileDiffIcon />
         </ToolbarButton>
         <ModeDropdownMenu />
       </ToolbarGroup>

@@ -36,6 +36,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
 import { discussionPlugin } from "../../../plugins/comments/discussion-plugin";
+import { userPlugin } from "../../../plugins/user-plugin";
 
 import { useCommentEditor } from "./comment-create-form";
 import { Editor, EditorContainer } from "../../primitives/editor";
@@ -90,8 +91,8 @@ export function Comment(props: {
   } = props;
 
   const editor = useEditorRef();
-  const userInfo = usePluginOption(discussionPlugin, "user", comment.userId);
-  const currentUserId = usePluginOption(discussionPlugin, "currentUserId");
+  const userInfo = usePluginOption(userPlugin, "user", comment.userId);
+  const currentUserId = usePluginOption(userPlugin, "currentUserId");
 
   const resolveDiscussion = async (id: string) => {
     const updatedDiscussions = editor

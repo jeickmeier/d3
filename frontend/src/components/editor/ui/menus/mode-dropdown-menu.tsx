@@ -6,13 +6,8 @@ import {
   type DropdownMenuProps,
   DropdownMenuItemIndicator,
 } from "@radix-ui/react-dropdown-menu";
-import { SuggestionPlugin } from "@udecode/plate-suggestion/react";
-import {
-  useEditorRef,
-  usePlateState,
-  usePluginOption,
-} from "@udecode/plate/react";
-import { CheckIcon, EyeIcon, PencilLineIcon, PenIcon } from "lucide-react";
+import { useEditorRef, usePlateState } from "@udecode/plate/react";
+import { CheckIcon, EyeIcon, PenIcon } from "lucide-react";
 
 import {
   DropdownMenu,
@@ -29,32 +24,14 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
   const [readOnly, setReadOnly] = usePlateState("readOnly");
   const [open, setOpen] = React.useState(false);
 
-  const isSuggestingFromPlugin = usePluginOption(
-    SuggestionPlugin,
-    "isSuggesting",
-  );
-  const [isSuggesting, setIsSuggesting] = React.useState(
-    isSuggestingFromPlugin,
-  );
-
-  React.useEffect(() => {
-    setIsSuggesting(isSuggestingFromPlugin);
-  }, [isSuggestingFromPlugin]);
-
   let value = "editing";
 
   if (readOnly) value = "viewing";
-
-  if (isSuggesting) value = "suggestion";
 
   const item: Record<string, { icon: React.ReactNode; label: string }> = {
     editing: {
       icon: <PenIcon />,
       label: "Editing",
-    },
-    suggestion: {
-      icon: <PencilLineIcon />,
-      label: "Suggestion",
     },
     viewing: {
       icon: <EyeIcon />,
@@ -83,14 +60,6 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
               setReadOnly(false);
             }
 
-            if (newValue === "suggestion") {
-              editor.setOption(SuggestionPlugin, "isSuggesting", true);
-
-              return;
-            } else {
-              editor.setOption(SuggestionPlugin, "isSuggesting", false);
-            }
-
             if (newValue === "editing") {
               editor.tf.focus();
 
@@ -114,15 +83,6 @@ export function ModeDropdownMenu(props: DropdownMenuProps) {
             <Indicator />
             {item.viewing.icon}
             {item.viewing.label}
-          </DropdownMenuRadioItem>
-
-          <DropdownMenuRadioItem
-            className="pl-2 *:first:[span]:hidden *:[svg]:text-muted-foreground"
-            value="suggestion"
-          >
-            <Indicator />
-            {item.suggestion.icon}
-            {item.suggestion.label}
           </DropdownMenuRadioItem>
         </DropdownMenuRadioGroup>
       </DropdownMenuContent>
