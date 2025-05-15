@@ -9,6 +9,8 @@ import { Plate } from "@udecode/plate/react";
 import { useCreateEditor } from "./core/use-create-editor";
 import { SettingsDialog } from "./settings";
 import { Editor, EditorContainer } from "./ui/primitives/editor";
+import { CommentsSidebar } from "./ui/sidebars/CommentsSidebar";
+import { SuggestionsSidebar } from "./ui/sidebars/SuggestionsSidebar";
 
 interface PlateEditorProps {
   currentUser?: {
@@ -29,6 +31,8 @@ export function PlateEditor({ currentUser }: PlateEditorProps) {
         </EditorContainer>
 
         <SettingsDialog />
+        <CommentsSidebar />
+        <SuggestionsSidebar />
       </Plate>
     </DndProvider>
   );

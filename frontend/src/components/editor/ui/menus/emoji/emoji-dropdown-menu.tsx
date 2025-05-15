@@ -11,7 +11,7 @@ import { Smile } from "lucide-react";
 import {
   emojiCategoryIcons,
   emojiSearchIcons,
-} from "../../../constants/emoji-icons";
+} from "../../../lib/constants/emoji-icons";
 import { EmojiPicker } from "./emoji-picker";
 import { EmojiToolbarDropdown } from "./emoji-toolbar-dropdown";
 import { ToolbarButton } from "../../menus/toolbars/toolbar";

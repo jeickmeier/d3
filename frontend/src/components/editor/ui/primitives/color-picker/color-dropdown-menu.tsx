@@ -13,7 +13,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
-import { DEFAULT_COLORS, DEFAULT_CUSTOM_COLORS } from "./color-constants";
+import {
+  DEFAULT_COLORS,
+  DEFAULT_CUSTOM_COLORS,
+} from "@/components/editor/lib/constants/color-constants";
+
 import { ColorPicker } from "./color-picker";
 import { ToolbarButton } from "../../menus/toolbars/toolbar";
 

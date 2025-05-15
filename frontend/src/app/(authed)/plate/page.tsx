@@ -5,7 +5,10 @@ import { useEffect, useState, useMemo } from "react"; // Import useMemo
 
 import { PlateEditor } from "@/components/editor/plate-editor";
 import { SettingsProvider } from "@/components/editor/settings";
-import { authClient } from "@/lib/auth/auth-client";
+import { CommentsSidebarProvider } from "@/components/editor/core/CommentsSidebarContext";
+import { SuggestionsSidebarProvider } from "@/components/editor/core/SuggestionsSidebarContext";
+// import { CommentsSidebar } from "@/components/editor/ui/sidebars/CommentsSidebar"; // Removed import
+import { useSharedSession } from "@/lib/auth/use-shared-session";
 
 export default function Page() {
   const [isClient, setIsClient] = useState(false);
@@ -14,11 +17,12 @@ export default function Page() {
     setIsClient(true);
   }, []);
 
-  const {
-    data: session,
-    isPending: sessionLoading,
-    error: sessionError,
-  } = authClient.useSession();
+  const sessionState = useSharedSession();
+
+  const sessionLoading = sessionState.status === "loading";
+  const sessionError =
+    sessionState.status === "error" ? sessionState.error : null;
+  const session = sessionState.status === "ready" ? sessionState.data : null;
 
   // Memoize currentUser to prevent unnecessary re-renders of PlateEditor
   const currentUser = useMemo(() => {
@@ -36,7 +40,7 @@ export default function Page() {
     return null;
   }
 
-  if (sessionError) {
+  if (sessionError && Object.keys(sessionError).length > 0) {
     // Handle error, maybe redirect to login or show an error message
     console.error("[Page] Error fetching session on client:", sessionError);
     return <div>Error loading session. Please try logging in again.</div>;
@@ -51,10 +55,14 @@ export default function Page() {
 
   return (
     <div className="h-screen w-full" data-registry="plate">
-      <SettingsProvider>
-        {/* Pass the potentially undefined currentUser, PlateEditor/useCreateEditor handles the default */}
-        <PlateEditor currentUser={currentUser} />
-      </SettingsProvider>
+      <CommentsSidebarProvider>
+        <SuggestionsSidebarProvider>
+          <SettingsProvider>
+            {/* Pass the potentially undefined currentUser */}
+            <PlateEditor currentUser={currentUser} />
+          </SettingsProvider>
+        </SuggestionsSidebarProvider>
+      </CommentsSidebarProvider>
 
       <Toaster />
     </div>

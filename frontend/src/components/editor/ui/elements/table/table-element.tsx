@@ -54,7 +54,7 @@ import {
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-import { DEFAULT_COLORS } from "../../../constants/color-constants";
+import { DEFAULT_COLORS } from "../../../lib/constants/color-constants";
 import { ColorDropdownMenuItems } from "../../primitives/color-picker/color-dropdown-menu-items";
 import {
   Toolbar,
@@ -69,7 +69,7 @@ import {
   BorderNone,
   BorderRight,
   BorderTop,
-} from "../../../constants/table-icons";
+} from "../../../lib/constants/table-icons";
 
 export const TableElement = withHOC(
   TableProvider,

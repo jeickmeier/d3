@@ -34,10 +34,9 @@ import {
   VideoPlugin,
 } from "@udecode/plate-media/react";
 import {
-  acceptSuggestion,
+  rejectSuggestion,
   getSuggestionKey,
   keyId2SuggestionId,
-  rejectSuggestion,
 } from "@udecode/plate-suggestion";
 import { SuggestionPlugin } from "@udecode/plate-suggestion/react";
 import { TablePlugin } from "@udecode/plate-table/react";
@@ -63,6 +62,7 @@ import { CommentCreateForm } from "./comment-create-form";
 
 export interface ResolvedSuggestion extends TResolvedSuggestion {
   comments: TComment[];
+  status?: "accepted" | "pending";
 }
 
 export const BLOCK_SUGGESTION = "__block__";
@@ -113,12 +113,17 @@ export const BlockSuggestionCard = ({
   const userInfo = usePluginOption(discussionPlugin, "user", suggestion.userId);
 
   const accept = (suggestion: ResolvedSuggestion) => {
-    api.suggestion.withoutSuggestions(() => {
-      acceptSuggestion(editor, suggestion);
-    });
+    if (suggestion.status === "accepted") return;
+    // Mark suggestion as accepted without removing marks
+    import("@/components/editor/core/mark-suggestion-accepted").then(
+      ({ markSuggestionAccepted }) => {
+        markSuggestionAccepted(editor as any, suggestion.suggestionId);
+      },
+    );
   };
 
   const reject = (suggestion: ResolvedSuggestion) => {
+    if (suggestion.status === "accepted") return;
     api.suggestion.withoutSuggestions(() => {
       rejectSuggestion(editor, suggestion);
     });
@@ -254,7 +259,7 @@ export const BlockSuggestionCard = ({
           />
         ))}
 
-        {hovering && (
+        {hovering && suggestion.status !== "accepted" && (
           <div className="absolute top-4 right-4 flex gap-2">
             <Button
               variant="ghost"
@@ -287,7 +292,8 @@ export const useResolveSuggestion = (
   blockPath: Path,
 ) => {
   const discussions = usePluginOption(discussionPlugin, "discussions");
-  const { api, editor, getOption, setOption } = useEditorPlugin(suggestionPlugin);
+  const { api, editor, getOption, setOption } =
+    useEditorPlugin(suggestionPlugin);
 
   React.useEffect(() => {
     let changed = false;
@@ -301,7 +307,11 @@ export const useResolveSuggestion = (
       const previousPath = newMap.get(id);
 
       if (PathApi.isPath(previousPath)) {
-        const nodesAtPath = api.suggestion.node({ id, at: previousPath, isText: true });
+        const nodesAtPath = api.suggestion.node({
+          id,
+          at: previousPath,
+          isText: true,
+        });
         let lineBreakId: string | null = null;
         const parentNode = api.node(previousPath);
         if (parentNode && ElementApi.isElement(parentNode[0])) {
@@ -458,6 +468,8 @@ export const useResolveSuggestion = (
           suggestionId: keyId2SuggestionId(id),
           type: "update",
           userId: nodeData.userId,
+          status:
+            (nodeData as any).status === "accepted" ? "accepted" : "pending",
         });
       }
       if (newText.length > 0 && text.length > 0) {
@@ -470,6 +482,8 @@ export const useResolveSuggestion = (
           text,
           type: "replace",
           userId: nodeData.userId,
+          status:
+            (nodeData as any).status === "accepted" ? "accepted" : "pending",
         });
       }
       if (newText.length > 0) {
@@ -481,6 +495,8 @@ export const useResolveSuggestion = (
           suggestionId: keyId2SuggestionId(id),
           type: "insert",
           userId: nodeData.userId,
+          status:
+            (nodeData as any).status === "accepted" ? "accepted" : "pending",
         });
       }
       if (text.length > 0) {
@@ -492,6 +508,8 @@ export const useResolveSuggestion = (
           text,
           type: "remove",
           userId: nodeData.userId,
+          status:
+            (nodeData as any).status === "accepted" ? "accepted" : "pending",
         });
       }
     });

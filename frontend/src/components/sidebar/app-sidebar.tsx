@@ -17,7 +17,7 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 
-import { authClient } from "@/lib/auth/auth-client";
+import { useSharedSession } from "@/lib/auth/use-shared-session";
 
 // This is sample data.
 const data = {
@@ -26,7 +26,9 @@ const data = {
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { open } = useSidebar();
-  const { data: session, isPending } = authClient.useSession();
+  const sessionState = useSharedSession();
+  const isPending = sessionState.status === "loading";
+  const session = sessionState.status === "ready" ? sessionState.data : null;
   const [isClient, setIsClient] = useState(false);
   const previousSessionRef = React.useRef<typeof session | undefined>(
     undefined,

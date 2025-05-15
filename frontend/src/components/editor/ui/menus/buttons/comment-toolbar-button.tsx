@@ -26,6 +26,7 @@ export function CommentToolbarButton() {
   return (
     <ToolbarButton
       onClick={onCommentToolbarButton}
+      onMouseDown={(e) => e.preventDefault()}
       data-plate-prevent-overlay
       tooltip="Comment"
     >

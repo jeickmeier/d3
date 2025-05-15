@@ -356,28 +356,30 @@ export const useResolvedDiscussion = (
     }
   }, [commentNodes, blockPath, api.comment, getOption, setOption]);
 
-  const commentsIds = new Set(
-    commentNodes.map(([node]) => api.comment.nodeId(node)).filter(Boolean),
-  );
+  const resolvedDiscussions = React.useMemo(() => {
+    const commentsIds = new Set(
+      commentNodes.map(([node]) => api.comment.nodeId(node)).filter(Boolean),
+    );
 
-  const resolvedDiscussions = React.useMemo(() => discussions
-    .map((d: TDiscussion) => ({
-      ...d,
-      createdAt: new Date(d.createdAt),
-    }))
-    .filter((item: TDiscussion) => {
-      const commentsPathMap = getOption("uniquePathMap");
-      const firstBlockPath = commentsPathMap.get(item.id);
+    return discussions
+      .map((d: TDiscussion) => ({
+        ...d,
+        createdAt: new Date(d.createdAt),
+      }))
+      .filter((item: TDiscussion) => {
+        const commentsPathMap = getOption("uniquePathMap");
+        const firstBlockPath = commentsPathMap.get(item.id);
 
-      if (!firstBlockPath) return false;
-      if (!PathApi.equals(firstBlockPath, blockPath)) return false;
+        if (!firstBlockPath) return false;
+        if (!PathApi.equals(firstBlockPath, blockPath)) return false;
 
-      return (
-        api.comment.has({ id: item.id }) &&
-        commentsIds.has(item.id) &&
-        !item.isResolved
-      );
-    }), [discussions, getOption, blockPath, api.comment, commentsIds]);
+        return (
+          api.comment.has({ id: item.id }) &&
+          commentsIds.has(item.id) &&
+          !item.isResolved
+        );
+      });
+  }, [discussions, getOption, blockPath, api.comment, commentNodes]);
 
   return resolvedDiscussions;
 };

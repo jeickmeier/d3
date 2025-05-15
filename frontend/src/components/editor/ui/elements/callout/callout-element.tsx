@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import {
   emojiCategoryIcons,
   emojiSearchIcons,
-} from "../../../constants/emoji-icons";
+} from "../../../lib/constants/emoji-icons";
 import { EmojiPicker } from "../../menus/emoji/emoji-picker";
 import { EmojiToolbarDropdown } from "../../menus/emoji/emoji-toolbar-dropdown";
 

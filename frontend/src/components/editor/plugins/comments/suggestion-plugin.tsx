@@ -12,6 +12,7 @@ import {
   BaseSuggestionPlugin,
 } from "@udecode/plate-suggestion";
 import { toTPlatePlugin } from "@udecode/plate/react";
+import { SuggestionPlugin } from "@udecode/plate-suggestion/react";
 
 import { discussionPlugin } from "./discussion-plugin";
 import { BlockSuggestion } from "../../ui/elements/comments-suggestions/block-suggestion";
@@ -76,8 +77,11 @@ export const suggestionPlugin = toTPlatePlugin<SuggestionConfig>(
       uniquePathMap: new Map(),
     },
     render: {
-      belowRootNodes: ({ api, element }) => {
-        if (!api.suggestion!.isBlockSuggestion(element)) {
+      belowRootNodes: ({ api, element, editor }) => {
+        const pluginApi = api ?? editor.getApi(SuggestionPlugin);
+
+        // If the plugin API is still unavailable, safely render nothing.
+        if (!pluginApi?.suggestion?.isBlockSuggestion(element)) {
           return null;
         }
 

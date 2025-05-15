@@ -1,6 +1,7 @@
 import { interceptor } from "@/lib/utils/logger";
 import { Metadata } from "next";
 import "./globals.css";
+import { SharedSessionProvider } from "@/lib/auth/use-shared-session";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -20,7 +21,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <SharedSessionProvider>{children}</SharedSessionProvider>
+      </body>
     </html>
   );
 }
