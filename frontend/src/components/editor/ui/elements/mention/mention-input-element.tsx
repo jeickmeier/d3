@@ -15,7 +15,7 @@ import {
   InlineComboboxGroup,
   InlineComboboxInput,
   InlineComboboxItem,
-} from "@/components/editor/ui/menus/inline-combobox";
+} from "@/components/editor/ui/toolbars/inline-combobox";
 
 const onSelectItem = getMentionOnSelectItem();
 

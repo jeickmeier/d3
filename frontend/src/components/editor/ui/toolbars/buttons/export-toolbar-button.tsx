@@ -79,7 +79,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BlockquoteElementStatic } from "@/components/editor/ui/elements/blockquote-element-static";
+import { BlockquoteElementStatic } from "@/components/editor/ui/elements/blockquote/blockquote-element-static";
 import { CodeBlockElementStatic } from "@/components/editor/ui/code/code-block-element-static";
 import { CodeLeafStatic } from "@/components/editor/ui/code/code-leaf-static";
 import { CodeLineElementStatic } from "@/components/editor/ui/code/code-line-element-static";
@@ -87,26 +87,26 @@ import { CodeSyntaxLeafStatic } from "@/components/editor/ui/code/code-syntax-le
 import { ColumnElementStatic } from "@/components/editor/ui/elements/layout/column-element-static";
 import { ColumnGroupElementStatic } from "@/components/editor/ui/elements/layout/column-group-element-static";
 import { CommentLeafStatic } from "@/components/editor/ui/features/comments-suggestions/comment-leaf-static";
-import { DateElementStatic } from "@/components/editor/ui/elements/date-element-static";
-import { HeadingElementStatic } from "@/components/editor/ui/elements/heading-element-static";
+import { DateElementStatic } from "@/components/editor/ui/elements/date/date-element-static";
+import { HeadingElementStatic } from "@/components/editor/ui/elements/heading/heading-element-static";
 import { HighlightLeafStatic } from "@/components/editor/ui/leafs/highlight-leaf-static";
-import { HrElementStatic } from "@/components/editor/ui/elements/hr-element-static";
-import { ImageElementStatic } from "@/components/editor/ui/elements/image-element-static";
+import { HrElementStatic } from "@/components/editor/ui/elements/heading/hr-element-static";
+import { ImageElementStatic } from "@/components/editor/ui/elements/image/image-element-static";
 import { KbdLeafStatic } from "@/components/editor/ui/leafs/kbd-leaf-static";
-import { LinkElementStatic } from "@/components/editor/ui/elements/link-element-static";
+import { LinkElementStatic } from "@/components/editor/ui/elements/link/link-element-static";
 import { MediaAudioElementStatic } from "@/components/editor/ui/elements/media/media-audio-element-static";
 import { MediaFileElementStatic } from "@/components/editor/ui/elements/media/media-file-element-static";
 import { MediaVideoElementStatic } from "@/components/editor/ui/elements/media/media-video-element-static";
-import { MentionElementStatic } from "@/components/editor/ui/elements/mention-element-static";
-import { ParagraphElementStatic } from "@/components/editor/ui/elements/paragraph-element-static";
+import { MentionElementStatic } from "@/components/editor/ui/elements/mention/mention-element-static";
+import { ParagraphElementStatic } from "@/components/editor/ui/elements/paragraph/paragraph-element-static";
 import { TableCellElementStatic } from "@/components/editor/ui/elements/table/table-cell-element-static";
 import { TableElementStatic } from "@/components/editor/ui/elements/table/table-element-static";
 import { TableRowElementStatic } from "@/components/editor/ui/elements/table/table-row-element-static";
-import { TocElementStatic } from "@/components/editor/ui/elements/toc-element-static";
-import { ToggleElementStatic } from "@/components/editor/ui/elements/toggle-element-static";
+import { TocElementStatic } from "@/components/editor/ui/elements/toc/toc-element-static";
+import { ToggleElementStatic } from "@/components/editor/ui/elements/toggle/toggle-element-static";
 import { EditorStatic } from "@/components/editor/ui/core/editor-static";
-import { EquationElementStatic } from "@/components/editor/ui/elements/equation-element-static";
-import { InlineEquationElementStatic } from "@/components/editor/ui/elements/inline-equation-element-static";
+import { EquationElementStatic } from "@/components/editor/ui/elements/equation/equation-element-static";
+import { InlineEquationElementStatic } from "@/components/editor/ui/elements/equation/inline-equation-element-static";
 import { ToolbarButton } from "../toolbar";
 import {
   FireLiComponent,

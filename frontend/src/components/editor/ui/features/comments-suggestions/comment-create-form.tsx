@@ -38,13 +38,13 @@ import { useCreateEditor } from "@/components/editor/use-create-editor";
 import type { TComment } from "./comment";
 
 import { AILeaf } from "@/components/editor/ui/features/ai/ai-leaf";
-import { DateElement } from "@/components/editor/ui/elements/date-element";
+import { DateElement } from "@/components/editor/ui/elements/date/date-element";
 import { Editor, EditorContainer } from "@/components/editor/ui/core/editor";
 import { EmojiInputElement } from "@/components/editor/ui/features/emoji/emoji-input-element";
-import { InlineEquationElement } from "@/components/editor/ui/elements/inline-equation-element";
-import { LinkElement } from "@/components/editor/ui/elements/link-element";
-import { MentionElement } from "@/components/editor/ui/elements/mention-element";
-import { MentionInputElement } from "@/components/editor/ui/elements/mention-input-element";
+import { InlineEquationElement } from "@/components/editor/ui/elements/equation/inline-equation-element";
+import { LinkElement } from "@/components/editor/ui/elements/link/link-element";
+import { MentionElement } from "@/components/editor/ui/elements/mention/mention-element";
+import { MentionInputElement } from "@/components/editor/ui/elements/mention/mention-input-element";
 
 export const useCommentEditor = (
   options: Omit<CreatePlateEditorOptions, "plugins"> = {},

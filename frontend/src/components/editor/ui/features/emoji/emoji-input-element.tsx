@@ -17,7 +17,7 @@ import {
   InlineComboboxGroup,
   InlineComboboxInput,
   InlineComboboxItem,
-} from "@/components/editor/ui/menus/inline-combobox";
+} from "@/components/editor/ui/toolbars/inline-combobox";
 
 export function EmojiInputElement(props: PlateElementProps) {
   const { children, editor, element } = props;
