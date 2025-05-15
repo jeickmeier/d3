@@ -187,14 +187,6 @@ export const useCreateEditor = (
 ) => {
   const { data: session } = authClient.useSession();
 
-  if (typeof window !== "undefined") {
-    // Log only on the client
-    console.log(
-      "Client useCreateEditor hookOptions.initialValue:",
-      JSON.stringify(hookOptions.initialValue),
-    );
-  }
-
   const {
     id = "main",
     initialValue: initialValueProp,
@@ -272,14 +264,6 @@ export const useCreateEditor = (
     ],
     [],
   );
-
-  if (typeof window !== "undefined") {
-    // Log only on the client
-    console.log(
-      "Client useCreateEditor final initialValue:",
-      JSON.stringify(initialValueProp ?? defaultValue),
-    );
-  }
 
   const editor = usePlateEditor(
     {

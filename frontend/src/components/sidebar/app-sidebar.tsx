@@ -37,20 +37,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   }, []);
 
   useEffect(() => {
-    if (typeof previousSessionRef.current !== "undefined") {
-      console.log(
-        "AppSidebar: session object reference is the same?",
-        previousSessionRef.current === session,
-      );
-    }
     previousSessionRef.current = session;
   }, [session]);
-
-  console.log("AppSidebar: isPending", isPending);
-  console.log(
-    "AppSidebar: session content",
-    session ? JSON.stringify(session) : String(session),
-  );
 
   const user = React.useMemo(() => {
     if (isPending || !session) {
