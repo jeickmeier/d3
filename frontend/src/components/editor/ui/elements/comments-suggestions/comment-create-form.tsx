@@ -46,6 +46,17 @@ import { InlineEquationElement } from "../equation/inline-equation-element";
 import { LinkElement } from "../link/link-element";
 import { MentionElement } from "../mention/mention-element";
 import { MentionInputElement } from "../mention/mention-input-element";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  COMMENT_TYPES,
+  CommentTypeId,
+} from "../../../plugins/comments/comment-types";
 
 export const useCommentEditor = (
   options: Omit<CreatePlateEditorOptions, "plugins"> = {},
@@ -84,11 +95,15 @@ export function CommentCreateForm({
   className,
   discussionId: discussionIdProp,
   focusOnMount = false,
+  showTypeSelector = true,
+  defaultType = "formatting",
 }: {
   autoFocus?: boolean;
   className?: string;
   discussionId?: string;
   focusOnMount?: boolean;
+  showTypeSelector?: boolean;
+  defaultType?: CommentTypeId;
 }) {
   const discussions = usePluginOption(discussionPlugin, "discussions");
 
@@ -97,6 +112,8 @@ export function CommentCreateForm({
   const discussionId = discussionIdProp ?? commentId;
 
   const userInfo = usePluginOption(userPlugin, "currentUser");
+  const [selectedType, setSelectedType] =
+    React.useState<CommentTypeId>(defaultType);
   const [commentValue, setCommentValue] = React.useState<Value | undefined>();
   const commentContent = React.useMemo(
     () =>
@@ -104,6 +121,16 @@ export function CommentCreateForm({
     [commentValue],
   );
   const commentEditor = useCommentEditor({}, []);
+
+  // Persist last-used comment type for inline form
+  React.useEffect(() => {
+    if (showTypeSelector && typeof window !== "undefined") {
+      const saved = localStorage.getItem("lastCommentType");
+      if (saved) {
+        setSelectedType(saved as CommentTypeId);
+      }
+    }
+  }, [showTypeSelector]);
 
   React.useEffect(() => {
     if (commentEditor && focusOnMount) {
@@ -131,6 +158,7 @@ export function CommentCreateForm({
               discussionId,
               isEdited: false,
               userId: editor.getOption(userPlugin, "currentUserId")!,
+              commentType: selectedType,
             },
           ],
           createdAt: new Date(),
@@ -153,6 +181,7 @@ export function CommentCreateForm({
         discussionId,
         isEdited: false,
         userId: editor.getOption(userPlugin, "currentUserId")!,
+        commentType: selectedType,
       };
 
       // Add reply to discussion comments
@@ -193,6 +222,7 @@ export function CommentCreateForm({
           discussionId: _discussionId,
           isEdited: false,
           userId: editor.getOption(userPlugin, "currentUserId")!,
+          commentType: selectedType,
         },
       ],
       createdAt: new Date(),
@@ -217,10 +247,17 @@ export function CommentCreateForm({
       );
       editor.tf.unsetNodes([getDraftCommentKey()], { at: path });
     });
-  }, [commentValue, commentEditor.tf, discussionId, editor, discussions]);
+  }, [
+    commentValue,
+    commentEditor.tf,
+    discussionId,
+    editor,
+    discussions,
+    selectedType,
+  ]);
 
   return (
-    <div className={cn("flex w-full", className)}>
+    <div className={cn("flex flex-col w-full gap-2", className)}>
       <div className="mt-2 mr-1 shrink-0">
         {/* Replace to your own backend or refer to potion */}
         <Avatar className="size-5">
@@ -228,6 +265,32 @@ export function CommentCreateForm({
           <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
         </Avatar>
       </div>
+
+      {showTypeSelector && (
+        <div className="mt-2 mr-2 shrink-0">
+          <Select
+            value={selectedType}
+            onValueChange={(value) => {
+              const type = value as CommentTypeId;
+              setSelectedType(type);
+              if (typeof window !== "undefined") {
+                localStorage.setItem("lastCommentType", type);
+              }
+            }}
+          >
+            <SelectTrigger className="h-8 w-32">
+              <SelectValue placeholder="Type" />
+            </SelectTrigger>
+            <SelectContent>
+              {COMMENT_TYPES.map((t) => (
+                <SelectItem key={t.id} value={t.id}>
+                  {t.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      )}
 
       <div className="relative flex grow gap-2">
         <Plate
@@ -239,7 +302,7 @@ export function CommentCreateForm({
           <EditorContainer variant="comment">
             <Editor
               variant="comment"
-              className="min-h-[25px] grow pt-0.5 pr-8"
+              className="min-h-[50px] grow pt-2 pr-8"
               onKeyDown={(e: React.KeyboardEvent) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();

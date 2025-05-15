@@ -37,6 +37,8 @@ import {
 import { cn } from "@/lib/utils";
 import { discussionPlugin } from "../../../plugins/comments/discussion-plugin";
 import { userPlugin } from "../../../plugins/user-plugin";
+import type { CommentTypeId } from "../../../plugins/comments/comment-types";
+import { COMMENT_TYPES_MAP } from "../../../plugins/comments/comment-types";
 
 import { useCommentEditor } from "./comment-create-form";
 import { Editor, EditorContainer } from "../../primitives/editor";
@@ -67,6 +69,7 @@ export interface TComment {
   discussionId: string;
   isEdited: boolean;
   userId: string;
+  commentType: CommentTypeId;
 }
 
 export function Comment(props: {
@@ -196,6 +199,16 @@ export function Comment(props: {
           <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
           <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
         </Avatar>
+        {/* Only show badge on first comment */}
+        {index === 0 && (
+          <span
+            className={`ml-1 mr-2 px-1.5 py-[1px] text-[10px] font-medium rounded ${
+              COMMENT_TYPES_MAP[comment.commentType ?? "formatting"].bg
+            }`}
+          >
+            {COMMENT_TYPES_MAP[comment.commentType ?? "formatting"].label}
+          </span>
+        )}
         <h4 className="mx-2 text-sm leading-none font-semibold">
           {/* Replace to your own backend or refer to potion */}
           {userInfo?.name}

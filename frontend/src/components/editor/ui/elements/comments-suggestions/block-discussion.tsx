@@ -36,6 +36,7 @@ import {
 } from "../../../plugins/comments/discussion-plugin";
 import { Comment } from "./comment";
 import { CommentCreateForm } from "./comment-create-form";
+import type { CommentTypeId } from "../../../plugins/comments/comment-types";
 
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;
@@ -80,7 +81,21 @@ const BlockCommentsContent = ({
   const editor = useEditorRef();
 
   const resolvedDiscussions = useResolvedDiscussion(commentNodes, blockPath);
-  const discussionsCount = resolvedDiscussions.length;
+  // Get visible types from plugin options
+  const visibleTypes = usePluginOption(
+    discussionPlugin,
+    "visibleTypes",
+  ) as CommentTypeId[];
+  // Filter discussions by selected types
+  const filteredDiscussions = React.useMemo(
+    () =>
+      resolvedDiscussions.filter((d) => {
+        const type = d.comments[0]?.commentType ?? "formatting";
+        return visibleTypes.includes(type);
+      }),
+    [resolvedDiscussions, visibleTypes],
+  );
+  const discussionsCount = filteredDiscussions.length;
   const activeCommentId = usePluginOption(commentsPlugin, "activeId");
   const isCommenting = activeCommentId === getDraftCommentKey();
   const activeDiscussion =
@@ -89,9 +104,9 @@ const BlockCommentsContent = ({
 
   const noneActive = !activeDiscussion;
 
-  const sortedData = resolvedDiscussions;
+  const sortedData = filteredDiscussions;
 
-  const selected = resolvedDiscussions.some((d) => d.id === activeCommentId);
+  const selected = filteredDiscussions.some((d) => d.id === activeCommentId);
 
   const [_open, setOpen] = React.useState(selected);
 
@@ -124,13 +139,7 @@ const BlockCommentsContent = ({
 
     return editor.api.toDOMNode(activeNode[0])!;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    open,
-    activeCommentId,
-    editor.api,
-    commentNodes,
-    draftCommentNode,
-  ]);
+  }, [open, activeCommentId, editor.api, commentNodes, draftCommentNode]);
 
   if (discussionsCount === 0 && !draftCommentNode)
     return <div className="w-full">{children}</div>;
@@ -200,7 +209,9 @@ const BlockCommentsContent = ({
               >
                 <MessageSquareTextIcon className="size-4 shrink-0" />
 
-                <span className="text-xs font-semibold">{discussionsCount}</span>
+                <span className="text-xs font-semibold">
+                  {discussionsCount}
+                </span>
               </Button>
             </PopoverTrigger>
           </div>
@@ -234,7 +245,12 @@ export const BlockComment = ({
             showDocumentContent
           />
         ))}
-        <CommentCreateForm discussionId={discussion.id} />
+        {/* Reply form: inherit parent type, hide selector */}
+        <CommentCreateForm
+          discussionId={discussion.id}
+          showTypeSelector={false}
+          defaultType={discussion.comments[0]?.commentType ?? "formatting"}
+        />
       </div>
 
       {!isLast && <div className="h-px w-full bg-muted" />}

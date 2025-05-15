@@ -2,10 +2,20 @@
 
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
-// import { Textarea } from "@/components/ui/textarea"; // Commented out for now
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/components/ui/select";
+import {
+  COMMENT_TYPES,
+  CommentTypeId,
+} from "@/components/editor/plugins/comments/comment-types";
 
 interface DocumentCommentFormProps {
-  onAddComment: (commentText: string) => void;
+  onAddComment: (commentText: string, commentType: CommentTypeId) => void;
   placeholder?: string;
 }
 
@@ -14,11 +24,12 @@ export const DocumentCommentForm: React.FC<DocumentCommentFormProps> = ({
   placeholder = "Add a document comment...",
 }) => {
   const [commentText, setCommentText] = useState("");
+  const [selectedType, setSelectedType] = useState<CommentTypeId>("formatting");
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (commentText.trim()) {
-      onAddComment(commentText.trim());
+      onAddComment(commentText.trim(), selectedType);
       setCommentText("");
     }
   };
@@ -29,6 +40,23 @@ export const DocumentCommentForm: React.FC<DocumentCommentFormProps> = ({
 
   return (
     <form onSubmit={handleSubmit} className="mt-4 mb-2 border-t pt-4">
+      <div className="mb-2 flex space-x-2">
+        <Select
+          value={selectedType}
+          onValueChange={(value) => setSelectedType(value as CommentTypeId)}
+        >
+          <SelectTrigger className="h-8 w-full">
+            <SelectValue placeholder="Type" />
+          </SelectTrigger>
+          <SelectContent>
+            {COMMENT_TYPES.map((t) => (
+              <SelectItem key={t.id} value={t.id}>
+                {t.label}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
       <textarea // Changed to standard HTML textarea
         value={commentText}
         onChange={handleInputChange}

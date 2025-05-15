@@ -5,6 +5,7 @@ import type { TComment } from "../../ui/elements/comments-suggestions/comment";
 import { createPlatePlugin } from "@udecode/plate/react";
 
 import { BlockDiscussion } from "../../ui/elements/comments-suggestions/block-discussion";
+import { COMMENT_TYPES, CommentTypeId } from "./comment-types";
 
 export interface TDiscussion {
   id: string;
@@ -18,6 +19,7 @@ export interface TDiscussion {
 // Options for the discussion plugin
 export interface DiscussionPluginOptions {
   discussions: TDiscussion[];
+  visibleTypes: CommentTypeId[];
 }
 
 // This plugin is purely UI. It's only used to store the discussions and users data
@@ -28,5 +30,6 @@ export const discussionPlugin = createPlatePlugin<
   key: "discussion",
   options: {
     discussions: [],
+    visibleTypes: COMMENT_TYPES.map((t) => t.id),
   },
 }).configure({ render: { aboveNodes: BlockDiscussion } });

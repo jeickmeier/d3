@@ -1,9 +1,15 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useCommentsSidebar } from "@/components/editor/core/CommentsSidebarContext";
 import { Button } from "@/components/ui/button";
-import { MessageSquareReplyIcon, XIcon } from "lucide-react";
+import { MessageSquareReplyIcon, XIcon, FilterIcon } from "lucide-react";
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   usePluginOption,
   ParagraphPlugin,
@@ -22,6 +28,9 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatCommentDate } from "@/components/editor/ui/elements/comments-suggestions/comment";
 import { nanoid } from "nanoid";
 import { DocumentCommentForm } from "./DocumentCommentForm";
+import type { CommentTypeId } from "@/components/editor/plugins/comments/comment-types";
+import { COMMENT_TYPES_MAP } from "@/components/editor/plugins/comments/comment-types";
+import { COMMENT_TYPES } from "@/components/editor/plugins/comments/comment-types";
 
 // Helper to get user initials for AvatarFallback
 const getUserInitials = (name?: string) => {
@@ -43,8 +52,25 @@ export const CommentsSidebar: React.FC = () => {
   >(null);
   const [replyText, setReplyText] = useState<string>("");
 
-  // prettier-ignore
-  const discussions = (usePluginOption(discussionPlugin, "discussions") ?? []) as TDiscussion[];
+  // All comments and filter state
+  const visibleTypes = usePluginOption(
+    discussionPlugin,
+    "visibleTypes",
+  ) as CommentTypeId[];
+  const allDiscussions = usePluginOption(
+    discussionPlugin,
+    "discussions",
+  ) as TDiscussion[];
+  // Filter discussions based on selected types
+  const discussions = React.useMemo(
+    () =>
+      allDiscussions.filter((d) =>
+        d.comments.some((c) =>
+          visibleTypes.includes(c.commentType ?? "formatting"),
+        ),
+      ),
+    [allDiscussions, visibleTypes],
+  );
 
   const users = usePluginOption(userPlugin, "users") ?? {};
 
@@ -53,7 +79,10 @@ export const CommentsSidebar: React.FC = () => {
     "currentUserId",
   );
 
-  const handleAddDocumentComment = (text: string) => {
+  const handleAddDocumentComment = (
+    text: string,
+    commentType: CommentTypeId,
+  ) => {
     if (!editor || !currentUserId) {
       console.error(
         "Editor or current user not available for adding document comment",
@@ -77,6 +106,7 @@ export const CommentsSidebar: React.FC = () => {
       createdAt: new Date(),
       userId: currentUserId,
       isEdited: false,
+      commentType,
     };
 
     const newDiscussion: TDiscussion = {
@@ -106,26 +136,32 @@ export const CommentsSidebar: React.FC = () => {
     }
 
     const commentId = nanoid();
-    const newCommentContent: Value = [
+    const newReplyContent: Value = [
       {
         type: ParagraphPlugin.key as string,
         children: [{ text: text.trim() }],
       },
     ];
 
-    const newReplyComment: TComment = {
-      id: commentId,
-      discussionId,
-      contentRich: newCommentContent,
-      createdAt: new Date(),
-      userId: currentUserId,
-      isEdited: false,
-    };
-
+    // Derive reply type from the parent discussion (default to formatting)
     const currentDiscussions = (editor.getOption(
       discussionPlugin,
       "discussions",
     ) ?? []) as TDiscussion[];
+    const parentDiscussion = currentDiscussions.find(
+      (d) => d.id === discussionId,
+    );
+    const replyType: CommentTypeId =
+      parentDiscussion?.comments?.[0]?.commentType ?? "formatting";
+    const newReplyComment: TComment = {
+      id: commentId,
+      discussionId,
+      contentRich: newReplyContent,
+      createdAt: new Date(),
+      userId: currentUserId,
+      isEdited: false,
+      commentType: replyType,
+    };
 
     const updatedDiscussions = currentDiscussions.map((discussion) => {
       if (discussion.id === discussionId) {
@@ -142,6 +178,19 @@ export const CommentsSidebar: React.FC = () => {
     setActiveReplyDiscussionId(null);
   };
 
+  // On mount, load persisted filter settings
+  useEffect(() => {
+    const saved = localStorage.getItem("visibleTypes");
+    if (saved) {
+      try {
+        const parsed: CommentTypeId[] = JSON.parse(saved);
+        editor.setOption(discussionPlugin, "visibleTypes", parsed);
+      } catch {
+        // ignore parse errors
+      }
+    }
+  }, [editor]);
+
   if (!isCommentsSidebarOpen) {
     return null;
   }
@@ -150,14 +199,48 @@ export const CommentsSidebar: React.FC = () => {
     <div className="fixed top-0 right-0 h-full w-96 bg-white border-l border-gray-200 shadow-lg z-[60] p-4 flex flex-col">
       <div className="flex justify-between items-center mb-4 pb-2 border-b">
         <h2 className="text-lg font-semibold">Comments</h2>
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsCommentsSidebarOpen(false)}
-          aria-label="Close comments sidebar"
-        >
-          <XIcon className="h-5 w-5" />
-        </Button>
+        <div className="flex items-center space-x-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Filter comments">
+                <FilterIcon className="h-5 w-5" />
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-50 p-2">
+              {COMMENT_TYPES.map((t) => (
+                <div key={t.id} className="flex items-center space-x-2 p-1">
+                  <Checkbox
+                    checked={visibleTypes.includes(t.id)}
+                    onCheckedChange={(checked) => {
+                      const isChecked = checked === true;
+                      const newVisible = isChecked
+                        ? [...visibleTypes, t.id]
+                        : visibleTypes.filter((id) => id !== t.id);
+                      editor.setOption(
+                        discussionPlugin,
+                        "visibleTypes",
+                        newVisible,
+                      );
+                      localStorage.setItem(
+                        "visibleTypes",
+                        JSON.stringify(newVisible),
+                      );
+                    }}
+                  />
+                  <span className="text-sm">{t.label}</span>
+                </div>
+              ))}
+            </PopoverContent>
+          </Popover>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setIsCommentsSidebarOpen(false)}
+            aria-label="Close comments sidebar"
+          >
+            <XIcon className="h-5 w-5" />
+          </Button>
+        </div>
       </div>
       <div className="flex-grow overflow-y-auto space-y-6 pr-2 scrollbar-thin scrollbar-thumb-gray-300 hover:scrollbar-thumb-gray-400">
         {discussions.length === 0 && (
@@ -186,6 +269,8 @@ export const CommentsSidebar: React.FC = () => {
                   new Date(comment.createdAt),
                 );
                 const indentationClass = commentIndex > 0 ? "ml-6" : "";
+                const badge =
+                  COMMENT_TYPES_MAP[comment.commentType ?? "formatting"];
 
                 return (
                   <div
@@ -203,9 +288,19 @@ export const CommentsSidebar: React.FC = () => {
                     </Avatar>
                     <div className="flex-1 bg-gray-50 p-2.5 rounded-md shadow-sm border border-gray-100">
                       <div className="flex justify-between items-center mb-1">
-                        <span className="text-xs font-semibold text-gray-700">
-                          {user?.name || "Anonymous"}
-                        </span>
+                        <div className="flex items-center space-x-1">
+                          {/* Only show badge for the first comment */}
+                          {commentIndex === 0 && (
+                            <span
+                              className={`px-1.5 text-[10px] font-medium rounded ${badge.bg}`}
+                            >
+                              {badge.label}
+                            </span>
+                          )}
+                          <span className="text-xs font-semibold text-gray-700">
+                            {user?.name || "Anonymous"}
+                          </span>
+                        </div>
                         <span className="text-xs text-gray-400">
                           {formattedDate}
                         </span>
