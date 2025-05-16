@@ -19,6 +19,15 @@ import {
 
 import { useSharedSession } from "@/lib/auth/use-shared-session";
 
+// Define typed session interface to avoid unsafe any
+interface UserSession {
+  user: {
+    name: string;
+    email: string;
+    image: string | null;
+  };
+}
+
 // This is sample data.
 const data = {
   navMain: [],
@@ -28,11 +37,10 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const { open } = useSidebar();
   const sessionState = useSharedSession();
   const isPending = sessionState.status === "loading";
-  const session = sessionState.status === "ready" ? sessionState.data : null;
+  const session: UserSession | null =
+    sessionState.status === "ready" ? (sessionState.data as UserSession) : null;
   const [isClient, setIsClient] = useState(false);
-  const previousSessionRef = React.useRef<typeof session | undefined>(
-    undefined,
-  );
+  const previousSessionRef = React.useRef<UserSession | null>(null);
 
   useEffect(() => {
     setIsClient(true);
@@ -51,9 +59,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       };
     }
     return {
-      name: session?.user?.name || "",
-      email: session?.user?.email || "",
-      image: session?.user?.image || "",
+      name: session.user.name || "",
+      email: session.user.email || "",
+      image: session.user.image || "",
     };
   }, [session, isPending]);
 

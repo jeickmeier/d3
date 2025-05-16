@@ -106,10 +106,11 @@ export const NavUser = React.memo(function NavUser({ user }: NavUserProps) {
             <DropdownMenuSeparator />
 
             <DropdownMenuItem
-              onSelect={async (event) => {
+              onSelect={(event) => {
                 event.preventDefault();
-                await authClient.signOut();
-                window.location.reload();
+                void authClient.signOut().then(() => {
+                  window.location.reload();
+                });
               }}
             >
               <div className="flex items-center w-full">
