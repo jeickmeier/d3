@@ -34,9 +34,10 @@ import {
   type TDiscussion,
   discussionPlugin,
 } from "../../../plugins/comments/discussion-plugin";
+import { useVisibleCommentTypes } from "../../../plugins/comments/useVisibleCommentTypes";
+import { filterDiscussionsByTypes } from "../../../plugins/comments/discussion-utils";
 import { Comment } from "./comment";
 import { CommentCreateForm } from "./comment-create-form";
-import type { CommentTypeId } from "../../../plugins/comments/comment-types";
 
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;
@@ -81,18 +82,11 @@ const BlockCommentsContent = ({
   const editor = useEditorRef();
 
   const resolvedDiscussions = useResolvedDiscussion(commentNodes, blockPath);
-  // Get visible types from plugin options
-  const visibleTypes = usePluginOption(
-    discussionPlugin,
-    "visibleTypes",
-  ) as CommentTypeId[];
+  // Get visible types via shared hook
+  const [visibleTypes] = useVisibleCommentTypes();
   // Filter discussions by selected types
   const filteredDiscussions = React.useMemo(
-    () =>
-      resolvedDiscussions.filter((d) => {
-        const type = d.comments[0]?.commentType ?? "formatting";
-        return visibleTypes.includes(type);
-      }),
+    () => filterDiscussionsByTypes(resolvedDiscussions, visibleTypes),
     [resolvedDiscussions, visibleTypes],
   );
   const discussionsCount = filteredDiscussions.length;

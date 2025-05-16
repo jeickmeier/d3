@@ -86,7 +86,7 @@ import { CodeLineElementStatic } from "../../elements/code/code-line-element-sta
 import { CodeSyntaxLeafStatic } from "../../elements/code/code-syntax-leaf-static";
 import { ColumnElementStatic } from "../../elements/layout/column-element-static";
 import { ColumnGroupElementStatic } from "../../elements/layout/column-group-element-static";
-import { CommentLeafStatic } from "../../elements/comments-suggestions/comment-leaf-static";
+import { CommentLeafStatic } from "../../elements/comments-suggestions/comment-leaf";
 import { DateElementStatic } from "../../elements/date/date-element-static";
 import { HeadingElementStatic } from "../../elements/heading/heading-element-static";
 import { HighlightLeafStatic } from "../../elements/leafs/highlight-leaf-static";

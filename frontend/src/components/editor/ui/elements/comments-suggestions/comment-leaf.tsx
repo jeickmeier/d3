@@ -15,9 +15,27 @@ import {
 import { cn } from "@/lib/utils";
 import { commentsPlugin } from "../../../plugins/comments/comments-plugin";
 
-export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
-  const { children, leaf } = props;
+export interface CommentLeafProps extends PlateLeafProps<TCommentText> {
+  /**
+   * When true (default) the leaf includes interactive behaviour (hover / active
+   * highlighting and event handlers). When false, it renders a simplified
+   * static appearance suitable for export or read-only contexts.
+   */
+  interactive?: boolean;
+}
 
+export function CommentLeaf(props: CommentLeafProps) {
+  const {
+    children,
+    leaf,
+    interactive = true,
+    ...rest
+  } = props as CommentLeafProps & {
+    leaf: TCommentText;
+  };
+
+  // Always call hooks (React hook rules) but we will only use them in
+  // interactive mode.
   const { api, setOption } = useEditorPlugin(commentsPlugin);
   const hoverId = usePluginOption(commentsPlugin, "hoverId");
   const activeId = usePluginOption(commentsPlugin, "activeId");
@@ -27,9 +45,27 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
   const isActive = activeId === currentId;
   const isHover = hoverId === currentId;
 
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Static mode – no interactive handlers, simpler styling
+  // ─────────────────────────────────────────────────────────────────────────────
+  if (!interactive) {
+    return (
+      <PlateLeaf
+        {...(rest as PlateLeafProps<TCommentText>)}
+        className="border-b-2 border-b-highlight/35 bg-highlight/15"
+      >
+        {children}
+      </PlateLeaf>
+    );
+  }
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Interactive mode (existing behaviour)
+  // ─────────────────────────────────────────────────────────────────────────────
+
   return (
     <PlateLeaf
-      {...props}
+      {...(rest as PlateLeafProps<TCommentText>)}
       className={cn(
         "border-b-2 border-b-highlight/[.36] bg-highlight/[.13] transition-colors duration-200",
         (isHover || isActive) && "border-b-highlight bg-highlight/25",
@@ -39,7 +75,7 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
           "border-b-highlight bg-highlight/45",
       )}
       attributes={{
-        ...props.attributes,
+        ...rest.attributes,
         onClick: () => setOption("activeId", currentId ?? null),
         onMouseEnter: () => setOption("hoverId", currentId ?? null),
         onMouseLeave: () => setOption("hoverId", null),
@@ -49,3 +85,13 @@ export function CommentLeaf(props: PlateLeafProps<TCommentText>) {
     </PlateLeaf>
   );
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Static / read-only alias – used in export or PDF generation where no
+// interactive behaviour is wanted. This avoids repeating the
+// `interactive={false}` prop at every call-site.
+// ─────────────────────────────────────────────────────────────────────────────
+export const CommentLeafStatic = (props: CommentLeafProps) => (
+  <CommentLeaf {...props} interactive={false} />
+);
+CommentLeafStatic.displayName = "CommentLeafStatic";

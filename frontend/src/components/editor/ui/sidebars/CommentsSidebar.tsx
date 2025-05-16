@@ -9,166 +9,49 @@ import {
   PopoverTrigger,
   PopoverContent,
 } from "@/components/ui/popover";
-import { Checkbox } from "@/components/ui/checkbox";
-import {
-  usePluginOption,
-  useEditorRef,
-  type PlateEditor,
-} from "@udecode/plate/react";
-import type { Value } from "@udecode/plate";
-import type { TComment } from "../elements/comments-suggestions/comment";
+import { usePluginOption } from "@udecode/plate/react";
 import {
   discussionPlugin,
   type TDiscussion,
 } from "@/components/editor/plugins/comments/discussion-plugin";
-import { userPlugin } from "@/components/editor/plugins/user-plugin";
-import { nanoid } from "nanoid";
-import { DocumentCommentForm } from "./DocumentCommentForm";
-import type { CommentTypeId } from "@/components/editor/plugins/comments/comment-types";
-import { COMMENT_TYPES } from "@/components/editor/plugins/comments/comment-types";
+import { CommentCreateForm } from "@/components/editor/ui/elements/comments-suggestions/comment-create-form";
 import { Comment } from "@/components/editor/ui/elements/comments-suggestions/comment";
-import { CommentForm } from "@/components/editor/ui/elements/comments-suggestions/comment-form";
+import { useVisibleCommentTypes } from "@/components/editor/plugins/comments/useVisibleCommentTypes";
+import { filterDiscussionsByTypes } from "@/components/editor/plugins/comments/discussion-utils";
+import { CommentTypeFilterList } from "@/components/editor/ui/elements/comments-suggestions/comment-type-filter-list";
 
-// Sidebar width in pixels (approx 1.7 * 24rem ≈ 650px)
-const SIDEBAR_WIDTH = 680; // px
+// Width is encoded in Tailwind arbitrary size w-[42.5rem]
 
 export const CommentsSidebar: React.FC = () => {
   const { isCommentsSidebarOpen, setIsCommentsSidebarOpen } =
     useCommentsSidebar();
-  const editor: PlateEditor = useEditorRef();
 
   const [activeReplyDiscussionId, setActiveReplyDiscussionId] = useState<
     string | null
   >(null);
 
+  // No-op setter for read-only comment components
+  const noopSetEditingId = React.useCallback<
+    React.Dispatch<React.SetStateAction<string | null>>
+  >(() => {}, []);
+
   // All comments and filter state
-  const visibleTypes = usePluginOption(
-    discussionPlugin,
-    "visibleTypes",
-  ) as CommentTypeId[];
+  const [visibleTypes, setVisibleTypes] = useVisibleCommentTypes();
   const allDiscussions = usePluginOption(
     discussionPlugin,
     "discussions",
   ) as TDiscussion[];
-  // Filter discussions based on selected types
   const discussions = React.useMemo(
-    () =>
-      allDiscussions.filter((d) =>
-        d.comments.some((c) =>
-          visibleTypes.includes(c.commentType ?? "formatting"),
-        ),
-      ),
+    () => filterDiscussionsByTypes(allDiscussions, visibleTypes),
     [allDiscussions, visibleTypes],
   );
-
-  const currentUserId: string | undefined = usePluginOption(
-    userPlugin,
-    "currentUserId",
-  );
-
-  // State to support editing (disabled in sidebar but required by Comment API)
-  const [editingId, setEditingId] = React.useState<string | null>(null);
-
-  const handleAddDocumentComment = (
-    content: Value,
-    commentType: CommentTypeId,
-  ) => {
-    if (!editor || !currentUserId) {
-      console.error(
-        "Editor or current user not available for adding document comment",
-      );
-      return;
-    }
-    const discussionId = nanoid();
-    const commentId = nanoid();
-
-    const newCommentContent: Value = content;
-
-    const newComment: TComment = {
-      id: commentId,
-      discussionId,
-      contentRich: newCommentContent,
-      createdAt: new Date(),
-      userId: currentUserId,
-      isEdited: false,
-      commentType,
-    };
-
-    const newDiscussion: TDiscussion = {
-      id: discussionId,
-      comments: [newComment],
-      createdAt: new Date(),
-      isResolved: false,
-      userId: currentUserId,
-      documentContent: undefined,
-    };
-
-    const currentDiscussionsFromEditor = (editor.getOption(
-      discussionPlugin,
-      "discussions",
-    ) ?? []) as TDiscussion[];
-    const updatedDiscussions = [...currentDiscussionsFromEditor, newDiscussion];
-
-    editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
-  };
-
-  const handleAddReplyToDiscussion = (
-    discussionId: string,
-    content: Value,
-    commentType: CommentTypeId,
-  ) => {
-    if (!editor || !currentUserId) {
-      console.error("Editor or current user not available for adding reply");
-      return;
-    }
-
-    const commentId = nanoid();
-
-    const newReplyComment: TComment = {
-      id: commentId,
-      discussionId,
-      contentRich: content,
-      createdAt: new Date(),
-      userId: currentUserId,
-      isEdited: false,
-      commentType,
-    };
-
-    const currentDiscussions = (editor.getOption(
-      discussionPlugin,
-      "discussions",
-    ) ?? []) as TDiscussion[];
-
-    const updatedDiscussions = currentDiscussions.map((d) =>
-      d.id === discussionId
-        ? { ...d, comments: [...d.comments, newReplyComment] }
-        : d,
-    );
-
-    editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
-    setActiveReplyDiscussionId(null);
-  };
-
-  // On mount, load persisted filter settings
-  useEffect(() => {
-    const saved = localStorage.getItem("visibleTypes");
-    if (saved) {
-      try {
-        const parsed: CommentTypeId[] = JSON.parse(saved);
-        editor.setOption(discussionPlugin, "visibleTypes", parsed);
-      } catch {
-        // ignore parse errors
-      }
-    }
-  }, [editor]);
 
   // Side-effect: when sidebar is open, add right padding to body to make room
   useEffect(() => {
     if (isCommentsSidebarOpen) {
-      const prevPadding = document.body.style.paddingRight;
-      document.body.style.paddingRight = `${SIDEBAR_WIDTH}px`;
+      document.body.classList.add("pr-[42.5rem]");
       return () => {
-        document.body.style.paddingRight = prevPadding;
+        document.body.classList.remove("pr-[42.5rem]");
       };
     }
   }, [isCommentsSidebarOpen]);
@@ -178,10 +61,7 @@ export const CommentsSidebar: React.FC = () => {
   }
 
   return (
-    <div
-      className="fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-lg z-[60] p-4 flex flex-col"
-      style={{ width: `${SIDEBAR_WIDTH}px` }}
-    >
+    <div className="fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-lg z-[60] p-4 flex flex-col w-[42.5rem]">
       <div className="flex justify-between items-center mb-4 pb-2 border-b">
         <h2 className="text-lg font-semibold">Comments</h2>
         <div className="flex items-center space-x-2">
@@ -192,29 +72,10 @@ export const CommentsSidebar: React.FC = () => {
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-50 p-2">
-              {COMMENT_TYPES.map((t) => (
-                <div key={t.id} className="flex items-center space-x-2 p-1">
-                  <Checkbox
-                    checked={visibleTypes.includes(t.id)}
-                    onCheckedChange={(checked) => {
-                      const isChecked = checked === true;
-                      const newVisible = isChecked
-                        ? [...visibleTypes, t.id]
-                        : visibleTypes.filter((id) => id !== t.id);
-                      editor.setOption(
-                        discussionPlugin,
-                        "visibleTypes",
-                        newVisible,
-                      );
-                      localStorage.setItem(
-                        "visibleTypes",
-                        JSON.stringify(newVisible),
-                      );
-                    }}
-                  />
-                  <span className="text-sm">{t.label}</span>
-                </div>
-              ))}
+              <CommentTypeFilterList
+                visibleTypes={visibleTypes}
+                onChange={setVisibleTypes}
+              />
             </PopoverContent>
           </Popover>
           <Button
@@ -249,15 +110,14 @@ export const CommentsSidebar: React.FC = () => {
                   key={comment.id}
                   comment={comment}
                   discussionLength={discussion.comments.length}
-                  editingId={editingId}
+                  editingId={null}
                   index={commentIndex}
-                  setEditingId={setEditingId}
+                  setEditingId={noopSetEditingId}
                   documentContent={discussion.documentContent}
                   showDocumentContent={
                     commentIndex === 0 && !!discussion.documentContent
                   }
                   enableEditing={false}
-                  onEditorClick={undefined}
                 />
               ))}
               <div className="mt-2 pl-9">
@@ -276,12 +136,12 @@ export const CommentsSidebar: React.FC = () => {
                 )}
                 {activeReplyDiscussionId === discussion.id && (
                   <div className="mt-2">
-                    <CommentForm
-                      onSubmit={(value, type) =>
-                        handleAddReplyToDiscussion(discussion.id, value, type)
+                    <CommentCreateForm
+                      discussionId={discussion.id}
+                      showTypeSelector={false}
+                      defaultType={
+                        discussion.comments[0]?.commentType ?? "formatting"
                       }
-                      placeholder="Write a reply..."
-                      submitLabel="Send"
                       className="pr-8"
                     />
                     <div className="flex justify-end mt-1">
@@ -301,7 +161,7 @@ export const CommentsSidebar: React.FC = () => {
           );
         })}
       </div>
-      <DocumentCommentForm onAddComment={handleAddDocumentComment} />
+      <CommentCreateForm className="pr-8" />
     </div>
   );
 };

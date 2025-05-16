@@ -4,13 +4,8 @@ import * as React from "react";
 
 import type { Value } from "@udecode/plate";
 
-import { useEditorRef, usePluginOption } from "@udecode/plate/react";
-import {
-  differenceInDays,
-  differenceInHours,
-  differenceInMinutes,
-  format,
-} from "date-fns";
+import { usePluginOption } from "@udecode/plate/react";
+import { formatCommentDate } from "@/lib/date";
 import {
   CheckIcon,
   MoreHorizontalIcon,
@@ -19,7 +14,6 @@ import {
   XIcon,
 } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -29,30 +23,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { discussionPlugin } from "../../../plugins/comments/discussion-plugin";
 import { userPlugin } from "../../../plugins/user-plugin";
 import type { CommentTypeId } from "../../../plugins/comments/comment-types";
 import { COMMENT_TYPES_MAP } from "../../../plugins/comments/comment-types";
 import { MiniPlateEditor } from "@/components/editor/MiniPlateEditor";
-
-export const formatCommentDate = (date: Date) => {
-  const now = new Date();
-  const diffMinutes = differenceInMinutes(now, date);
-  const diffHours = differenceInHours(now, date);
-  const diffDays = differenceInDays(now, date);
-
-  if (diffMinutes < 60) {
-    return `${diffMinutes}m`;
-  }
-  if (diffHours < 24) {
-    return `${diffHours}h`;
-  }
-  if (diffDays < 2) {
-    return `${diffDays}d`;
-  }
-
-  return format(date, "MM/dd/yyyy");
-};
+import { useDiscussionMutations } from "../../../plugins/comments/useDiscussionMutations";
+import { CommentAvatar } from "@/components/ui/comment-avatar";
 
 export interface TComment {
   id: string;
@@ -72,7 +48,6 @@ export function Comment(props: {
   setEditingId: React.Dispatch<React.SetStateAction<string | null>>;
   documentContent?: string;
   showDocumentContent?: boolean;
-  onEditorClick?: () => void;
   /** Disable editing capabilities (e.g., sidebar view). */
   enableEditing?: boolean;
 }) {
@@ -84,41 +59,13 @@ export function Comment(props: {
     index,
     setEditingId,
     showDocumentContent = false,
-    onEditorClick,
     enableEditing = true,
   } = props;
 
-  const editor = useEditorRef();
   const userInfo = usePluginOption(userPlugin, "user", comment.userId);
   const currentUserId = usePluginOption(userPlugin, "currentUserId");
 
-  const updateComment = async (input: {
-    id: string;
-    contentRich: Value;
-    discussionId: string;
-    isEdited: boolean;
-  }) => {
-    const updatedDiscussions = editor
-      .getOption(discussionPlugin, "discussions")
-      .map((discussion) => {
-        if (discussion.id === input.discussionId) {
-          const updatedComments = discussion.comments.map((comment) => {
-            if (comment.id === input.id) {
-              return {
-                ...comment,
-                contentRich: input.contentRich,
-                isEdited: true,
-                updatedAt: new Date(),
-              };
-            }
-            return comment;
-          });
-          return { ...discussion, comments: updatedComments };
-        }
-        return discussion;
-      });
-    editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
-  };
+  const { updateComment: updateCommentMutation } = useDiscussionMutations();
 
   // Replace to your own backend or refer to potion
   const isMyComment = currentUserId === comment.userId;
@@ -142,12 +89,7 @@ export function Comment(props: {
   };
 
   const onSave = () => {
-    void updateComment({
-      id: comment.id,
-      contentRich: editingValue,
-      discussionId: comment.discussionId,
-      isEdited: true,
-    });
+    void updateCommentMutation(comment.id, comment.discussionId, editingValue);
     setEditingId(null);
   };
 
@@ -164,10 +106,7 @@ export function Comment(props: {
       onMouseLeave={() => setHovering(false)}
     >
       <div className="relative flex items-center">
-        <Avatar className="size-5">
-          <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
-          <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
-        </Avatar>
+        <CommentAvatar name={userInfo?.name} avatarUrl={userInfo?.avatarUrl} />
         {/* Only show badge on first comment */}
         {index === 0 && (
           <span
@@ -266,7 +205,6 @@ export function Comment(props: {
             value={initialValue}
             readOnly
             className="w-auto grow"
-            onClick={() => onEditorClick?.()}
           />
         )}
       </div>
@@ -283,41 +221,9 @@ interface CommentMoreDropdownProps {
 export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
   const { comment, dropdownOpen, setDropdownOpen, setEditingId } = props;
 
-  const editor = useEditorRef();
+  const { deleteComment: deleteCommentMutation } = useDiscussionMutations();
 
   const selectedEditCommentRef = React.useRef<boolean>(false);
-
-  const onDeleteComment = React.useCallback(() => {
-    if (!comment.id)
-      return alert("You are operating too quickly, please try again later.");
-
-    // Find and update the discussion
-    const updatedDiscussions = editor
-      .getOption(discussionPlugin, "discussions")
-      .map((discussion) => {
-        if (discussion.id !== comment.discussionId) {
-          return discussion;
-        }
-
-        const commentIndex = discussion.comments.findIndex(
-          (c) => c.id === comment.id,
-        );
-        if (commentIndex === -1) {
-          return discussion;
-        }
-
-        return {
-          ...discussion,
-          comments: [
-            ...discussion.comments.slice(0, commentIndex),
-            ...discussion.comments.slice(commentIndex + 1),
-          ],
-        };
-      });
-
-    // Save back to session storage
-    editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
-  }, [comment.discussionId, comment.id, editor]);
 
   const onEditComment = React.useCallback(() => {
     selectedEditCommentRef.current = true;
@@ -327,6 +233,14 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
 
     setEditingId(comment.id);
   }, [comment.id, setEditingId]);
+
+  const onDeleteComment = React.useCallback(() => {
+    if (!comment.id) {
+      alert("You are operating too quickly, please try again later.");
+      return;
+    }
+    deleteCommentMutation(comment.id, comment.discussionId);
+  }, [comment.id, comment.discussionId, deleteCommentMutation]);
 
   return (
     <DropdownMenu

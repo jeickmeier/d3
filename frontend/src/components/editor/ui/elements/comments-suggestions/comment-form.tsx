@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
+import { usePersistentState } from "@/hooks/usePersistentState";
 
 import { NodeApi, type Value } from "@udecode/plate";
 import { ArrowUpIcon } from "lucide-react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CommentAvatar } from "@/components/ui/comment-avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { MiniPlateEditor } from "@/components/editor/MiniPlateEditor";
@@ -60,17 +61,11 @@ export const CommentForm: React.FC<CommentFormProps> = ({
   user,
 }) => {
   // Track selected type and editor value
-  const [selectedType, setSelectedType] =
-    React.useState<CommentTypeId>(defaultType);
+  const [selectedType, setSelectedType] = usePersistentState<CommentTypeId>(
+    "lastCommentType",
+    defaultType,
+  );
   const [value, setValue] = React.useState<Value | undefined>();
-
-  // Persist last-used type when enabled
-  React.useEffect(() => {
-    if (showTypeSelector && typeof window !== "undefined") {
-      const saved = localStorage.getItem("lastCommentType");
-      if (saved) setSelectedType(saved as CommentTypeId);
-    }
-  }, [showTypeSelector]);
 
   // Derive plain-text content for disabled / submit checks
   const plainContent = React.useMemo(
@@ -89,13 +84,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
     <div className={cn("flex flex-col w-full gap-2", className)}>
       {!hideAvatar && (
         <div className="mt-2 shrink-0">
-          <Avatar className="size-5">
-            <AvatarImage
-              alt={user?.name ?? undefined}
-              src={user?.avatarUrl ?? undefined}
-            />
-            <AvatarFallback>{user?.name?.[0]}</AvatarFallback>
-          </Avatar>
+          <CommentAvatar name={user?.name} avatarUrl={user?.avatarUrl} />
         </div>
       )}
 
@@ -106,9 +95,6 @@ export const CommentForm: React.FC<CommentFormProps> = ({
             onValueChange={(val) => {
               const type = val as CommentTypeId;
               setSelectedType(type);
-              if (typeof window !== "undefined") {
-                localStorage.setItem("lastCommentType", type);
-              }
             }}
           >
             <SelectTrigger className="h-8 w-32">
