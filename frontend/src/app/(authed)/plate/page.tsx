@@ -9,6 +9,14 @@ import { CommentsSidebarProvider } from "@/components/editor/features/comments/C
 // import { CommentsSidebar } from "@/components/editor/ui/sidebars/CommentsSidebar"; // Removed import
 import { useSharedSession } from "@/lib/auth/use-shared-session";
 
+interface UserSession {
+  user: {
+    id: string;
+    name: string | null;
+    image: string | null;
+  };
+}
+
 export default function Page() {
   const [isClient, setIsClient] = useState(false);
 
@@ -21,7 +29,8 @@ export default function Page() {
   const sessionLoading = sessionState.status === "loading";
   const sessionError =
     sessionState.status === "error" ? sessionState.error : null;
-  const session = sessionState.status === "ready" ? sessionState.data : null;
+  const session: UserSession | null =
+    sessionState.status === "ready" ? (sessionState.data as UserSession) : null;
 
   // Memoize currentUser to prevent unnecessary re-renders of PlateEditor
   const currentUser = useMemo(() => {
