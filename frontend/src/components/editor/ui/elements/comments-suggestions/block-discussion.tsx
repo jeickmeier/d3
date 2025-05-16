@@ -176,7 +176,7 @@ const BlockCommentsContent = ({
           side="bottom"
         >
           {isCommenting ? (
-            <CommentCreateForm className="p-4" focusOnMount />
+            <CommentCreateForm className="p-4" />
           ) : (
             <React.Fragment>
               {noneActive ? (

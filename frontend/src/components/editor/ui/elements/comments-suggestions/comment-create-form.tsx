@@ -2,106 +2,35 @@
 
 import * as React from "react";
 
-import { withProps } from "@udecode/cn";
-import { type Value, nanoid, NodeApi } from "@udecode/plate";
-import { AIPlugin } from "@udecode/plate-ai/react";
-import {
-  BasicMarksPlugin,
-  BoldPlugin,
-  ItalicPlugin,
-  StrikethroughPlugin,
-  UnderlinePlugin,
-} from "@udecode/plate-basic-marks/react";
+import { type Value, nanoid } from "@udecode/plate";
 import { getCommentKey, getDraftCommentKey } from "@udecode/plate-comments";
 import { CommentsPlugin, useCommentId } from "@udecode/plate-comments/react";
-import { DatePlugin } from "@udecode/plate-date/react";
-import { EmojiInputPlugin } from "@udecode/plate-emoji/react";
-import { LinkPlugin } from "@udecode/plate-link/react";
-import { InlineEquationPlugin } from "@udecode/plate-math/react";
-import {
-  MentionInputPlugin,
-  MentionPlugin,
-} from "@udecode/plate-mention/react";
-import { Plate, useEditorRef, usePluginOption } from "@udecode/plate/react";
-import { type CreatePlateEditorOptions, PlateLeaf } from "@udecode/plate/react";
-import { ArrowUpIcon } from "lucide-react";
+import { useEditorRef, usePluginOption } from "@udecode/plate/react";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
   type TDiscussion,
   discussionPlugin,
 } from "../../../plugins/comments/discussion-plugin";
 import { userPlugin } from "../../../plugins/user-plugin";
-import { useCreateEditor } from "../../../core/use-create-editor";
+
+import { CommentTypeId } from "../../../plugins/comments/comment-types";
 
 import type { TComment } from "./comment";
 
-import { AILeaf } from "../ai/ai-leaf";
-import { DateElement } from "../date/date-element";
-import { Editor, EditorContainer } from "../../primitives/editor";
-import { EmojiInputElement } from "../../menus/emoji/emoji-input-element";
-import { InlineEquationElement } from "../equation/inline-equation-element";
-import { LinkElement } from "../link/link-element";
-import { MentionElement } from "../mention/mention-element";
-import { MentionInputElement } from "../mention/mention-input-element";
-import {
-  Select,
-  SelectTrigger,
-  SelectValue,
-  SelectContent,
-  SelectItem,
-} from "@/components/ui/select";
-import {
-  COMMENT_TYPES,
-  CommentTypeId,
-} from "../../../plugins/comments/comment-types";
-
-export const useCommentEditor = (
-  options: Omit<CreatePlateEditorOptions, "plugins"> = {},
-  deps: any[] = [],
-) => {
-  const commentEditor = useCreateEditor(
-    {
-      id: "comment",
-      components: {
-        [AIPlugin.key]: AILeaf,
-        [BoldPlugin.key]: withProps(PlateLeaf, { as: "strong" }),
-        [DatePlugin.key]: DateElement,
-        [EmojiInputPlugin.key]: EmojiInputElement,
-        [InlineEquationPlugin.key]: InlineEquationElement,
-        [ItalicPlugin.key]: withProps(PlateLeaf, { as: "em" }),
-        [LinkPlugin.key]: LinkElement,
-        [MentionInputPlugin.key]: MentionInputElement,
-        [MentionPlugin.key]: MentionElement,
-        [StrikethroughPlugin.key]: withProps(PlateLeaf, { as: "s" }),
-        [UnderlinePlugin.key]: withProps(PlateLeaf, { as: "u" }),
-        // [SlashInputPlugin.key]: SlashInputElement,
-      },
-      placeholders: false,
-      plugins: [BasicMarksPlugin],
-      value: [],
-      ...options,
-    },
-    deps,
-  );
-
-  return commentEditor;
-};
+// New shared component
+import { CommentForm } from "./comment-form";
 
 export function CommentCreateForm({
   autoFocus = false,
   className,
   discussionId: discussionIdProp,
-  focusOnMount = false,
   showTypeSelector = true,
   defaultType = "formatting",
 }: {
   autoFocus?: boolean;
   className?: string;
   discussionId?: string;
-  focusOnMount?: boolean;
   showTypeSelector?: boolean;
   defaultType?: CommentTypeId;
 }) {
@@ -112,225 +41,131 @@ export function CommentCreateForm({
   const discussionId = discussionIdProp ?? commentId;
 
   const userInfo = usePluginOption(userPlugin, "currentUser");
-  const [selectedType, setSelectedType] =
-    React.useState<CommentTypeId>(defaultType);
-  const [commentValue, setCommentValue] = React.useState<Value | undefined>();
-  const commentContent = React.useMemo(
-    () =>
-      commentValue ? NodeApi.string({ children: commentValue, type: "p" }) : "",
-    [commentValue],
-  );
-  const commentEditor = useCommentEditor({}, []);
 
-  // Persist last-used comment type for inline form
-  React.useEffect(() => {
-    if (showTypeSelector && typeof window !== "undefined") {
-      const saved = localStorage.getItem("lastCommentType");
-      if (saved) {
-        setSelectedType(saved as CommentTypeId);
-      }
-    }
-  }, [showTypeSelector]);
+  const onAddComment = React.useCallback(
+    async (commentValue: Value, selectedType: CommentTypeId) => {
+      // Clear editor value
+      // (Clearing handled in CommentForm)
 
-  React.useEffect(() => {
-    if (commentEditor && focusOnMount) {
-      commentEditor.tf.focus();
-    }
-  }, [commentEditor, focusOnMount]);
+      if (discussionId) {
+        // Get existing discussion
+        const discussion = discussions.find((d) => d.id === discussionId);
+        if (!discussion) {
+          // Mock creating suggestion
+          const newDiscussion: TDiscussion = {
+            id: discussionId,
+            comments: [
+              {
+                id: nanoid(),
+                contentRich: commentValue,
+                createdAt: new Date(),
+                discussionId,
+                isEdited: false,
+                userId: editor.getOption(userPlugin, "currentUserId")!,
+                commentType: selectedType,
+              },
+            ],
+            createdAt: new Date(),
+            isResolved: false,
+            userId: editor.getOption(userPlugin, "currentUserId")!,
+          };
 
-  const onAddComment = React.useCallback(async () => {
-    if (!commentValue) return;
+          editor.setOption(discussionPlugin, "discussions", [
+            ...discussions,
+            newDiscussion,
+          ]);
+          return;
+        }
 
-    commentEditor.tf.reset();
-
-    if (discussionId) {
-      // Get existing discussion
-      const discussion = discussions.find((d) => d.id === discussionId);
-      if (!discussion) {
-        // Mock creating suggestion
-        const newDiscussion: TDiscussion = {
-          id: discussionId,
-          comments: [
-            {
-              id: nanoid(),
-              contentRich: commentValue,
-              createdAt: new Date(),
-              discussionId,
-              isEdited: false,
-              userId: editor.getOption(userPlugin, "currentUserId")!,
-              commentType: selectedType,
-            },
-          ],
-          createdAt: new Date(),
-          isResolved: false,
-          userId: editor.getOption(userPlugin, "currentUserId")!,
-        };
-
-        editor.setOption(discussionPlugin, "discussions", [
-          ...discussions,
-          newDiscussion,
-        ]);
-        return;
-      }
-
-      // Create reply comment
-      const comment: TComment = {
-        id: nanoid(),
-        contentRich: commentValue,
-        createdAt: new Date(),
-        discussionId,
-        isEdited: false,
-        userId: editor.getOption(userPlugin, "currentUserId")!,
-        commentType: selectedType,
-      };
-
-      // Add reply to discussion comments
-      const updatedDiscussion = {
-        ...discussion,
-        comments: [...discussion.comments, comment],
-      };
-
-      // Filter out old discussion and add updated one
-      const updatedDiscussions = discussions
-        .filter((d) => d.id !== discussionId)
-        .concat(updatedDiscussion);
-
-      editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
-
-      return;
-    }
-
-    const commentsNodeEntry = editor
-      .getApi(CommentsPlugin)
-      .comment.nodes({ at: [], isDraft: true });
-
-    if (commentsNodeEntry.length === 0) return;
-
-    const documentContent = commentsNodeEntry
-      .map(([node]) => node.text)
-      .join("");
-
-    const _discussionId = nanoid();
-    // Mock creating new discussion
-    const newDiscussion: TDiscussion = {
-      id: _discussionId,
-      comments: [
-        {
+        // Create reply comment
+        const comment: TComment = {
           id: nanoid(),
           contentRich: commentValue,
           createdAt: new Date(),
-          discussionId: _discussionId,
+          discussionId,
           isEdited: false,
           userId: editor.getOption(userPlugin, "currentUserId")!,
           commentType: selectedType,
-        },
-      ],
-      createdAt: new Date(),
-      documentContent,
-      isResolved: false,
-      userId: editor.getOption(userPlugin, "currentUserId")!,
-    };
+        };
 
-    editor.setOption(discussionPlugin, "discussions", [
-      ...discussions,
-      newDiscussion,
-    ]);
+        // Add reply to discussion comments
+        const updatedDiscussion = {
+          ...discussion,
+          comments: [...discussion.comments, comment],
+        };
 
-    const id = newDiscussion.id;
+        // Filter out old discussion and add updated one
+        const updatedDiscussions = discussions
+          .filter((d) => d.id !== discussionId)
+          .concat(updatedDiscussion);
 
-    commentsNodeEntry.forEach(([, path]) => {
-      editor.tf.setNodes(
-        {
-          [getCommentKey(id)]: true,
-        },
-        { at: path, split: true },
-      );
-      editor.tf.unsetNodes([getDraftCommentKey()], { at: path });
-    });
-  }, [
-    commentValue,
-    commentEditor.tf,
-    discussionId,
-    editor,
-    discussions,
-    selectedType,
-  ]);
+        editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
+
+        return;
+      }
+
+      const commentsNodeEntry = editor
+        .getApi(CommentsPlugin)
+        .comment.nodes({ at: [], isDraft: true });
+
+      if (commentsNodeEntry.length === 0) return;
+
+      const documentContent = commentsNodeEntry
+        .map(([node]) => node.text)
+        .join("");
+
+      const _discussionId = nanoid();
+      // Mock creating new discussion
+      const newDiscussion: TDiscussion = {
+        id: _discussionId,
+        comments: [
+          {
+            id: nanoid(),
+            contentRich: commentValue,
+            createdAt: new Date(),
+            discussionId: _discussionId,
+            isEdited: false,
+            userId: editor.getOption(userPlugin, "currentUserId")!,
+            commentType: selectedType,
+          },
+        ],
+        createdAt: new Date(),
+        documentContent,
+        isResolved: false,
+        userId: editor.getOption(userPlugin, "currentUserId")!,
+      };
+
+      editor.setOption(discussionPlugin, "discussions", [
+        ...discussions,
+        newDiscussion,
+      ]);
+
+      const id = newDiscussion.id;
+
+      commentsNodeEntry.forEach(([, path]) => {
+        editor.tf.setNodes(
+          {
+            [getCommentKey(id)]: true,
+          },
+          { at: path, split: true },
+        );
+        editor.tf.unsetNodes([getDraftCommentKey()], { at: path });
+      });
+    },
+    [discussionId, editor, discussions],
+  );
 
   return (
-    <div className={cn("flex flex-col w-full gap-2", className)}>
-      <div className="mt-2 mr-1 shrink-0">
-        {/* Replace to your own backend or refer to potion */}
-        <Avatar className="size-5">
-          <AvatarImage alt={userInfo?.name} src={userInfo?.avatarUrl} />
-          <AvatarFallback>{userInfo?.name?.[0]}</AvatarFallback>
-        </Avatar>
-      </div>
-
-      {showTypeSelector && (
-        <div className="mt-2 mr-2 shrink-0">
-          <Select
-            value={selectedType}
-            onValueChange={(value) => {
-              const type = value as CommentTypeId;
-              setSelectedType(type);
-              if (typeof window !== "undefined") {
-                localStorage.setItem("lastCommentType", type);
-              }
-            }}
-          >
-            <SelectTrigger className="h-8 w-32">
-              <SelectValue placeholder="Type" />
-            </SelectTrigger>
-            <SelectContent>
-              {COMMENT_TYPES.map((t) => (
-                <SelectItem key={t.id} value={t.id}>
-                  {t.label}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      )}
-
-      <div className="relative flex grow gap-2">
-        <Plate
-          onChange={({ value }) => {
-            setCommentValue(value);
-          }}
-          editor={commentEditor}
-        >
-          <EditorContainer variant="comment">
-            <Editor
-              variant="comment"
-              className="min-h-[50px] grow pt-2 pr-8"
-              onKeyDown={(e: React.KeyboardEvent) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  onAddComment();
-                }
-              }}
-              placeholder="Reply..."
-              autoComplete="off"
-              autoFocus={autoFocus}
-            />
-
-            <Button
-              size="icon"
-              variant="ghost"
-              className="absolute right-0.5 bottom-0.5 ml-auto shrink-0"
-              disabled={commentContent.trim().length === 0}
-              onClick={(e) => {
-                e.stopPropagation();
-                onAddComment();
-              }}
-            >
-              <div className="flex size-6 items-center justify-center rounded-full">
-                <ArrowUpIcon />
-              </div>
-            </Button>
-          </EditorContainer>
-        </Plate>
-      </div>
-    </div>
+    <CommentForm
+      onSubmit={onAddComment}
+      autoFocus={autoFocus}
+      className={cn("w-full", className)}
+      showTypeSelector={showTypeSelector}
+      defaultType={defaultType}
+      user={{
+        name: userInfo?.name ?? null,
+        avatarUrl: userInfo?.avatarUrl ?? null,
+      }}
+    />
   );
 }

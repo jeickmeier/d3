@@ -12,11 +12,9 @@ import {
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   usePluginOption,
-  ParagraphPlugin,
   useEditorRef,
   type PlateEditor,
 } from "@udecode/plate/react";
-import { Node } from "slate";
 import type { Value } from "@udecode/plate";
 import type { TComment } from "../elements/comments-suggestions/comment";
 import {
@@ -24,23 +22,15 @@ import {
   type TDiscussion,
 } from "@/components/editor/plugins/comments/discussion-plugin";
 import { userPlugin } from "@/components/editor/plugins/user-plugin";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { formatCommentDate } from "@/components/editor/ui/elements/comments-suggestions/comment";
 import { nanoid } from "nanoid";
 import { DocumentCommentForm } from "./DocumentCommentForm";
 import type { CommentTypeId } from "@/components/editor/plugins/comments/comment-types";
-import { COMMENT_TYPES_MAP } from "@/components/editor/plugins/comments/comment-types";
 import { COMMENT_TYPES } from "@/components/editor/plugins/comments/comment-types";
+import { Comment } from "@/components/editor/ui/elements/comments-suggestions/comment";
+import { CommentForm } from "@/components/editor/ui/elements/comments-suggestions/comment-form";
 
-// Helper to get user initials for AvatarFallback
-const getUserInitials = (name?: string) => {
-  if (!name) return "?";
-  const parts = name.split(" ");
-  if (parts.length > 1) {
-    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
-  }
-  return name.substring(0, 2).toUpperCase();
-};
+// Sidebar width in pixels (approx 1.7 * 24rem ≈ 650px)
+const SIDEBAR_WIDTH = 680; // px
 
 export const CommentsSidebar: React.FC = () => {
   const { isCommentsSidebarOpen, setIsCommentsSidebarOpen } =
@@ -50,7 +40,6 @@ export const CommentsSidebar: React.FC = () => {
   const [activeReplyDiscussionId, setActiveReplyDiscussionId] = useState<
     string | null
   >(null);
-  const [replyText, setReplyText] = useState<string>("");
 
   // All comments and filter state
   const visibleTypes = usePluginOption(
@@ -72,15 +61,16 @@ export const CommentsSidebar: React.FC = () => {
     [allDiscussions, visibleTypes],
   );
 
-  const users = usePluginOption(userPlugin, "users") ?? {};
-
   const currentUserId: string | undefined = usePluginOption(
     userPlugin,
     "currentUserId",
   );
 
+  // State to support editing (disabled in sidebar but required by Comment API)
+  const [editingId, setEditingId] = React.useState<string | null>(null);
+
   const handleAddDocumentComment = (
-    text: string,
+    content: Value,
     commentType: CommentTypeId,
   ) => {
     if (!editor || !currentUserId) {
@@ -92,12 +82,7 @@ export const CommentsSidebar: React.FC = () => {
     const discussionId = nanoid();
     const commentId = nanoid();
 
-    const newCommentContent: Value = [
-      {
-        type: ParagraphPlugin.key as string,
-        children: [{ text }],
-      },
-    ];
+    const newCommentContent: Value = content;
 
     const newComment: TComment = {
       id: commentId,
@@ -127,54 +112,40 @@ export const CommentsSidebar: React.FC = () => {
     editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
   };
 
-  const handleAddReplyToDiscussion = (discussionId: string, text: string) => {
-    if (!editor || !currentUserId || !text.trim()) {
-      console.error(
-        "Editor, current user, or text not available for adding reply",
-      );
+  const handleAddReplyToDiscussion = (
+    discussionId: string,
+    content: Value,
+    commentType: CommentTypeId,
+  ) => {
+    if (!editor || !currentUserId) {
+      console.error("Editor or current user not available for adding reply");
       return;
     }
 
     const commentId = nanoid();
-    const newReplyContent: Value = [
-      {
-        type: ParagraphPlugin.key as string,
-        children: [{ text: text.trim() }],
-      },
-    ];
 
-    // Derive reply type from the parent discussion (default to formatting)
+    const newReplyComment: TComment = {
+      id: commentId,
+      discussionId,
+      contentRich: content,
+      createdAt: new Date(),
+      userId: currentUserId,
+      isEdited: false,
+      commentType,
+    };
+
     const currentDiscussions = (editor.getOption(
       discussionPlugin,
       "discussions",
     ) ?? []) as TDiscussion[];
-    const parentDiscussion = currentDiscussions.find(
-      (d) => d.id === discussionId,
-    );
-    const replyType: CommentTypeId =
-      parentDiscussion?.comments?.[0]?.commentType ?? "formatting";
-    const newReplyComment: TComment = {
-      id: commentId,
-      discussionId,
-      contentRich: newReplyContent,
-      createdAt: new Date(),
-      userId: currentUserId,
-      isEdited: false,
-      commentType: replyType,
-    };
 
-    const updatedDiscussions = currentDiscussions.map((discussion) => {
-      if (discussion.id === discussionId) {
-        return {
-          ...discussion,
-          comments: [...discussion.comments, newReplyComment],
-        };
-      }
-      return discussion;
-    });
+    const updatedDiscussions = currentDiscussions.map((d) =>
+      d.id === discussionId
+        ? { ...d, comments: [...d.comments, newReplyComment] }
+        : d,
+    );
 
     editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
-    setReplyText("");
     setActiveReplyDiscussionId(null);
   };
 
@@ -191,12 +162,26 @@ export const CommentsSidebar: React.FC = () => {
     }
   }, [editor]);
 
+  // Side-effect: when sidebar is open, add right padding to body to make room
+  useEffect(() => {
+    if (isCommentsSidebarOpen) {
+      const prevPadding = document.body.style.paddingRight;
+      document.body.style.paddingRight = `${SIDEBAR_WIDTH}px`;
+      return () => {
+        document.body.style.paddingRight = prevPadding;
+      };
+    }
+  }, [isCommentsSidebarOpen]);
+
   if (!isCommentsSidebarOpen) {
     return null;
   }
 
   return (
-    <div className="fixed top-0 right-0 h-full w-96 bg-white border-l border-gray-200 shadow-lg z-[60] p-4 flex flex-col">
+    <div
+      className="fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-lg z-[60] p-4 flex flex-col"
+      style={{ width: `${SIDEBAR_WIDTH}px` }}
+    >
       <div className="flex justify-between items-center mb-4 pb-2 border-b">
         <h2 className="text-lg font-semibold">Comments</h2>
         <div className="flex items-center space-x-2">
@@ -259,59 +244,22 @@ export const CommentsSidebar: React.FC = () => {
                   {discussion.documentContent}
                 </blockquote>
               )}
-              {discussion.comments.map((comment, commentIndex) => {
-                const user = users?.[comment.userId];
-                const commentText = Node.string({
-                  children: comment.contentRich,
-                  type: "p",
-                } as any);
-                const formattedDate = formatCommentDate(
-                  new Date(comment.createdAt),
-                );
-                const indentationClass = commentIndex > 0 ? "ml-6" : "";
-                const badge =
-                  COMMENT_TYPES_MAP[comment.commentType ?? "formatting"];
-
-                return (
-                  <div
-                    key={comment.id}
-                    className={`flex space-x-3 ${indentationClass}`}
-                  >
-                    <Avatar className="h-8 w-8 mt-1">
-                      <AvatarImage
-                        src={user?.avatarUrl}
-                        alt={user?.name || "User"}
-                      />
-                      <AvatarFallback>
-                        {getUserInitials(user?.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 bg-gray-50 p-2.5 rounded-md shadow-sm border border-gray-100">
-                      <div className="flex justify-between items-center mb-1">
-                        <div className="flex items-center space-x-1">
-                          {/* Only show badge for the first comment */}
-                          {commentIndex === 0 && (
-                            <span
-                              className={`px-1.5 text-[10px] font-medium rounded ${badge.bg}`}
-                            >
-                              {badge.label}
-                            </span>
-                          )}
-                          <span className="text-xs font-semibold text-gray-700">
-                            {user?.name || "Anonymous"}
-                          </span>
-                        </div>
-                        <span className="text-xs text-gray-400">
-                          {formattedDate}
-                        </span>
-                      </div>
-                      <p className="text-xs text-gray-600 whitespace-pre-wrap">
-                        {commentText}
-                      </p>
-                    </div>
-                  </div>
-                );
-              })}
+              {discussion.comments.map((comment, commentIndex) => (
+                <Comment
+                  key={comment.id}
+                  comment={comment}
+                  discussionLength={discussion.comments.length}
+                  editingId={editingId}
+                  index={commentIndex}
+                  setEditingId={setEditingId}
+                  documentContent={discussion.documentContent}
+                  showDocumentContent={
+                    commentIndex === 0 && !!discussion.documentContent
+                  }
+                  enableEditing={false}
+                  onEditorClick={undefined}
+                />
+              ))}
               <div className="mt-2 pl-9">
                 {activeReplyDiscussionId !== discussion.id && (
                   <Button
@@ -319,7 +267,6 @@ export const CommentsSidebar: React.FC = () => {
                     size="sm"
                     onClick={() => {
                       setActiveReplyDiscussionId(discussion.id);
-                      setReplyText("");
                     }}
                     className="text-xs text-gray-500 hover:text-gray-700"
                   >
@@ -328,43 +275,26 @@ export const CommentsSidebar: React.FC = () => {
                   </Button>
                 )}
                 {activeReplyDiscussionId === discussion.id && (
-                  <form
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      handleAddReplyToDiscussion(discussion.id, replyText);
-                    }}
-                    className="flex flex-col space-y-2"
-                  >
-                    <textarea
-                      value={replyText}
-                      onChange={(e) => setReplyText(e.target.value)}
+                  <div className="mt-2">
+                    <CommentForm
+                      onSubmit={(value, type) =>
+                        handleAddReplyToDiscussion(discussion.id, value, type)
+                      }
                       placeholder="Write a reply..."
-                      className="w-full text-xs p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500 min-h-[50px] shadow-sm focus:outline-none focus:ring-1 focus:ring-opacity-50 resize-none"
-                      rows={2}
+                      submitLabel="Send"
+                      className="pr-8"
                     />
-                    <div className="flex justify-end space-x-2">
+                    <div className="flex justify-end mt-1">
                       <Button
-                        type="button"
                         variant="ghost"
                         size="sm"
-                        onClick={() => {
-                          setActiveReplyDiscussionId(null);
-                          setReplyText("");
-                        }}
+                        onClick={() => setActiveReplyDiscussionId(null)}
                         className="text-xs"
                       >
                         Cancel
                       </Button>
-                      <Button
-                        type="submit"
-                        size="sm"
-                        disabled={!replyText.trim()}
-                        className="text-xs"
-                      >
-                        Submit Reply
-                      </Button>
                     </div>
-                  </form>
+                  </div>
                 )}
               </div>
             </div>

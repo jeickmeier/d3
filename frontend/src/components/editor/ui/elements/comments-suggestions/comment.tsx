@@ -4,13 +4,7 @@ import * as React from "react";
 
 import type { Value } from "@udecode/plate";
 
-import { CommentsPlugin } from "@udecode/plate-comments/react";
-import {
-  Plate,
-  useEditorPlugin,
-  useEditorRef,
-  usePluginOption,
-} from "@udecode/plate/react";
+import { useEditorRef, usePluginOption } from "@udecode/plate/react";
 import {
   differenceInDays,
   differenceInHours,
@@ -39,9 +33,7 @@ import { discussionPlugin } from "../../../plugins/comments/discussion-plugin";
 import { userPlugin } from "../../../plugins/user-plugin";
 import type { CommentTypeId } from "../../../plugins/comments/comment-types";
 import { COMMENT_TYPES_MAP } from "../../../plugins/comments/comment-types";
-
-import { useCommentEditor } from "./comment-create-form";
-import { Editor, EditorContainer } from "../../primitives/editor";
+import { MiniPlateEditor } from "@/components/editor/MiniPlateEditor";
 
 export const formatCommentDate = (date: Date) => {
   const now = new Date();
@@ -81,6 +73,8 @@ export function Comment(props: {
   documentContent?: string;
   showDocumentContent?: boolean;
   onEditorClick?: () => void;
+  /** Disable editing capabilities (e.g., sidebar view). */
+  enableEditing?: boolean;
 }) {
   const {
     comment,
@@ -91,30 +85,12 @@ export function Comment(props: {
     setEditingId,
     showDocumentContent = false,
     onEditorClick,
+    enableEditing = true,
   } = props;
 
   const editor = useEditorRef();
   const userInfo = usePluginOption(userPlugin, "user", comment.userId);
   const currentUserId = usePluginOption(userPlugin, "currentUserId");
-
-  const resolveDiscussion = async (id: string) => {
-    const updatedDiscussions = editor
-      .getOption(discussionPlugin, "discussions")
-      .map((discussion) => {
-        if (discussion.id === id) {
-          return { ...discussion, isResolved: true };
-        }
-        return discussion;
-      });
-    editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
-  };
-
-  const removeDiscussion = async (id: string) => {
-    const updatedDiscussions = editor
-      .getOption(discussionPlugin, "discussions")
-      .filter((discussion) => discussion.id !== id);
-    editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
-  };
 
   const updateComment = async (input: {
     id: string;
@@ -144,42 +120,35 @@ export function Comment(props: {
     editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
   };
 
-  const { tf } = useEditorPlugin(CommentsPlugin);
-
   // Replace to your own backend or refer to potion
   const isMyComment = currentUserId === comment.userId;
 
   const initialValue = comment.contentRich;
 
-  const commentEditor = useCommentEditor(
-    {
-      id: comment.id,
-      value: initialValue,
-    },
-    [initialValue],
-  );
+  // State for editing value when in edit mode
+  const [editingValue, setEditingValue] = React.useState<Value>(initialValue);
+
+  // Sync editingValue whenever editing toggles on with fresh content
+  React.useEffect(() => {
+    if (editingId === comment.id) {
+      setEditingValue(initialValue);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [editingId, initialValue]);
 
   const onCancel = () => {
     setEditingId(null);
-    commentEditor.tf.replaceNodes(initialValue, {
-      at: [],
-      children: true,
-    });
+    setEditingValue(initialValue);
   };
 
   const onSave = () => {
     void updateComment({
       id: comment.id,
-      contentRich: commentEditor.children,
+      contentRich: editingValue,
       discussionId: comment.discussionId,
       isEdited: true,
     });
     setEditingId(null);
-  };
-
-  const onResolveComment = () => {
-    void resolveDiscussion(comment.discussionId);
-    tf.comment.unsetMark({ id: comment.discussionId });
   };
 
   const isFirst = index === 0;
@@ -221,31 +190,9 @@ export function Comment(props: {
           {comment.isEdited && <span>(edited)</span>}
         </div>
 
-        {isMyComment && (hovering || dropdownOpen) && (
+        {enableEditing && isMyComment && (hovering || dropdownOpen) && (
           <div className="absolute top-0 right-0 flex space-x-1">
-            {index === 0 && (
-              <Button
-                variant="ghost"
-                className="h-6 p-1 text-muted-foreground"
-                onClick={onResolveComment}
-                type="button"
-              >
-                <CheckIcon className="size-4" />
-              </Button>
-            )}
-
             <CommentMoreDropdown
-              onCloseAutoFocus={() => {
-                setTimeout(() => {
-                  commentEditor.tf.focus({ edge: "endEditor" });
-                }, 0);
-              }}
-              onRemoveComment={() => {
-                if (discussionLength === 1) {
-                  tf.comment.unsetMark({ id: comment.discussionId });
-                  void removeDiscussion(comment.discussionId);
-                }
-              }}
               comment={comment}
               dropdownOpen={dropdownOpen}
               setDropdownOpen={setDropdownOpen}
@@ -269,46 +216,59 @@ export function Comment(props: {
         {!isLast && (
           <div className="absolute top-0 left-3 h-full w-0.5 shrink-0 bg-muted" />
         )}
-        <Plate readOnly={!isEditing} editor={commentEditor}>
-          <EditorContainer variant="comment">
-            <Editor
-              variant="comment"
-              className="w-auto grow"
-              onClick={() => onEditorClick?.()}
+        {enableEditing && isEditing ? (
+          <div className="flex w-full flex-col gap-2">
+            <MiniPlateEditor
+              value={editingValue}
+              onChange={setEditingValue}
+              showToolbar
+              autoFocus
+              className="min-h-[60px] grow"
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  onSave();
+                }
+              }}
             />
 
-            {isEditing && (
-              <div className="ml-auto flex shrink-0 gap-1">
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="size-[28px]"
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.stopPropagation();
-                    void onCancel();
-                  }}
-                >
-                  <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-primary/40">
-                    <XIcon className="size-3 stroke-[3px] text-background" />
-                  </div>
-                </Button>
+            <div className="flex justify-end gap-1">
+              <Button
+                size="icon"
+                variant="ghost"
+                className="size-[28px]"
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.stopPropagation();
+                  void onCancel();
+                }}
+              >
+                <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-primary/40">
+                  <XIcon className="size-3 stroke-[3px] text-background" />
+                </div>
+              </Button>
 
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
-                    e.stopPropagation();
-                    void onSave();
-                  }}
-                >
-                  <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-brand">
-                    <CheckIcon className="size-3 stroke-[3px] text-background" />
-                  </div>
-                </Button>
-              </div>
-            )}
-          </EditorContainer>
-        </Plate>
+              <Button
+                size="icon"
+                variant="ghost"
+                onClick={(e: React.MouseEvent<HTMLButtonElement>) => {
+                  e.stopPropagation();
+                  void onSave();
+                }}
+              >
+                <div className="flex size-5 shrink-0 items-center justify-center rounded-[50%] bg-brand">
+                  <CheckIcon className="size-3 stroke-[3px] text-background" />
+                </div>
+              </Button>
+            </div>
+          </div>
+        ) : (
+          <MiniPlateEditor
+            value={initialValue}
+            readOnly
+            className="w-auto grow"
+            onClick={() => onEditorClick?.()}
+          />
+        )}
       </div>
     </div>
   );
@@ -318,19 +278,10 @@ interface CommentMoreDropdownProps {
   dropdownOpen: boolean;
   setDropdownOpen: React.Dispatch<React.SetStateAction<boolean>>;
   setEditingId: React.Dispatch<React.SetStateAction<string | null>>;
-  onCloseAutoFocus?: () => void;
-  onRemoveComment?: () => void;
 }
 
 export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
-  const {
-    comment,
-    dropdownOpen,
-    setDropdownOpen,
-    setEditingId,
-    onCloseAutoFocus,
-    onRemoveComment,
-  } = props;
+  const { comment, dropdownOpen, setDropdownOpen, setEditingId } = props;
 
   const editor = useEditorRef();
 
@@ -366,8 +317,7 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
 
     // Save back to session storage
     editor.setOption(discussionPlugin, "discussions", updatedDiscussions);
-    onRemoveComment?.();
-  }, [comment.discussionId, comment.id, editor, onRemoveComment]);
+  }, [comment.discussionId, comment.id, editor]);
 
   const onEditComment = React.useCallback(() => {
     selectedEditCommentRef.current = true;
@@ -390,13 +340,14 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
-        className="w-48"
+        className="w-48 z-[80]"
         onCloseAutoFocus={(e) => {
+          // Prevent Radix from returning focus to trigger
           if (selectedEditCommentRef.current) {
-            onCloseAutoFocus?.();
             selectedEditCommentRef.current = false;
           }
 
+          // Stop default focus handling to avoid errors when DOM nodes may be unmounted
           return e.preventDefault();
         }}
       >
