@@ -109,9 +109,11 @@ export function SettingsDialog() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    Object.entries(tempApiKeys).forEach(([service, key]) => {
-      setApiKey(service as keyof ApiKeys, key);
-    });
+    (Object.entries(tempApiKeys) as [keyof ApiKeys, string][]).forEach(
+      ([service, key]) => {
+        setApiKey(service, key);
+      },
+    );
     setOpen(false);
 
     // Update AI options if needed

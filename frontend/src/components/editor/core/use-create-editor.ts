@@ -102,6 +102,7 @@ import { TocElement } from "@/components/editor/core/ui/elements/toc/toc-element
 import { ToggleElement } from "@/components/editor/core/ui/elements/toggle/toggle-element";
 
 import { userPlugin } from "@/components/editor/core/plugins/user-plugin";
+import type { UserPluginOptions } from "@/components/editor/core/plugins/user-plugin";
 import { editorPlugins, viewPlugins } from "./editor-plugins";
 
 // Define a more specific type for currentUser based on PlateEditorProps if available,
@@ -116,7 +117,7 @@ interface CurrentUserType {
 interface UseCreateEditorHookOptions
   extends Omit<CreatePlateEditorOptions, "plugins"> {
   placeholders?: boolean;
-  plugins?: any[]; // This allows passing modified plugins if needed directly
+  plugins?: CreatePlateEditorOptions["plugins"];
   readOnly?: boolean;
   currentUser?: CurrentUserType;
 }
@@ -177,7 +178,7 @@ export const editorComponents = {
 
 export const useCreateEditor = (
   options: UseCreateEditorHookOptions = {},
-  deps: any[] = [],
+  deps: unknown[] = [],
 ) => {
   const {
     components,
@@ -187,14 +188,16 @@ export const useCreateEditor = (
     ...plateEditorOptions // Renamed from options to avoid conflict
   } = options;
 
-  let pluginOverrides: Record<string, any> | undefined;
+  let pluginOverrides:
+    | Record<string, { options: Partial<UserPluginOptions> }>
+    | undefined;
   if (currentUser) {
     // Only include the current user in the users map
     const combinedUsers = {
       [currentUser.id]: {
         id: currentUser.id,
         name: currentUser.name || currentUser.id,
-        avatarUrl: currentUser.avatarUrl,
+        avatarUrl: currentUser.avatarUrl ?? "",
       },
     };
 
@@ -208,7 +211,7 @@ export const useCreateEditor = (
     };
   }
 
-  return usePlateEditor<Value, (typeof editorPlugins)[number]>(
+  return usePlateEditor<Value>(
     {
       components: {
         ...(readOnly
@@ -218,7 +221,10 @@ export const useCreateEditor = (
             : editorComponents),
         ...components,
       },
-      plugins: (readOnly ? viewPlugins : editorPlugins) as any,
+
+      plugins: readOnly
+        ? (viewPlugins as unknown as CreatePlateEditorOptions["plugins"])
+        : (editorPlugins as unknown as CreatePlateEditorOptions["plugins"]),
       // If we have plugin overrides (i.e. the caller provided a currentUser),
       // forward them to Plate so they are merged with the default config.
       override: pluginOverrides ? { plugins: pluginOverrides } : undefined,

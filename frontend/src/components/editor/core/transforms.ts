@@ -90,16 +90,18 @@ const insertBlockMap: Record<
   [CodeBlockPlugin.key]: (editor) => insertCodeBlock(editor, { select: true }),
   [EquationPlugin.key]: (editor) => insertEquation(editor, { select: true }),
   [FilePlugin.key]: (editor) => insertFilePlaceholder(editor, { select: true }),
-  [ImagePlugin.key]: (editor) =>
-    insertMedia(editor, {
+  [ImagePlugin.key]: (editor) => {
+    void insertMedia(editor, {
       select: true,
       type: ImagePlugin.key,
-    }),
-  [MediaEmbedPlugin.key]: (editor) =>
-    insertMedia(editor, {
+    });
+  },
+  [MediaEmbedPlugin.key]: (editor) => {
+    void insertMedia(editor, {
       select: true,
       type: MediaEmbedPlugin.key,
-    }),
+    });
+  },
   [TablePlugin.key]: (editor) =>
     editor.getTransforms(TablePlugin).insert.table({}, { select: true }),
   [TocPlugin.key]: (editor) => insertToc(editor, { select: true }),
