@@ -41,7 +41,7 @@ import {
   getBlockType,
   setBlockType,
   STRUCTURAL_TYPES,
-} from "../../core/transforms";
+} from "@/components/editor/core/transforms";
 
 import { ToolbarButton, ToolbarMenuGroup } from "./toolbars/toolbar";
 

@@ -41,7 +41,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
-import { STRUCTURAL_TYPES } from "../../core/transforms";
+import { STRUCTURAL_TYPES } from "@/components/editor/core/transforms";
 
 const UNDRAGGABLE_KEYS = [
   ColumnItemPlugin.key,

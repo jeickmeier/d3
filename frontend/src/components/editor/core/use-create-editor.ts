@@ -63,45 +63,45 @@ import {
 
 import { AIAnchorElement } from "@/components/editor/features/ai/ui/elements/ai-anchor-element";
 import { AILeaf } from "@/components/editor/features/ai/ui/elements/ai-leaf";
-import { BlockquoteElement } from "@/components/editor/ui/elements/blockquote/blockquote-element";
-import { CalloutElement } from "@/components/editor/ui/elements/callout/callout-element";
-import { CodeBlockElement } from "@/components/editor/ui/elements/code/code-block-element";
-import { CodeLeaf } from "@/components/editor/ui/elements/code/code-leaf";
-import { CodeLineElement } from "@/components/editor/ui/elements/code/code-line-element";
-import { CodeSyntaxLeaf } from "@/components/editor/ui/elements/code/code-syntax-leaf";
-import { ColumnElement } from "@/components/editor/ui/elements/layout/column-element";
-import { ColumnGroupElement } from "@/components/editor/ui/elements/layout/column-group-element";
+import { BlockquoteElement } from "@/components/editor/core/ui/elements/blockquote/blockquote-element";
+import { CalloutElement } from "@/components/editor/core/ui/elements/callout/callout-element";
+import { CodeBlockElement } from "@/components/editor/core/ui/elements/code/code-block-element";
+import { CodeLeaf } from "@/components/editor/core/ui/elements/code/code-leaf";
+import { CodeLineElement } from "@/components/editor/core/ui/elements/code/code-line-element";
+import { CodeSyntaxLeaf } from "@/components/editor/core/ui/elements/code/code-syntax-leaf";
+import { ColumnElement } from "@/components/editor/core/ui/elements/layout/column-element";
+import { ColumnGroupElement } from "@/components/editor/core/ui/elements/layout/column-group-element";
 import { CommentLeaf } from "@comments/ui/elements/comment-leaf";
-import { DateElement } from "@/components/editor/ui/elements/date/date-element";
-import { EmojiInputElement } from "@/components/editor/ui/menus/emoji/emoji-input-element";
-import { EquationElement } from "@/components/editor/ui/elements/equation/equation-element";
-import { HeadingElement } from "@/components/editor/ui/elements/heading/heading-element";
-import { HighlightLeaf } from "@/components/editor/ui/elements/leafs/highlight-leaf";
-import { HrElement } from "@/components/editor/ui/elements/heading/hr-element";
-import { ImageElement } from "@/components/editor/ui/elements/image/image-element";
-import { InlineEquationElement } from "@/components/editor/ui/elements/equation/inline-equation-element";
-import { KbdLeaf } from "@/components/editor/ui/elements/leafs/kbd-leaf";
-import { LinkElement } from "@/components/editor/ui/elements/link/link-element";
-import { MediaAudioElement } from "@/components/editor/ui/elements/media/media-audio-element";
-import { MediaEmbedElement } from "@/components/editor/ui/elements/media/media-embed-element";
-import { MediaFileElement } from "@/components/editor/ui/elements/media/media-file-element";
-import { MediaPlaceholderElement } from "@/components/editor/ui/elements/media/media-placeholder-element";
-import { MediaVideoElement } from "@/components/editor/ui/elements/media/media-video-element";
-import { MentionElement } from "@/components/editor/ui/elements/mention/mention-element";
-import { MentionInputElement } from "@/components/editor/ui/elements/mention/mention-input-element";
-import { ParagraphElement } from "@/components/editor/ui/elements/paragraph/paragraph-element";
-import { withPlaceholders } from "@/components/editor/ui/primitives/placeholder";
-import { SlashInputElement } from "@/components/editor/ui/elements/slash-input/slash-input-element";
+import { DateElement } from "@/components/editor/core/ui/elements/date/date-element";
+import { EmojiInputElement } from "@/components/editor/core/ui/menus/emoji/emoji-input-element";
+import { EquationElement } from "@/components/editor/core/ui/elements/equation/equation-element";
+import { HeadingElement } from "@/components/editor/core/ui/elements/heading/heading-element";
+import { HighlightLeaf } from "@/components/editor/core/ui/elements/leafs/highlight-leaf";
+import { HrElement } from "@/components/editor/core/ui/elements/heading/hr-element";
+import { ImageElement } from "@/components/editor/core/ui/elements/image/image-element";
+import { InlineEquationElement } from "@/components/editor/core/ui/elements/equation/inline-equation-element";
+import { KbdLeaf } from "@/components/editor/core/ui/elements/leafs/kbd-leaf";
+import { LinkElement } from "@/components/editor/core/ui/elements/link/link-element";
+import { MediaAudioElement } from "@/components/editor/core/ui/elements/media/media-audio-element";
+import { MediaEmbedElement } from "@/components/editor/core/ui/elements/media/media-embed-element";
+import { MediaFileElement } from "@/components/editor/core/ui/elements/media/media-file-element";
+import { MediaPlaceholderElement } from "@/components/editor/core/ui/elements/media/media-placeholder-element";
+import { MediaVideoElement } from "@/components/editor/core/ui/elements/media/media-video-element";
+import { MentionElement } from "@/components/editor/core/ui/elements/mention/mention-element";
+import { MentionInputElement } from "@/components/editor/core/ui/elements/mention/mention-input-element";
+import { ParagraphElement } from "@/components/editor/core/ui/elements/paragraph/paragraph-element";
+import { withPlaceholders } from "@/components/editor/core/ui/primitives/placeholder";
+import { SlashInputElement } from "@/components/editor/core/ui/elements/slash-input/slash-input-element";
 import {
   TableCellElement,
   TableCellHeaderElement,
-} from "@/components/editor/ui/elements/table/table-cell-element";
-import { TableElement } from "@/components/editor/ui/elements/table/table-element";
-import { TableRowElement } from "@/components/editor/ui/elements/table/table-row-element";
-import { TocElement } from "@/components/editor/ui/elements/toc/toc-element";
-import { ToggleElement } from "@/components/editor/ui/elements/toggle/toggle-element";
+} from "@/components/editor/core/ui/elements/table/table-cell-element";
+import { TableElement } from "@/components/editor/core/ui/elements/table/table-element";
+import { TableRowElement } from "@/components/editor/core/ui/elements/table/table-row-element";
+import { TocElement } from "@/components/editor/core/ui/elements/toc/toc-element";
+import { ToggleElement } from "@/components/editor/core/ui/elements/toggle/toggle-element";
 
-import { userPlugin } from "../plugins/user-plugin";
+import { userPlugin } from "@/components/editor/core/plugins/user-plugin";
 import { editorPlugins, viewPlugins } from "./editor-plugins";
 
 // Define a more specific type for currentUser based on PlateEditorProps if available,

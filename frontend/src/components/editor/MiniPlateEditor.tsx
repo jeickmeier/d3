@@ -10,18 +10,18 @@ import { ParagraphPlugin } from "@udecode/plate/react";
 
 // Toolbar utilities (only used when !readOnly && showToolbar)
 import { BoldPlugin, ItalicPlugin } from "@udecode/plate-basic-marks/react";
-import { FixedToolbar } from "@/components/editor/ui/menus/toolbars/fixed/fixed-toolbar";
-import { ToolbarGroup } from "@/components/editor/ui/menus/toolbars/toolbar";
-import { MarkToolbarButton } from "@/components/editor/ui/menus/buttons/mark-toolbar-button";
-import { BulletedIndentListToolbarButton } from "@/components/editor/ui/menus/buttons/indent-list-toolbar-button";
+import { FixedToolbar } from "@/components/editor/core/ui/menus/toolbars/fixed/fixed-toolbar";
+import { ToolbarGroup } from "@/components/editor/core/ui/menus/toolbars/toolbar";
+import { MarkToolbarButton } from "@/components/editor/core/ui/menus/buttons/mark-toolbar-button";
+import { BulletedIndentListToolbarButton } from "@/components/editor/core/ui/menus/buttons/indent-list-toolbar-button";
 import { BoldIcon, ItalicIcon } from "lucide-react";
 
 import { useCreateEditor } from "./core/use-create-editor";
 import {
   Editor,
   EditorContainer,
-} from "@/components/editor/ui/primitives/editor";
-import { EditorStatic } from "@/components/editor/ui/primitives/editor-static";
+} from "@/components/editor/core/ui/primitives/editor";
+import { EditorStatic } from "@/components/editor/core/ui/primitives/editor-static";
 
 export const MINI_EDITOR_PLUGINS = [
   ParagraphPlugin,

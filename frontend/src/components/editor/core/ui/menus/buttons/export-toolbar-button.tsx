@@ -79,44 +79,44 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { BlockquoteElementStatic } from "../../elements/blockquote/blockquote-element-static";
-import { CodeBlockElementStatic } from "../../elements/code/code-block-element-static";
-import { CodeLeafStatic } from "../../elements/code/code-leaf-static";
-import { CodeLineElementStatic } from "../../elements/code/code-line-element-static";
-import { CodeSyntaxLeafStatic } from "../../elements/code/code-syntax-leaf-static";
-import { ColumnElementStatic } from "../../elements/layout/column-element-static";
-import { ColumnGroupElementStatic } from "../../elements/layout/column-group-element-static";
-import { CommentLeafStatic } from "../../elements/comments-suggestions/comment-leaf";
-import { DateElementStatic } from "../../elements/date/date-element-static";
-import { HeadingElementStatic } from "../../elements/heading/heading-element-static";
-import { HighlightLeafStatic } from "../../elements/leafs/highlight-leaf-static";
-import { HrElementStatic } from "../../elements/heading/hr-element-static";
-import { ImageElementStatic } from "../../elements/image/image-element-static";
-import { KbdLeafStatic } from "../../elements/leafs/kbd-leaf-static";
-import { LinkElementStatic } from "../../elements/link/link-element-static";
-import { MediaAudioElementStatic } from "../../elements/media/media-audio-element-static";
-import { MediaFileElementStatic } from "../../elements/media/media-file-element-static";
-import { MediaVideoElementStatic } from "../../elements/media/media-video-element-static";
-import { MentionElementStatic } from "../../elements/mention/mention-element-static";
-import { ParagraphElementStatic } from "../../elements/paragraph/paragraph-element-static";
-import { TableCellElementStatic } from "../../elements/table/table-cell-element-static";
-import { TableElementStatic } from "../../elements/table/table-element-static";
-import { TableRowElementStatic } from "../../elements/table/table-row-element-static";
-import { TocElementStatic } from "../../elements/toc/toc-element-static";
-import { ToggleElementStatic } from "../../elements/toggle/toggle-element-static";
-import { EditorStatic } from "../../primitives/editor-static";
-import { EquationElementStatic } from "../../elements/equation/equation-element-static";
-import { InlineEquationElementStatic } from "../../elements/equation/inline-equation-element-static";
-import { ToolbarButton } from "../../menus/toolbars/toolbar";
+import { BlockquoteElementStatic } from "@/components/editor/core/ui/elements/blockquote/blockquote-element-static";
+import { CodeBlockElementStatic } from "@/components/editor/core/ui/elements/code/code-block-element-static";
+import { CodeLeafStatic } from "@/components/editor/core/ui/elements/code/code-leaf-static";
+import { CodeLineElementStatic } from "@/components/editor/core/ui/elements/code/code-line-element-static";
+import { CodeSyntaxLeafStatic } from "@/components/editor/core/ui/elements/code/code-syntax-leaf-static";
+import { ColumnElementStatic } from "@/components/editor/core/ui/elements/layout/column-element-static";
+import { ColumnGroupElementStatic } from "@/components/editor/core/ui/elements/layout/column-group-element-static";
+import { CommentLeafStatic } from "@/components/editor/features/comments/ui/elements/comment-leaf";
+import { DateElementStatic } from "@/components/editor/core/ui/elements/date/date-element-static";
+import { HeadingElementStatic } from "@/components/editor/core/ui/elements/heading/heading-element-static";
+import { HighlightLeafStatic } from "@/components/editor/core/ui/elements/leafs/highlight-leaf-static";
+import { HrElementStatic } from "@/components/editor/core/ui/elements/heading/hr-element-static";
+import { ImageElementStatic } from "@/components/editor/core/ui/elements/image/image-element-static";
+import { KbdLeafStatic } from "@/components/editor/core/ui/elements/leafs/kbd-leaf-static";
+import { LinkElementStatic } from "@/components/editor/core/ui/elements/link/link-element-static";
+import { MediaAudioElementStatic } from "@/components/editor/core/ui/elements/media/media-audio-element-static";
+import { MediaFileElementStatic } from "@/components/editor/core/ui/elements/media/media-file-element-static";
+import { MediaVideoElementStatic } from "@/components/editor/core/ui/elements/media/media-video-element-static";
+import { MentionElementStatic } from "@/components/editor/core/ui/elements/mention/mention-element-static";
+import { ParagraphElementStatic } from "@/components/editor/core/ui/elements/paragraph/paragraph-element-static";
+import { TableCellElementStatic } from "@/components/editor/core/ui/elements/table/table-cell-element-static";
+import { TableElementStatic } from "@/components/editor/core/ui/elements/table/table-element-static";
+import { TableRowElementStatic } from "@/components/editor/core/ui/elements/table/table-row-element-static";
+import { TocElementStatic } from "@/components/editor/core/ui/elements/toc/toc-element-static";
+import { ToggleElementStatic } from "@/components/editor/core/ui/elements/toggle/toggle-element-static";
+import { EditorStatic } from "@/components/editor/core/ui/primitives/editor-static";
+import { EquationElementStatic } from "@/components/editor/core/ui/elements/equation/equation-element-static";
+import { InlineEquationElementStatic } from "@/components/editor/core/ui/elements/equation/inline-equation-element-static";
+import { ToolbarButton } from "@/components/editor/core/ui/menus/toolbars/toolbar";
 import {
   FireLiComponent,
   FireMarker,
-} from "../../elements/indentation/indent-fire-marker";
+} from "@/components/editor/core/ui/elements/indentation/indent-fire-marker";
 import {
   TodoLiStatic,
   TodoMarkerStatic,
-} from "../../elements/indentation/indent-todo-marker-static";
-import { TableCellHeaderStaticElement } from "../../elements/table/table-cell-element-static";
+} from "@/components/editor/core/ui/elements/indentation/indent-todo-marker-static";
+import { TableCellHeaderStaticElement } from "@/components/editor/core/ui/elements/table/table-cell-element-static";
 
 const siteUrl = "https://platejs.org";
 const lowlight = createLowlight(all);

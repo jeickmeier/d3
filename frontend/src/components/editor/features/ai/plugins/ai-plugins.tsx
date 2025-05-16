@@ -11,9 +11,9 @@ import { usePluginOption } from "@udecode/plate/react";
 
 import { AILoadingBar } from "@components/editor/features/ai/ui/elements/ai-loading-bar";
 import { AIMenu } from "@components/editor/features/ai/ui/menus/ai/ai-menu";
-import { markdownPlugin } from "@components/editor/plugins/markdown-plugin";
+import { markdownPlugin } from "@components/editor/core/plugins/markdown-plugin";
 
-import { cursorOverlayPlugin } from "@components/editor/plugins/cursor-overlay-plugin";
+import { cursorOverlayPlugin } from "@components/editor/core/plugins/cursor-overlay-plugin";
 
 const systemCommon = `\
 You are an advanced AI-powered note-taking assistant, designed to enhance productivity and creativity in note management.

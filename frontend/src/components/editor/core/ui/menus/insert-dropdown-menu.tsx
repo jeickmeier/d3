@@ -55,7 +55,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { insertBlock, insertInlineElement } from "../../core/transforms";
+import {
+  insertBlock,
+  insertInlineElement,
+} from "@/components/editor/core/transforms";
 
 import { ToolbarButton, ToolbarMenuGroup } from "./toolbars/toolbar";
 

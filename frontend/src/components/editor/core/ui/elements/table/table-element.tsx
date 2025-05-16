@@ -54,14 +54,14 @@ import {
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-import { DEFAULT_COLORS } from "../../../lib/constants/color-constants";
-import { ColorDropdownMenuItems } from "../../primitives/color-picker/color-dropdown-menu-items";
+import { DEFAULT_COLORS } from "@/components/editor/settings/color-constants";
+import { ColorDropdownMenuItems } from "@/components/editor/core/ui/primitives/color-picker/color-dropdown-menu-items";
 import {
   Toolbar,
   ToolbarButton,
   ToolbarGroup,
   ToolbarMenuGroup,
-} from "../../menus/toolbars/toolbar";
+} from "@/components/editor/core/ui/menus/toolbars/toolbar";
 import {
   BorderAll,
   BorderBottom,
@@ -69,7 +69,7 @@ import {
   BorderNone,
   BorderRight,
   BorderTop,
-} from "../../../lib/constants/table-icons";
+} from "@/components/editor/settings/table-icons";
 
 export const TableElement = withHOC(
   TableProvider,

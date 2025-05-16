@@ -20,33 +20,33 @@ import { SlashPlugin } from "@udecode/plate-slash-command/react";
 import { TogglePlugin } from "@udecode/plate-toggle/react";
 import { TrailingBlockPlugin } from "@udecode/plate-trailing-block";
 
-import { FixedToolbarPlugin } from "@/components/editor/plugins/fixed-toolbar-plugin";
-import { FloatingToolbarPlugin } from "@/components/editor/plugins/floating-toolbar-plugin";
+import { FixedToolbarPlugin } from "@/components/editor/core/plugins/fixed-toolbar-plugin";
+import { FloatingToolbarPlugin } from "@/components/editor/core/plugins/floating-toolbar-plugin";
 
-import { aiPlugins } from "../features/ai/plugins/ai-plugins";
-import { alignPlugin } from "../plugins/align-plugin";
-import { autoformatPlugin } from "../plugins/autoformat-plugin";
-import { basicNodesPlugins } from "../plugins/basic-nodes-plugins";
-import { blockMenuPlugins } from "../plugins/block-menu-plugins";
+import { aiPlugins } from "@/components/editor/features/ai/plugins/ai-plugins";
+import { alignPlugin } from "@/components/editor/core/plugins/align-plugin";
+import { autoformatPlugin } from "@/components/editor/core/plugins/autoformat-plugin";
+import { basicNodesPlugins } from "@/components/editor/core/plugins/basic-nodes-plugins";
+import { blockMenuPlugins } from "@/components/editor/core/plugins/block-menu-plugins";
 import { commentsPlugin } from "@comments/plugins/comments-plugin";
-import { cursorOverlayPlugin } from "../plugins/cursor-overlay-plugin";
-import { deletePlugins } from "../plugins/delete-plugins";
+import { cursorOverlayPlugin } from "@/components/editor/core/plugins/cursor-overlay-plugin";
+import { deletePlugins } from "@/components/editor/core/plugins/delete-plugins";
 import { discussionPlugin } from "@comments/plugins/discussion-plugin";
-import { dndPlugins } from "../plugins/dnd-plugins";
-import { equationPlugins } from "../plugins/equation-plugins";
-import { exitBreakPlugin } from "../plugins/exit-break-plugin";
-import { indentListPlugins } from "../plugins/indent-list-plugins";
-import { lineHeightPlugin } from "../plugins/line-height-plugin";
-import { linkPlugin } from "../plugins/link-plugin";
-import { markdownPlugin } from "../plugins/markdown-plugin";
-import { mediaPlugins } from "../plugins/media-plugins";
-import { mentionPlugin } from "../plugins/mention-plugin";
-import { resetBlockTypePlugin } from "../plugins/reset-block-type-plugin";
-import { skipMarkPlugin } from "../plugins/skip-mark-plugin";
-import { softBreakPlugin } from "../plugins/soft-break-plugin";
-import { tablePlugin } from "../plugins/table-plugin";
-import { tocPlugin } from "../plugins/toc-plugin";
-import { userPlugin } from "../plugins/user-plugin";
+import { dndPlugins } from "@/components/editor/core/plugins/dnd-plugins";
+import { equationPlugins } from "@/components/editor/core/plugins/equation-plugins";
+import { exitBreakPlugin } from "@/components/editor/core/plugins/exit-break-plugin";
+import { indentListPlugins } from "@/components/editor/core/plugins/indent-list-plugins";
+import { lineHeightPlugin } from "@/components/editor/core/plugins/line-height-plugin";
+import { linkPlugin } from "@/components/editor/core/plugins/link-plugin";
+import { markdownPlugin } from "@/components/editor/core/plugins/markdown-plugin";
+import { mediaPlugins } from "@/components/editor/core/plugins/media-plugins";
+import { mentionPlugin } from "@/components/editor/core/plugins/mention-plugin";
+import { resetBlockTypePlugin } from "@/components/editor/core/plugins/reset-block-type-plugin";
+import { skipMarkPlugin } from "@/components/editor/core/plugins/skip-mark-plugin";
+import { softBreakPlugin } from "@/components/editor/core/plugins/soft-break-plugin";
+import { tablePlugin } from "@/components/editor/core/plugins/table-plugin";
+import { tocPlugin } from "@/components/editor/core/plugins/toc-plugin";
+import { userPlugin } from "@/components/editor/core/plugins/user-plugin";
 
 export const viewPlugins = [
   ...basicNodesPlugins,

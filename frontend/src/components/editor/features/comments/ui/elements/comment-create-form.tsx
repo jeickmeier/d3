@@ -9,7 +9,7 @@ import { useEditorRef, usePluginOption } from "@udecode/plate/react";
 
 import { cn } from "@/lib/utils";
 import { discussionPlugin } from "@comments/plugins/discussion-plugin";
-import { userPlugin } from "@components/editor/plugins/user-plugin";
+import { userPlugin } from "@components/editor/core/plugins/user-plugin";
 
 import { CommentTypeId } from "@comments/types/comment-types";
 

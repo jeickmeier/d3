@@ -4,7 +4,7 @@ import { Toaster } from "sonner";
 import { useEffect, useState, useMemo } from "react"; // Import useMemo
 
 import { PlateEditor } from "@/components/editor/plate-editor";
-import { SettingsProvider } from "@/components/editor/settings";
+import { SettingsProvider } from "@/components/editor/settings/settings";
 import { CommentsSidebarProvider } from "@/components/editor/features/comments/CommentsSidebarContext";
 // import { CommentsSidebar } from "@/components/editor/ui/sidebars/CommentsSidebar"; // Removed import
 import { useSharedSession } from "@/lib/auth/use-shared-session";

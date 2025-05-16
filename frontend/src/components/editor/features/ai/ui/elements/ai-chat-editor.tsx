@@ -61,42 +61,42 @@ import {
 import { usePlateEditor } from "@udecode/plate/react";
 import { all, createLowlight } from "lowlight";
 
-import { markdownPlugin } from "@components/editor/plugins/markdown-plugin";
+import { markdownPlugin } from "@components/editor/core/plugins/markdown-plugin";
 import {
   TodoLiStatic,
   TodoMarkerStatic,
-} from "@components/editor/ui/elements/indentation/indent-todo-marker-static";
+} from "@components/editor/core/ui/elements/indentation/indent-todo-marker-static";
 
-import { BlockquoteElementStatic } from "@components/editor/ui/elements/blockquote/blockquote-element-static";
-import { CalloutElementStatic } from "@components/editor/ui/elements/callout/callout-element-static";
-import { CodeBlockElementStatic } from "@components/editor/ui/elements/code/code-block-element-static";
-import { CodeLeafStatic } from "@components/editor/ui/elements/code/code-leaf-static";
-import { CodeLineElementStatic } from "@components/editor/ui/elements/code/code-line-element-static";
-import { CodeSyntaxLeafStatic } from "@components/editor/ui/elements/code/code-syntax-leaf-static";
-import { ColumnElementStatic } from "@components/editor/ui/elements/layout/column-element-static";
-import { ColumnGroupElementStatic } from "@components/editor/ui/elements/layout/column-group-element-static";
-import { DateElementStatic } from "@components/editor/ui/elements/date/date-element-static";
-import { EditorStatic } from "@components/editor/ui/primitives/editor-static";
-import { EquationElementStatic } from "@components/editor/ui/elements/equation/equation-element-static";
-import { HeadingElementStatic } from "@components/editor/ui/elements/heading/heading-element-static";
-import { HighlightLeafStatic } from "@components/editor/ui/elements/leafs/highlight-leaf-static";
-import { HrElementStatic } from "@components/editor/ui/elements/heading/hr-element-static";
-import { ImageElementStatic } from "@components/editor/ui/elements/image/image-element-static";
-import { InlineEquationElementStatic } from "@components/editor/ui/elements/equation/inline-equation-element-static";
-import { KbdLeafStatic } from "@components/editor/ui/elements/leafs/kbd-leaf-static";
-import { LinkElementStatic } from "@components/editor/ui/elements/link/link-element-static";
-import { MediaAudioElementStatic } from "@components/editor/ui/elements/media/media-audio-element-static";
-import { MediaFileElementStatic } from "@components/editor/ui/elements/media/media-file-element-static";
-import { MediaVideoElementStatic } from "@components/editor/ui/elements/media/media-video-element-static";
-import { MentionElementStatic } from "@components/editor/ui/elements/mention/mention-element-static";
-import { ParagraphElementStatic } from "@components/editor/ui/elements/paragraph/paragraph-element-static";
+import { BlockquoteElementStatic } from "@components/editor/core/ui/elements/blockquote/blockquote-element-static";
+import { CalloutElementStatic } from "@components/editor/core/ui/elements/callout/callout-element-static";
+import { CodeBlockElementStatic } from "@components/editor/core/ui/elements/code/code-block-element-static";
+import { CodeLeafStatic } from "@components/editor/core/ui/elements/code/code-leaf-static";
+import { CodeLineElementStatic } from "@components/editor/core/ui/elements/code/code-line-element-static";
+import { CodeSyntaxLeafStatic } from "@components/editor/core/ui/elements/code/code-syntax-leaf-static";
+import { ColumnElementStatic } from "@components/editor/core/ui/elements/layout/column-element-static";
+import { ColumnGroupElementStatic } from "@components/editor/core/ui/elements/layout/column-group-element-static";
+import { DateElementStatic } from "@components/editor/core/ui/elements/date/date-element-static";
+import { EditorStatic } from "@components/editor/core/ui/primitives/editor-static";
+import { EquationElementStatic } from "@components/editor/core/ui/elements/equation/equation-element-static";
+import { HeadingElementStatic } from "@components/editor/core/ui/elements/heading/heading-element-static";
+import { HighlightLeafStatic } from "@components/editor/core/ui/elements/leafs/highlight-leaf-static";
+import { HrElementStatic } from "@components/editor/core/ui/elements/heading/hr-element-static";
+import { ImageElementStatic } from "@components/editor/core/ui/elements/image/image-element-static";
+import { InlineEquationElementStatic } from "@components/editor/core/ui/elements/equation/inline-equation-element-static";
+import { KbdLeafStatic } from "@components/editor/core/ui/elements/leafs/kbd-leaf-static";
+import { LinkElementStatic } from "@components/editor/core/ui/elements/link/link-element-static";
+import { MediaAudioElementStatic } from "@components/editor/core/ui/elements/media/media-audio-element-static";
+import { MediaFileElementStatic } from "@components/editor/core/ui/elements/media/media-file-element-static";
+import { MediaVideoElementStatic } from "@components/editor/core/ui/elements/media/media-video-element-static";
+import { MentionElementStatic } from "@components/editor/core/ui/elements/mention/mention-element-static";
+import { ParagraphElementStatic } from "@components/editor/core/ui/elements/paragraph/paragraph-element-static";
 import {
   TableCellElementStatic,
   TableCellHeaderStaticElement,
-} from "@components/editor/ui/elements/table/table-cell-element-static";
-import { TableElementStatic } from "@components/editor/ui/elements/table/table-element-static";
-import { TableRowElementStatic } from "@components/editor/ui/elements/table/table-row-element-static";
-import { TocElementStatic } from "@components/editor/ui/elements/toc/toc-element-static";
+} from "@components/editor/core/ui/elements/table/table-cell-element-static";
+import { TableElementStatic } from "@components/editor/core/ui/elements/table/table-element-static";
+import { TableRowElementStatic } from "@components/editor/core/ui/elements/table/table-row-element-static";
+import { TocElementStatic } from "@components/editor/core/ui/elements/toc/toc-element-static";
 
 const components = {
   [BaseAudioPlugin.key]: MediaAudioElementStatic,

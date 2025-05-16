@@ -20,7 +20,7 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { STRUCTURAL_TYPES } from "../../core/transforms";
+import { STRUCTURAL_TYPES } from "@/components/editor/core/transforms";
 
 import { ToolbarButton } from "../menus/toolbars/toolbar";
 

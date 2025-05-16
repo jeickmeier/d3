@@ -13,9 +13,9 @@ import { Button } from "@/components/ui/button";
 import {
   emojiCategoryIcons,
   emojiSearchIcons,
-} from "../../../lib/constants/emoji-icons";
-import { EmojiPicker } from "../../menus/emoji/emoji-picker";
-import { EmojiToolbarDropdown } from "../../menus/emoji/emoji-toolbar-dropdown";
+} from "@/components/editor/settings/emoji-icons";
+import { EmojiPicker } from "@/components/editor/core/ui/menus/emoji/emoji-picker";
+import { EmojiToolbarDropdown } from "@/components/editor/core/ui/menus/emoji/emoji-toolbar-dropdown";
 
 export function CalloutElement({
   attributes,

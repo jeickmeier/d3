@@ -11,10 +11,10 @@ import { Smile } from "lucide-react";
 import {
   emojiCategoryIcons,
   emojiSearchIcons,
-} from "../../../lib/constants/emoji-icons";
-import { EmojiPicker } from "./emoji-picker";
-import { EmojiToolbarDropdown } from "./emoji-toolbar-dropdown";
-import { ToolbarButton } from "../../menus/toolbars/toolbar";
+} from "@/components/editor/settings/emoji-icons";
+import { EmojiPicker } from "@/components/editor/core/ui/menus/emoji/emoji-picker";
+import { EmojiToolbarDropdown } from "@/components/editor/core/ui/menus/emoji/emoji-toolbar-dropdown";
+import { ToolbarButton } from "@/components/editor/core/ui/menus/toolbars/toolbar";
 
 type EmojiDropdownMenuProps = {
   options?: EmojiDropdownMenuOptions;

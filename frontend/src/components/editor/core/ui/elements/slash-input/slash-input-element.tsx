@@ -44,7 +44,10 @@ import {
   TableOfContentsIcon,
 } from "lucide-react";
 
-import { insertBlock, insertInlineElement } from "../../../core/transforms";
+import {
+  insertBlock,
+  insertInlineElement,
+} from "@/components/editor/core/transforms";
 
 import {
   InlineCombobox,
@@ -54,7 +57,7 @@ import {
   InlineComboboxGroupLabel,
   InlineComboboxInput,
   InlineComboboxItem,
-} from "../../menus/inline-combobox";
+} from "@/components/editor/core/ui/menus/inline-combobox";
 
 type Group = {
   group: string;

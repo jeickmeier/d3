@@ -6,7 +6,7 @@ import {
   discussionPlugin,
   type TDiscussion,
 } from "@comments/plugins/discussion-plugin";
-import { userPlugin } from "@components/editor/plugins/user-plugin";
+import { userPlugin } from "@components/editor/core/plugins/user-plugin";
 import type { CommentTypeId } from "@comments/types/comment-types";
 import {
   createDiscussion,

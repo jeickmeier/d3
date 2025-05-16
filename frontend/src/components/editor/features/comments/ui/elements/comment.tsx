@@ -23,7 +23,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { userPlugin } from "@components/editor/plugins/user-plugin";
+import { userPlugin } from "@components/editor/core/plugins/user-plugin";
 import type { CommentTypeId } from "@comments/types/comment-types";
 import { COMMENT_TYPES_MAP } from "@comments/types/comment-types";
 import { MiniPlateEditor } from "@/components/editor/MiniPlateEditor";

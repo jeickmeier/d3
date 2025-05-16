@@ -4,7 +4,7 @@ import * as React from "react";
 
 import { useChat as useBaseChat } from "@ai-sdk/react";
 
-import { useSettings } from "@components/editor/settings";
+import { useSettings } from "@/components/editor/settings/settings";
 import { fakeStreamText } from "@components/editor/features/ai/ui/primitives/mock-chat-stream";
 
 export const useChat = () => {
