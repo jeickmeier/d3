@@ -6,8 +6,8 @@ import { CopilotPlugin } from "@udecode/plate-ai/react";
 // import { faker } from '@faker-js/faker';
 import { serializeMd, stripMarkdown } from "@udecode/plate-markdown";
 
-import { GhostText } from "../ui/primitives/ghost-text";
-import { markdownPlugin } from "./markdown-plugin";
+import { GhostText } from "@components/editor/features/ai/ui/primitives/ghost-text";
+import { markdownPlugin } from "@components/editor/plugins/markdown-plugin";
 
 export const copilotPlugins = [
   markdownPlugin,

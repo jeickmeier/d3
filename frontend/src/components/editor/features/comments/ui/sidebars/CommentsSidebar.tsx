@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useCommentsSidebar } from "@/components/editor/core/CommentsSidebarContext";
+import { useCommentsSidebar } from "@/components/editor/features/comments/CommentsSidebarContext";
 import { Button } from "@/components/ui/button";
 import { MessageSquareReplyIcon, XIcon, FilterIcon } from "lucide-react";
 import {

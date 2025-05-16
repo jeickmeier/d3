@@ -61,8 +61,8 @@ import {
   usePlateEditor,
 } from "@udecode/plate/react";
 
-import { AIAnchorElement } from "@/components/editor/ui/elements/ai/ai-anchor-element";
-import { AILeaf } from "@/components/editor/ui/elements/ai/ai-leaf";
+import { AIAnchorElement } from "@/components/editor/features/ai/ui/elements/ai-anchor-element";
+import { AILeaf } from "@/components/editor/features/ai/ui/elements/ai-leaf";
 import { BlockquoteElement } from "@/components/editor/ui/elements/blockquote/blockquote-element";
 import { CalloutElement } from "@/components/editor/ui/elements/callout/callout-element";
 import { CodeBlockElement } from "@/components/editor/ui/elements/code/code-block-element";

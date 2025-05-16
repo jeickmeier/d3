@@ -27,9 +27,9 @@ import {
   PopoverContent,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { useChat } from "../../../core/use-chat";
+import { useChat } from "@components/editor/features/ai/core/use-chat";
 
-import { AIChatEditor } from "../../elements/ai/ai-chat-editor";
+import { AIChatEditor } from "../../elements/ai-chat-editor";
 import { AIMenuItems } from "./ai-menu-items";
 
 export function AIMenu() {

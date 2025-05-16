@@ -28,7 +28,7 @@ import { MoreDropdownMenu } from "../../menus/more-dropdown-menu";
 import { AIToolbarButton } from "./ai-toolbar-button";
 import { AlignDropdownMenu } from "../../menus/align-dropdown-menu";
 import { ColorDropdownMenu } from "../../primitives/color-picker/color-dropdown-menu";
-import { useCommentsSidebar } from "@/components/editor/core/CommentsSidebarContext";
+import { useCommentsSidebar } from "@/components/editor/features/comments/CommentsSidebarContext";
 import { FontSizeToolbarButton } from "./font-size-toolbar-button";
 import { RedoToolbarButton, UndoToolbarButton } from "./history-toolbar-button";
 import { InsertDropdownMenu } from "../../menus/insert-dropdown-menu";
