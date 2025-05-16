@@ -110,7 +110,7 @@ export const MediaPlaceholderElement = withHOC(
           isUpload: true,
           name: element.mediaType === FilePlugin.key ? uploadedFile.name : "",
           placeholderId: element.id as string,
-          type: element.mediaType!,
+          type: element.mediaType,
           url: uploadedFile.url,
         };
 
@@ -120,7 +120,6 @@ export const MediaPlaceholderElement = withHOC(
       });
 
       api.placeholder.removeUploadingFile(element.id as string);
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [uploadedFile, element.id]);
 
     // React dev mode will call React.useEffect twice
@@ -138,8 +137,6 @@ export const MediaPlaceholderElement = withHOC(
       if (!currentFiles) return;
 
       replaceCurrentPlaceholder(currentFiles);
-
-      // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [isReplaced]);
 
     return (

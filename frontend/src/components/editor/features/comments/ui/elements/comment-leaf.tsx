@@ -24,16 +24,12 @@ export interface CommentLeafProps extends PlateLeafProps<TCommentText> {
   interactive?: boolean;
 }
 
-export function CommentLeaf(props: CommentLeafProps) {
-  const {
-    children,
-    leaf,
-    interactive = true,
-    ...rest
-  } = props as CommentLeafProps & {
-    leaf: TCommentText;
-  };
-
+export function CommentLeaf({
+  children,
+  leaf,
+  interactive = true,
+  ...rest
+}: CommentLeafProps) {
   // Always call hooks (React hook rules) but we will only use them in
   // interactive mode.
   const { api, setOption } = useEditorPlugin(commentsPlugin);

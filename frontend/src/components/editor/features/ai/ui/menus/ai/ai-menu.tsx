@@ -58,7 +58,6 @@ export function AIMenu() {
         setAnchorElement(anchorDom);
       }, 0);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [streaming]);
 
   const setOpen = (open: boolean) => {

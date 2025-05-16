@@ -2,10 +2,7 @@ import { useCallback } from "react";
 import { useEditorRef, usePluginOption } from "@udecode/plate/react";
 import type { Value } from "@udecode/plate";
 
-import {
-  discussionPlugin,
-  type TDiscussion,
-} from "@comments/plugins/discussion-plugin";
+import { discussionPlugin } from "@comments/plugins/discussion-plugin";
 import { userPlugin } from "@components/editor/core/plugins/user-plugin";
 import type { CommentTypeId } from "@comments/types/comment-types";
 import {
@@ -48,8 +45,8 @@ export function useDiscussionMutations() {
         documentContent,
       });
 
-      const discussions = (editor.getOption(discussionPlugin, "discussions") ??
-        []) as TDiscussion[];
+      const discussions =
+        editor.getOption(discussionPlugin, "discussions") ?? [];
 
       editor.setOption(
         discussionPlugin,
@@ -83,8 +80,8 @@ export function useDiscussionMutations() {
         commentType,
       } as TComment;
 
-      const discussions = (editor.getOption(discussionPlugin, "discussions") ??
-        []) as TDiscussion[];
+      const discussions =
+        editor.getOption(discussionPlugin, "discussions") ?? [];
 
       editor.setOption(
         discussionPlugin,
@@ -102,8 +99,8 @@ export function useDiscussionMutations() {
   // ---------------------------------------------------------------------------
   const updateComment = useCallback(
     (commentId: string, discussionId: string, contentRich: Value) => {
-      const discussions = (editor.getOption(discussionPlugin, "discussions") ??
-        []) as TDiscussion[];
+      const discussions =
+        editor.getOption(discussionPlugin, "discussions") ?? [];
       editor.setOption(
         discussionPlugin,
         "discussions",
@@ -123,8 +120,8 @@ export function useDiscussionMutations() {
   // ---------------------------------------------------------------------------
   const deleteComment = useCallback(
     (commentId: string, discussionId: string) => {
-      const discussions = (editor.getOption(discussionPlugin, "discussions") ??
-        []) as TDiscussion[];
+      const discussions =
+        editor.getOption(discussionPlugin, "discussions") ?? [];
       editor.setOption(
         discussionPlugin,
         "discussions",

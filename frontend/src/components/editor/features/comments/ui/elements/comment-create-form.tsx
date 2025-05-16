@@ -42,7 +42,7 @@ export function CommentCreateForm({
   const { addNewDiscussion, addReply } = useDiscussionMutations();
 
   const onAddComment = React.useCallback(
-    async (commentValue: Value, selectedType: CommentTypeId) => {
+    (commentValue: Value, selectedType: CommentTypeId) => {
       // If no discussionId prop is provided, always create a new discussion
       if (discussionIdProp === undefined) {
         addNewDiscussion(commentValue, selectedType);

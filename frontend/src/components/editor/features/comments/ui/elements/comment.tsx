@@ -80,7 +80,6 @@ export function Comment(props: {
     if (editingId === comment.id) {
       setEditingValue(initialValue);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editingId, initialValue]);
 
   const onCancel = () => {

@@ -51,7 +51,7 @@ export const copilotPlugins = [
         if (!contextEntry) return "";
 
         const prompt = serializeMd(editor, {
-          value: [contextEntry[0] as TElement],
+          value: [contextEntry[0]],
         });
 
         return `Continue the text up to the next punctuation mark:

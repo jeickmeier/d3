@@ -35,10 +35,7 @@ export const CommentsSidebar: React.FC = () => {
 
   // All comments and filter state
   const [visibleTypes, setVisibleTypes] = useVisibleCommentTypes();
-  const allDiscussions = usePluginOption(
-    discussionPlugin,
-    "discussions",
-  ) as TDiscussion[];
+  const allDiscussions = usePluginOption(discussionPlugin, "discussions");
   const discussions = React.useMemo(
     () => filterDiscussionsByTypes(allDiscussions, visibleTypes),
     [allDiscussions, visibleTypes],
