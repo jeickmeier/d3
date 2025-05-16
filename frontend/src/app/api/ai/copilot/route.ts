@@ -5,12 +5,15 @@ import { generateText } from "ai";
 import { NextResponse } from "next/server";
 
 export async function POST(req: NextRequest) {
-  const {
-    apiKey: key,
-    model = "gpt-4o-mini",
-    prompt,
-    system,
-  } = await req.json();
+  // Parse and type the request body to avoid unsafe any assignments
+  const body = (await req.json()) as {
+    apiKey?: string;
+    model?: string;
+    prompt: string;
+    system?: string;
+  };
+
+  const { apiKey: key, model = "gpt-4o-mini", prompt, system } = body;
 
   const apiKey = key || process.env.OPENAI_API_KEY;
 

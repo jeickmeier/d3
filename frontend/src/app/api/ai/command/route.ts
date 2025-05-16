@@ -1,4 +1,4 @@
-import type { TextStreamPart, ToolSet } from "ai";
+import type { TextStreamPart, ToolSet, Message } from "ai";
 import type { NextRequest } from "next/server";
 
 import { createOpenAI } from "@ai-sdk/openai";
@@ -126,8 +126,17 @@ const CHUNKING_REGEXPS = {
   word: /\S+\s+/m,
 };
 
+// Type of the request body for the AI command endpoint
+type RequestBody = {
+  apiKey?: string;
+  messages: Array<Omit<Message, "id">>;
+  system?: string;
+};
+
 export async function POST(req: NextRequest) {
-  const { apiKey: key, messages, system } = await req.json();
+  // Parse and type the request body
+  const body = (await req.json()) as RequestBody;
+  const { apiKey: key, messages, system } = body;
 
   const apiKey = key || process.env.OPENAI_API_KEY;
 
