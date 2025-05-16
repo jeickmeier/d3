@@ -24,8 +24,9 @@ class Logger {
     const error = new Error();
     const stack = error.stack?.split("\n")[3];
     const match = stack?.match(/at\s+(.*)\s+\((.*):(\d+):(\d+)\)/);
-    if (match) {
-      const [, , file, line] = match;
+    if (match && match.length >= 4) {
+      const file = match[2];
+      const line = match[3];
       return `${file}:${line}`;
     }
     return "";
@@ -182,11 +183,11 @@ class ConsoleInterceptor {
       .map((arg) => {
         if (arg instanceof Error) {
           return `${arg.message}\n${arg.stack}`;
-        }
-        if (typeof arg === "object") {
+        } else if (arg !== null && typeof arg === "object") {
           return JSON.stringify(arg, null, 2);
+        } else {
+          return String(arg);
         }
-        return String(arg);
       })
       .join(" ");
   }
@@ -207,10 +208,19 @@ class ConsoleInterceptor {
       };
 
       window.addEventListener("unhandledrejection", (event) => {
-        logger.error("Unhandled Promise rejection:", {
-          reason: event.reason,
-          stack: event.reason?.stack,
-        });
+        const reason: unknown = event.reason;
+        if (reason instanceof Error) {
+          logger.error(
+            "Unhandled Promise rejection:",
+            reason.message,
+            reason.stack,
+          );
+        } else {
+          logger.error(
+            "Unhandled Promise rejection:",
+            JSON.stringify(reason, null, 2),
+          );
+        }
       });
     } else {
       // Server-side error handling
