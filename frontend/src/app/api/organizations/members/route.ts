@@ -9,6 +9,7 @@ import {
 import { db } from "@db/db";
 import { member } from "@db/schema";
 import { and, eq } from "drizzle-orm";
+import { z, ZodError } from "zod";
 
 /**
  * GET handler for fetching all members of an organization
@@ -69,6 +70,12 @@ export async function GET(request: NextRequest) {
   }
 }
 
+const MemberActionSchema = z.object({
+  userId: z.string(),
+  organizationId: z.string(),
+  role: z.enum(["member", "admin", "owner"]),
+});
+
 /**
  * POST handler for adding a member to an organization
  *
@@ -89,9 +96,20 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the request body
-    const body = await request.json();
-    const { userId, organizationId, role } = body;
+    // Parse and validate the request body
+    let bodyParsed: z.infer<typeof MemberActionSchema>;
+    try {
+      bodyParsed = MemberActionSchema.parse(await request.json());
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { error: err.errors.map((e) => e.message).join(", ") },
+          { status: 400 },
+        );
+      }
+      throw err;
+    }
+    const { userId, organizationId, role } = bodyParsed;
 
     if (!userId || !organizationId || !role) {
       return NextResponse.json(
@@ -172,9 +190,20 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Get the request body
-    const body = await request.json();
-    const { userId, organizationId, role } = body;
+    // Parse and validate the request body
+    let bodyParsed: z.infer<typeof MemberActionSchema>;
+    try {
+      bodyParsed = MemberActionSchema.parse(await request.json());
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return NextResponse.json(
+          { error: err.errors.map((e) => e.message).join(", ") },
+          { status: 400 },
+        );
+      }
+      throw err;
+    }
+    const { userId, organizationId, role } = bodyParsed;
 
     if (!userId || !organizationId || !role) {
       return NextResponse.json(

@@ -60,7 +60,7 @@ export function SharedSessionProvider({ children }: { children: ReactNode }) {
       }
     }
 
-    fetchOnce();
+    void fetchOnce();
 
     return () => {
       cancelled = true;

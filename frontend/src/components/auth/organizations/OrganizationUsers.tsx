@@ -32,10 +32,20 @@ import {
 import { ChevronDown, Trash2, X } from "lucide-react";
 import { OrganizationMemberAdd } from "./OrganizationMemberAdd";
 import { logger } from "@/lib/utils/logger";
+
 interface OrganizationUsersProps {
   organizationId: string;
   organizationName: string;
   onClose: () => void;
+}
+
+interface FetchMembersResponse {
+  members: OrganizationMember[];
+  currentUserId: string;
+}
+
+interface ErrorResponse {
+  error?: string;
 }
 
 export function OrganizationUsers({
@@ -61,13 +71,13 @@ export function OrganizationUsers({
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()) as ErrorResponse;
         throw new Error(
           errorData.error || "Failed to fetch organization users",
         );
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as FetchMembersResponse;
       setUsers(data.members);
 
       // Find the current user's role
@@ -95,12 +105,12 @@ export function OrganizationUsers({
   };
 
   useEffect(() => {
-    fetchUsers();
+    void fetchUsers();
   }, [fetchUsers]);
 
   const handleMemberAdded = () => {
     // Refresh the list of members
-    fetchUsers();
+    void fetchUsers();
     setShowAddMember(false);
   };
 
@@ -122,12 +132,12 @@ export function OrganizationUsers({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()) as ErrorResponse;
         throw new Error(errorData.error || "Failed to update member role");
       }
 
       // Refresh the list of members
-      fetchUsers();
+      await fetchUsers();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to update member role",
@@ -154,7 +164,7 @@ export function OrganizationUsers({
       );
 
       if (!response.ok) {
-        const errorData = await response.json();
+        const errorData = (await response.json()) as ErrorResponse;
         logger.error("Member removal failed:", errorData);
         throw new Error(errorData.error || "Failed to remove member");
       }
@@ -262,7 +272,9 @@ export function OrganizationUsers({
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem
-                            onClick={() => handleUpdateRole(user.id, "member")}
+                            onClick={() => {
+                              void handleUpdateRole(user.id, "member");
+                            }}
                             className={
                               user.role === "member" ? "bg-slate-100" : ""
                             }
@@ -270,7 +282,9 @@ export function OrganizationUsers({
                             Member
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleUpdateRole(user.id, "admin")}
+                            onClick={() => {
+                              void handleUpdateRole(user.id, "admin");
+                            }}
                             className={
                               user.role === "admin" ? "bg-slate-100" : ""
                             }
@@ -278,7 +292,9 @@ export function OrganizationUsers({
                             Admin
                           </DropdownMenuItem>
                           <DropdownMenuItem
-                            onClick={() => handleUpdateRole(user.id, "owner")}
+                            onClick={() => {
+                              void handleUpdateRole(user.id, "owner");
+                            }}
                             className={
                               user.role === "owner" ? "bg-slate-100" : ""
                             }
@@ -323,7 +339,9 @@ export function OrganizationUsers({
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
-              onClick={() => deleteUser && handleRemoveMember(deleteUser.id)}
+              onClick={() => {
+                if (deleteUser) void handleRemoveMember(deleteUser.id);
+              }}
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
               disabled={isDeleting}
             >

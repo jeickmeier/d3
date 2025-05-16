@@ -11,7 +11,9 @@ const convertImageToBase64 = (file: File): Promise<string> => {
     const reader = new FileReader();
     reader.readAsDataURL(file);
     reader.onload = () => resolve(reader.result as string);
-    reader.onerror = (error) => reject(error);
+    reader.onerror = () => {
+      reject(reader.error ?? new Error("Error converting image to Base64"));
+    };
   });
 };
 
@@ -68,7 +70,7 @@ export default function SignUp() {
       />
 
       <Button
-        onClick={handleSignUp}
+        onClick={() => void handleSignUp()}
         className="w-full mt-4 flex items-center justify-center gap-2"
       >
         <svg

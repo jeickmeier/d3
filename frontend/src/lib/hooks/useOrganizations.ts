@@ -30,8 +30,8 @@ export function useOrganizations() {
         // For error responses, try to get meaningful error information
         let errorMsg = `API error: ${response.status}`;
         try {
-          const errorData = await response.json();
-          if (errorData && errorData.error) {
+          const errorData = (await response.json()) as { error?: string };
+          if (errorData.error) {
             errorMsg = errorData.error;
           }
         } catch {
@@ -45,24 +45,21 @@ export function useOrganizations() {
       }
 
       // For successful responses
-      let data;
+      const text = await response.text();
+      // Check if the response is empty
+      if (!text.trim()) {
+        throw new Error("Empty response received from API");
+      }
+      let parsedData: OrganizationWithMembership[];
       try {
-        const text = await response.text();
-
-        // Check if the response is empty
-        if (!text || text.trim() === "") {
-          throw new Error("Empty response received from API");
-        }
-
-        data = JSON.parse(text);
+        parsedData = JSON.parse(text) as OrganizationWithMembership[];
       } catch (err) {
         console.error("JSON parsing error:", err);
         throw new Error(
           `Failed to parse API response: ${err instanceof Error ? err.message : "Unknown parsing error"}`,
         );
       }
-
-      setOrganizations(data);
+      setOrganizations(parsedData);
     } catch (err) {
       console.error("Error fetching organizations:", err);
       setError(
@@ -74,7 +71,7 @@ export function useOrganizations() {
   }
 
   useEffect(() => {
-    fetchOrganizations();
+    void fetchOrganizations();
   }, []);
 
   return {

@@ -24,6 +24,14 @@ interface OrganizationMemberAddProps {
   onMemberAdded: () => void;
 }
 
+interface FetchUsersResponse {
+  users?: User[];
+}
+
+interface AddMemberResponse {
+  error?: string;
+}
+
 export function OrganizationMemberAdd({
   organizationId,
   onClose,
@@ -43,15 +51,15 @@ export function OrganizationMemberAdd({
         if (!response.ok) {
           throw new Error("Failed to fetch users");
         }
-        const data = await response.json();
-        setUsers(data.users || []);
+        const data = (await response.json()) as FetchUsersResponse;
+        setUsers(data.users ?? []);
       } catch (err) {
         console.error("Error fetching users:", err);
         setError("Failed to load users");
       }
     };
 
-    fetchUsers();
+    void fetchUsers();
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -80,8 +88,8 @@ export function OrganizationMemberAdd({
       });
 
       if (!addResponse.ok) {
-        const errorData = await addResponse.json();
-        throw new Error(errorData.error || "Failed to add member");
+        const errorData = (await addResponse.json()) as AddMemberResponse;
+        throw new Error(errorData.error ?? "Failed to add member");
       }
 
       setSuccess(true);
@@ -115,7 +123,12 @@ export function OrganizationMemberAdd({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={(e) => {
+          void handleSubmit(e);
+        }}
+        className="space-y-4"
+      >
         <div className="space-y-2">
           <Label htmlFor="user">Select User</Label>
           <Select value={selectedUserId} onValueChange={setSelectedUserId}>

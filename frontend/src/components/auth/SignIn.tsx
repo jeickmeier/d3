@@ -69,7 +69,7 @@ export default function SignIn() {
         onChange={(e) => setPassword(e.target.value)}
       />
       <Button
-        onClick={signIn}
+        onClick={() => void signIn()}
         className="w-full mt-4 flex items-center justify-center gap-2"
       >
         <svg
@@ -86,7 +86,7 @@ export default function SignIn() {
       </Button>
       <Button
         variant="outline"
-        onClick={signInWithGithub}
+        onClick={() => void signInWithGithub()}
         className="w-full mt-4 flex items-center justify-center gap-2"
       >
         <svg viewBox="0 0 438.549 438.549" className="h-4 w-4">

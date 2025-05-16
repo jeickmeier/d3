@@ -14,7 +14,7 @@ export function OrganizationsComponent() {
   useEffect(() => {
     const handleOrgCreation = () => {
       // Refetch organizations and switch to list tab
-      refetch();
+      void refetch();
       setActiveTab("list");
     };
 

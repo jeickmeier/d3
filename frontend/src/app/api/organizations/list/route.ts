@@ -64,7 +64,7 @@ export async function GET(request: NextRequest) {
     );
 
     // Create a map of organization IDs to roles for quick lookup
-    const membershipMap = new Map();
+    const membershipMap = new Map<string, string>();
     userMemberships.forEach((membership) => {
       membershipMap.set(membership.organizationId, membership.role);
     });

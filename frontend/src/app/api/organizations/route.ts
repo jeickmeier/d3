@@ -11,6 +11,22 @@ import {
   badRequestResponse,
   forbiddenResponse,
 } from "@/lib/api/error-handler";
+import { z, ZodError } from "zod";
+
+const CreateOrganizationSchema = z.object({
+  name: z.string(),
+  slug: z.string(),
+  logo: z.string().nullable().optional(),
+  typeId: z.string().nullable().optional(),
+});
+
+const UpdateOrganizationSchema = z.object({
+  id: z.string(),
+  name: z.string().optional(),
+  slug: z.string().optional(),
+  logo: z.string().nullable().optional(),
+  typeId: z.string().nullable().optional(),
+});
 
 /**
  * GET handler for fetching all organizations
@@ -86,12 +102,16 @@ export async function POST(request: NextRequest) {
       return unauthorizedResponse("User ID not found in session");
     }
 
-    const body = await request.json();
-    const { name, slug, logo, typeId } = body;
-
-    if (!name || !slug) {
-      return badRequestResponse("Name and slug are required");
+    let createInput;
+    try {
+      createInput = CreateOrganizationSchema.parse(await request.json());
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return badRequestResponse(err.errors.map((e) => e.message).join(", "));
+      }
+      throw err;
     }
+    const { name, slug, logo, typeId } = createInput;
 
     // Create organization using Drizzle
     const [org] = await db
@@ -140,8 +160,16 @@ export async function PUT(request: NextRequest) {
       return unauthorizedResponse();
     }
 
-    const body = await request.json();
-    const { id, name, slug, logo, typeId } = body;
+    let updateInput;
+    try {
+      updateInput = UpdateOrganizationSchema.parse(await request.json());
+    } catch (err) {
+      if (err instanceof ZodError) {
+        return badRequestResponse(err.errors.map((e) => e.message).join(", "));
+      }
+      throw err;
+    }
+    const { id, name, slug, logo, typeId } = updateInput;
 
     if (!id) {
       return badRequestResponse("Organization ID is required");

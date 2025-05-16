@@ -24,8 +24,8 @@ export function useOrganizationTypes() {
       if (!response.ok) {
         let errorMsg = `API error: ${response.status}`;
         try {
-          const errorData = await response.json();
-          if (errorData && errorData.error) {
+          const errorData = (await response.json()) as { error?: string };
+          if (errorData.error) {
             errorMsg = errorData.error;
           }
         } catch {
@@ -37,7 +37,7 @@ export function useOrganizationTypes() {
         throw new Error(errorMsg);
       }
 
-      const data = await response.json();
+      const data = (await response.json()) as OrganizationType[];
       setOrganizationTypes(data);
     } catch (error) {
       setError(error instanceof Error ? error : new Error(String(error)));
@@ -47,11 +47,11 @@ export function useOrganizationTypes() {
   }
 
   useEffect(() => {
-    fetchOrganizationTypes();
+    void fetchOrganizationTypes();
   }, []);
 
   const refetch = () => {
-    fetchOrganizationTypes();
+    void fetchOrganizationTypes();
   };
 
   return {

@@ -89,7 +89,7 @@ export function OrganizationList() {
     try {
       setIsDeleting(true);
       await authClient.organization.delete({ organizationId: orgId });
-      refetch();
+      await refetch();
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to delete organization",
@@ -130,7 +130,7 @@ export function OrganizationList() {
   };
 
   const handleOrganizationUpdated = () => {
-    refetch(); // Refresh the list
+    void refetch(); // Refresh the list
     setViewMode("list");
     setEditingOrg(null);
   };
@@ -285,7 +285,7 @@ export function OrganizationList() {
                               <AlertDialogCancel>Cancel</AlertDialogCancel>
                               <AlertDialogAction
                                 className="bg-red-600 text-white hover:bg-red-700"
-                                onClick={() => handleDelete(org.id)}
+                                onClick={() => void handleDelete(org.id)}
                                 disabled={isDeleting}
                               >
                                 {isDeleting ? "Deleting..." : "Delete"}

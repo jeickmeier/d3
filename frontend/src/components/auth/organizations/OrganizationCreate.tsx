@@ -116,7 +116,10 @@ export function OrganizationCreate({ onCreated }: OrganizationCreateProps) {
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
+      <form
+        onSubmit={(e) => void handleSubmit(e)}
+        className="space-y-4 max-w-md"
+      >
         <div className="space-y-2">
           <Label htmlFor="name">Team Name</Label>
           <Input

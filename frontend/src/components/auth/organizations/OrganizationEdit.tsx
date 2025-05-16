@@ -114,14 +114,17 @@ export function OrganizationEdit({
       });
 
       if (!response.ok) {
-        const errorData = await response.json();
-        logger.error("Organization update failed:", errorData);
-
-        // Extract a more specific error message if available
-        const errorMessage = errorData.error
-          ? errorData.error
-          : "Failed to update organization";
-
+        const json: unknown = await response.json();
+        logger.error("Organization update failed:", json);
+        let errorMessage = "Failed to update organization";
+        if (
+          typeof json === "object" &&
+          json !== null &&
+          "error" in json &&
+          typeof (json as Record<string, unknown>).error === "string"
+        ) {
+          errorMessage = (json as Record<string, string>).error;
+        }
         throw new Error(errorMessage);
       }
 
@@ -174,10 +177,17 @@ export function OrganizationEdit({
       );
 
       if (!response.ok) {
-        const data = await response.json();
-        setSlugError(
-          data.error || "This slug is already taken. Please choose another.",
-        );
+        const json: unknown = await response.json();
+        let message = "This slug is already taken. Please choose another.";
+        if (
+          typeof json === "object" &&
+          json !== null &&
+          "error" in json &&
+          typeof (json as Record<string, unknown>).error === "string"
+        ) {
+          message = (json as Record<string, string>).error;
+        }
+        setSlugError(message);
         return false;
       }
 
@@ -206,7 +216,12 @@ export function OrganizationEdit({
         </div>
       )}
 
-      <form onSubmit={handleSubmit} className="space-y-4">
+      <form
+        onSubmit={(e) => {
+          void handleSubmit(e);
+        }}
+        className="space-y-4"
+      >
         <div className="space-y-2">
           <Label htmlFor="name">Team Name</Label>
           <Input
