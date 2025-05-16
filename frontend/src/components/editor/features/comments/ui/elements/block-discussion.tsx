@@ -29,13 +29,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { commentsPlugin } from "../../../plugins/comments/comments-plugin";
+import { commentsPlugin } from "@comments/plugins/comments-plugin";
 import {
   type TDiscussion,
   discussionPlugin,
-} from "../../../plugins/comments/discussion-plugin";
-import { useVisibleCommentTypes } from "../../../plugins/comments/useVisibleCommentTypes";
-import { filterDiscussionsByTypes } from "../../../plugins/comments/discussion-utils";
+} from "@comments/plugins/discussion-plugin";
+import { useVisibleCommentTypes } from "@comments/hooks/useVisibleCommentTypes";
+import { filterDiscussionsByTypes } from "@comments/utils/discussion-utils";
 import { Comment } from "./comment";
 import { CommentCreateForm } from "./comment-create-form";
 

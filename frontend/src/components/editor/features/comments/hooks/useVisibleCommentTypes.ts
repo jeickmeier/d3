@@ -1,8 +1,8 @@
 import { useEffect } from "react";
 import { useEditorRef } from "@udecode/plate/react";
 
-import { discussionPlugin } from "./discussion-plugin";
-import type { CommentTypeId } from "./comment-types";
+import { discussionPlugin } from "@comments/plugins/discussion-plugin";
+import type { CommentTypeId } from "@comments/types/comment-types";
 import { usePersistentState } from "@/hooks/usePersistentState";
 
 /**

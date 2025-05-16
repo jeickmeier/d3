@@ -1,9 +1,9 @@
 import type { Value } from "@udecode/plate";
 import { nanoid } from "nanoid";
 
-import type { TComment } from "../../ui/elements/comments-suggestions/comment";
-import type { TDiscussion } from "./discussion-plugin";
-import type { CommentTypeId } from "./comment-types";
+import type { TComment } from "@comments/ui/elements/comment";
+import type { TDiscussion } from "@comments/plugins/discussion-plugin";
+import type { CommentTypeId } from "@comments/types/comment-types";
 
 /**
  * Add a brand-new discussion containing a first comment.

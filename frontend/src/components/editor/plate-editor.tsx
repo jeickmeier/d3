@@ -9,7 +9,7 @@ import { Plate } from "@udecode/plate/react";
 import { useCreateEditor } from "./core/use-create-editor";
 import { SettingsDialog } from "./settings";
 import { Editor, EditorContainer } from "./ui/primitives/editor";
-import { CommentsSidebar } from "./ui/sidebars/CommentsSidebar";
+import { CommentsSidebar } from "@comments/ui/sidebars/CommentsSidebar";
 
 interface PlateEditorProps {
   currentUser?: {

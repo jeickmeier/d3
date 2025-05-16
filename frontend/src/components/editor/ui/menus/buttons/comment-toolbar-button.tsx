@@ -6,7 +6,7 @@ import { getDraftCommentKey } from "@udecode/plate-comments";
 import { useEditorPlugin } from "@udecode/plate/react";
 import { MessageSquareTextIcon } from "lucide-react";
 
-import { commentsPlugin } from "../../../plugins/comments/comments-plugin";
+import { commentsPlugin } from "@comments/plugins/comments-plugin";
 
 import { ToolbarButton } from "../../menus/toolbars/toolbar";
 

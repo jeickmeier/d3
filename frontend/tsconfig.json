@@ -21,7 +21,8 @@
     "paths": {
       "@/*": ["./src/*"],
       "@db/*": ["./db/*"],
-      "@components/*": ["./src/components/*"]
+      "@components/*": ["./src/components/*"],
+      "@comments/*": ["./src/components/editor/features/comments/*"]
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],

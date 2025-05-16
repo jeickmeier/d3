@@ -1,9 +1,6 @@
 import React from "react";
 import { Checkbox } from "@/components/ui/checkbox";
-import {
-  COMMENT_TYPES,
-  CommentTypeId,
-} from "@/components/editor/plugins/comments/comment-types";
+import { COMMENT_TYPES, CommentTypeId } from "@comments/types/comment-types";
 
 interface CommentTypeFilterListProps {
   visibleTypes: CommentTypeId[];

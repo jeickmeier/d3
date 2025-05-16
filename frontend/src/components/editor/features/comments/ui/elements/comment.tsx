@@ -23,11 +23,11 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { userPlugin } from "../../../plugins/user-plugin";
-import type { CommentTypeId } from "../../../plugins/comments/comment-types";
-import { COMMENT_TYPES_MAP } from "../../../plugins/comments/comment-types";
+import { userPlugin } from "@components/editor/plugins/user-plugin";
+import type { CommentTypeId } from "@comments/types/comment-types";
+import { COMMENT_TYPES_MAP } from "@comments/types/comment-types";
 import { MiniPlateEditor } from "@/components/editor/MiniPlateEditor";
-import { useDiscussionMutations } from "../../../plugins/comments/useDiscussionMutations";
+import { useDiscussionMutations } from "@comments/hooks/useDiscussionMutations";
 import { CommentAvatar } from "@/components/ui/comment-avatar";
 
 export interface TComment {

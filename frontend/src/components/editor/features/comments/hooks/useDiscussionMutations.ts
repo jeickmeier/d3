@@ -2,17 +2,20 @@ import { useCallback } from "react";
 import { useEditorRef, usePluginOption } from "@udecode/plate/react";
 import type { Value } from "@udecode/plate";
 
-import { discussionPlugin, type TDiscussion } from "./discussion-plugin";
-import { userPlugin } from "../user-plugin";
-import type { CommentTypeId } from "./comment-types";
+import {
+  discussionPlugin,
+  type TDiscussion,
+} from "@comments/plugins/discussion-plugin";
+import { userPlugin } from "@components/editor/plugins/user-plugin";
+import type { CommentTypeId } from "@comments/types/comment-types";
 import {
   createDiscussion,
   addCommentToDiscussion,
   addDiscussion,
   updateCommentInDiscussions,
   deleteCommentFromDiscussions,
-} from "./discussion-utils";
-import type { TComment } from "../../ui/elements/comments-suggestions/comment";
+} from "@comments/utils/discussion-utils";
+import type { TComment } from "@comments/ui/elements/comment";
 import { nanoid } from "nanoid";
 
 /**

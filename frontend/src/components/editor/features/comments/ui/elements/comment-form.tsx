@@ -21,10 +21,7 @@ import {
 } from "@/components/ui/select";
 
 // Comment type definitions
-import {
-  COMMENT_TYPES,
-  CommentTypeId,
-} from "@/components/editor/plugins/comments/comment-types";
+import { COMMENT_TYPES, CommentTypeId } from "@comments/types/comment-types";
 
 interface CommentFormProps {
   /**

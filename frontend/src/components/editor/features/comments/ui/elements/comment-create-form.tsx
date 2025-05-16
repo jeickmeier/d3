@@ -8,15 +8,15 @@ import { CommentsPlugin, useCommentId } from "@udecode/plate-comments/react";
 import { useEditorRef, usePluginOption } from "@udecode/plate/react";
 
 import { cn } from "@/lib/utils";
-import { discussionPlugin } from "../../../plugins/comments/discussion-plugin";
-import { userPlugin } from "../../../plugins/user-plugin";
+import { discussionPlugin } from "@comments/plugins/discussion-plugin";
+import { userPlugin } from "@components/editor/plugins/user-plugin";
 
-import { CommentTypeId } from "../../../plugins/comments/comment-types";
+import { CommentTypeId } from "@comments/types/comment-types";
 
 // New shared component
-import { CommentForm } from "./comment-form";
+import { CommentForm } from "@comments/ui/elements/comment-form";
 
-import { useDiscussionMutations } from "../../../plugins/comments/useDiscussionMutations";
+import { useDiscussionMutations } from "@comments/hooks/useDiscussionMutations";
 
 export function CommentCreateForm({
   autoFocus = false,
@@ -43,6 +43,11 @@ export function CommentCreateForm({
 
   const onAddComment = React.useCallback(
     async (commentValue: Value, selectedType: CommentTypeId) => {
+      // If no discussionId prop is provided, always create a new discussion
+      if (discussionIdProp === undefined) {
+        addNewDiscussion(commentValue, selectedType);
+        return;
+      }
       // Clear editor value handled by CommentForm
 
       if (discussionId) {
@@ -87,7 +92,14 @@ export function CommentCreateForm({
         editor.tf.unsetNodes([getDraftCommentKey()], { at: path });
       });
     },
-    [discussionId, discussions, addNewDiscussion, addReply, editor],
+    [
+      discussionIdProp,
+      discussionId,
+      discussions,
+      addNewDiscussion,
+      addReply,
+      editor,
+    ],
   );
 
   return (

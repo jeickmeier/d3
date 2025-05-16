@@ -13,14 +13,12 @@ import { usePluginOption } from "@udecode/plate/react";
 import {
   discussionPlugin,
   type TDiscussion,
-} from "@/components/editor/plugins/comments/discussion-plugin";
-import { CommentCreateForm } from "@/components/editor/ui/elements/comments-suggestions/comment-create-form";
-import { Comment } from "@/components/editor/ui/elements/comments-suggestions/comment";
-import { useVisibleCommentTypes } from "@/components/editor/plugins/comments/useVisibleCommentTypes";
-import { filterDiscussionsByTypes } from "@/components/editor/plugins/comments/discussion-utils";
-import { CommentTypeFilterList } from "@/components/editor/ui/elements/comments-suggestions/comment-type-filter-list";
-
-// Width is encoded in Tailwind arbitrary size w-[42.5rem]
+} from "@comments/plugins/discussion-plugin";
+import { CommentCreateForm } from "@comments/ui/elements/comment-create-form";
+import { Comment } from "../elements/comment";
+import { useVisibleCommentTypes } from "@comments/hooks/useVisibleCommentTypes";
+import { filterDiscussionsByTypes } from "@comments/utils/discussion-utils";
+import { CommentTypeFilterList } from "../elements/comment-type-filter-list";
 
 export const CommentsSidebar: React.FC = () => {
   const { isCommentsSidebarOpen, setIsCommentsSidebarOpen } =
@@ -49,9 +47,9 @@ export const CommentsSidebar: React.FC = () => {
   // Side-effect: when sidebar is open, add right padding to body to make room
   useEffect(() => {
     if (isCommentsSidebarOpen) {
-      document.body.classList.add("pr-[42.5rem]");
+      document.body.classList.add("pr-[50rem]");
       return () => {
-        document.body.classList.remove("pr-[42.5rem]");
+        document.body.classList.remove("pr-[50rem]");
       };
     }
   }, [isCommentsSidebarOpen]);
@@ -61,7 +59,7 @@ export const CommentsSidebar: React.FC = () => {
   }
 
   return (
-    <div className="fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-lg z-[60] p-4 flex flex-col w-[42.5rem]">
+    <div className="fixed top-0 right-0 h-full bg-white border-l border-gray-200 shadow-lg z-[60] p-4 flex flex-col w-[50rem]">
       <div className="flex justify-between items-center mb-4 pb-2 border-b">
         <h2 className="text-lg font-semibold">Comments</h2>
         <div className="flex items-center space-x-2">
@@ -92,7 +90,7 @@ export const CommentsSidebar: React.FC = () => {
         {discussions.length === 0 && (
           <p className="text-gray-500 text-sm">No comments yet.</p>
         )}
-        {discussions.map((discussion) => {
+        {discussions.map((discussion: TDiscussion) => {
           if (discussion.isResolved) return null;
 
           return (
@@ -105,7 +103,7 @@ export const CommentsSidebar: React.FC = () => {
                   {discussion.documentContent}
                 </blockquote>
               )}
-              {discussion.comments.map((comment, commentIndex) => (
+              {discussion.comments.map((comment, commentIndex: number) => (
                 <Comment
                   key={comment.id}
                   comment={comment}

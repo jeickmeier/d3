@@ -71,7 +71,7 @@ import { CodeLineElement } from "@/components/editor/ui/elements/code/code-line-
 import { CodeSyntaxLeaf } from "@/components/editor/ui/elements/code/code-syntax-leaf";
 import { ColumnElement } from "@/components/editor/ui/elements/layout/column-element";
 import { ColumnGroupElement } from "@/components/editor/ui/elements/layout/column-group-element";
-import { CommentLeaf } from "@/components/editor/ui/elements/comments-suggestions/comment-leaf";
+import { CommentLeaf } from "@comments/ui/elements/comment-leaf";
 import { DateElement } from "@/components/editor/ui/elements/date/date-element";
 import { EmojiInputElement } from "@/components/editor/ui/menus/emoji/emoji-input-element";
 import { EquationElement } from "@/components/editor/ui/elements/equation/equation-element";
