@@ -8,10 +8,8 @@ import { useElement, usePluginOption } from "@udecode/plate/react";
 export const GhostText = () => {
   const element = useElement();
 
-  const isSuggested = usePluginOption(
-    CopilotPlugin,
-    "isSuggested",
-    element.id as string,
+  const isSuggested = Boolean(
+    usePluginOption(CopilotPlugin, "isSuggested", element.id as string),
   );
 
   if (!isSuggested) return null;

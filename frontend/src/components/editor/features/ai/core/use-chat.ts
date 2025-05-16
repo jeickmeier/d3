@@ -38,14 +38,43 @@ export const useChat = () => {
         let sample: "markdown" | "mdx" | null = null;
 
         try {
-          const content = JSON.parse(init?.body as string).messages.at(
-            -1,
-          ).content;
+          // Type definitions for runtime validation
+          interface ChatMessage {
+            content: string;
+          }
 
-          if (content.includes("Generate a markdown sample")) {
-            sample = "markdown";
-          } else if (content.includes("Generate a mdx sample")) {
-            sample = "mdx";
+          interface ChatRequestBody {
+            messages: ChatMessage[];
+          }
+
+          // Runtime type-guard to ensure we only access the expected shape
+          const isChatRequestBody = (val: unknown): val is ChatRequestBody => {
+            return (
+              typeof val === "object" &&
+              val !== null &&
+              "messages" in val &&
+              Array.isArray((val as { messages: unknown }).messages) &&
+              (val as { messages: unknown[] }).messages.every(
+                (msg) =>
+                  typeof msg === "object" &&
+                  msg !== null &&
+                  "content" in msg &&
+                  typeof (msg as { content: unknown }).content === "string",
+              )
+            );
+          };
+
+          const parsed = JSON.parse(init?.body as string) as unknown;
+
+          if (isChatRequestBody(parsed)) {
+            const lastContent =
+              parsed.messages[parsed.messages.length - 1]?.content ?? "";
+
+            if (lastContent.includes("Generate a markdown sample")) {
+              sample = "markdown";
+            } else if (lastContent.includes("Generate a mdx sample")) {
+              sample = "mdx";
+            }
           }
         } catch {
           sample = null;

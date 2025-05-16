@@ -281,8 +281,8 @@ export const AIMenuItems = ({
 }) => {
   const editor = useEditorRef();
   const { messages } = usePluginOption(AIChatPlugin, "chat");
-  const aiEditor = usePluginOption(AIChatPlugin, "aiEditor")!;
-  const isSelecting = useIsSelecting();
+  const aiEditor = usePluginOption(AIChatPlugin, "aiEditor") as SlateEditor;
+  const isSelecting = useIsSelecting() as boolean;
 
   const menuState = React.useMemo(() => {
     if (messages && messages.length > 0) {

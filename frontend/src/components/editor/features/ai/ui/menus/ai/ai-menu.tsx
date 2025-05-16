@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import { type NodeEntry, isHotkey } from "@udecode/plate";
+import { type NodeEntry, isHotkey as _isHotkey } from "@udecode/plate";
 import {
   AIChatPlugin,
   useEditorChat,
@@ -32,12 +32,28 @@ import { useChat } from "@components/editor/features/ai/core/use-chat";
 import { AIChatEditor } from "../../elements/ai-chat-editor";
 import { AIMenuItems } from "./ai-menu-items";
 
+// A strongly typed wrapper around `isHotkey` to satisfy the linter.
+const isHotkey: (
+  hotkey: string,
+  event: KeyboardEvent | React.KeyboardEvent,
+) => boolean = _isHotkey as unknown as (
+  hotkey: string,
+  event: KeyboardEvent | React.KeyboardEvent,
+) => boolean;
+
 export function AIMenu() {
   const { api, editor } = useEditorPlugin(AIChatPlugin);
+  const aiChatApi = api.aiChat as unknown as {
+    show: () => void;
+    hide: () => void;
+    submit: () => Promise<void> | void;
+    stop: () => void;
+    node: (options?: { anchor?: boolean }) => NodeEntry | undefined;
+  };
   const open = usePluginOption(AIChatPlugin, "open");
   const mode = usePluginOption(AIChatPlugin, "mode");
   const streaming = usePluginOption(AIChatPlugin, "streaming");
-  const isSelecting = useIsSelecting();
+  const isSelecting = Boolean(useIsSelecting());
 
   const [value, setValue] = React.useState("");
 
@@ -52,7 +68,7 @@ export function AIMenu() {
 
   React.useEffect(() => {
     if (streaming) {
-      const anchor = api.aiChat.node({ anchor: true });
+      const anchor = aiChatApi.node({ anchor: true });
       setTimeout(() => {
         const anchorDom = editor.api.toDOMNode(anchor![0])!;
         setAnchorElement(anchorDom);
@@ -60,11 +76,14 @@ export function AIMenu() {
     }
   }, [streaming]);
 
+  const hideChat = () => aiChatApi.hide();
+  const submitChat = () => aiChatApi.submit();
+
   const setOpen = (open: boolean) => {
     if (open) {
-      api.aiChat.show();
+      aiChatApi.show();
     } else {
-      api.aiChat.hide();
+      hideChat();
     }
   };
 
@@ -103,13 +122,13 @@ export function AIMenu() {
   useHotkeys(
     "meta+j",
     () => {
-      api.aiChat.show();
+      aiChatApi.show();
     },
     { enableOnContentEditable: true, enableOnFormTags: true },
   );
 
   useHotkeys("esc", () => {
-    api.aiChat.stop();
+    aiChatApi.stop();
 
     // remove when you implement the route /api/ai/command
     chat._abortFakeStream();
@@ -130,10 +149,10 @@ export function AIMenu() {
         style={{
           width: anchorElement?.offsetWidth,
         }}
-        onEscapeKeyDown={(e) => {
+        onEscapeKeyDown={(e: KeyboardEvent) => {
           e.preventDefault();
 
-          api.aiChat.hide();
+          hideChat();
         }}
         align="center"
         side="bottom"
@@ -160,14 +179,14 @@ export function AIMenu() {
                 "border-b focus-visible:ring-transparent",
               )}
               value={input}
-              onKeyDown={(e) => {
-                if (isHotkey("backspace")(e) && input.length === 0) {
+              onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+                if (isHotkey("backspace", e) && input.length === 0) {
                   e.preventDefault();
-                  api.aiChat.hide();
+                  hideChat();
                 }
-                if (isHotkey("enter")(e) && !e.shiftKey && !value) {
+                if (isHotkey("enter", e) && !e.shiftKey && !value) {
                   e.preventDefault();
-                  void api.aiChat.submit();
+                  void submitChat();
                 }
               }}
               onValueChange={setInput}
