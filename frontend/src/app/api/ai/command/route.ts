@@ -36,7 +36,7 @@ function smoothStream<TOOLS extends ToolSet>({
   _internal?: {
     delay?: (delayInMs: number | null) => Promise<void>;
   };
-  chunking?: ChunkDetector | RegExp | "line" | "word";
+  chunking?: ChunkDetector | RegExp | "line" | "word" | "list";
   delayInMs?: delayer | number | null;
 } = {}): (options: {
   tools: TOOLS;
