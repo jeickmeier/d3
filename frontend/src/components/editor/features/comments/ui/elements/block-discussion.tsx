@@ -39,6 +39,21 @@ import { filterDiscussionsByTypes } from "@comments/utils/discussion-utils";
 import { Comment } from "./comment";
 import { CommentCreateForm } from "./comment-create-form";
 
+/**
+ * BlockDiscussion is a higher-order wrapper that decorates a Slate block with the
+ * inline comment / discussion UI.
+ *
+ * Plate invokes this `RenderNodeWrapper` for every element it renders. The wrapper
+ * decides — based on the presence of comment nodes at the element's path — whether
+ * to swap the default renderer for a custom `BlockCommentsContent` component.  If
+ * the block has no associated comments (or only appears as a nested path such as
+ * inside a table cell) the wrapper returns `undefined` which tells Plate to fall
+ * back to the default element rendering.
+ *
+ * Returning a component instead of the usual JSX keeps the editor performant
+ * because the heavy pop-over logic is only evaluated for elements that actually
+ * need it.
+ */
 export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   const { editor, element } = props;
 
@@ -69,6 +84,20 @@ export const BlockDiscussion: RenderNodeWrapper<AnyPluginConfig> = (props) => {
   return BlockDiscussionComponent;
 };
 
+/**
+ * BlockCommentsContent renders the pop-over that lists all discussions belonging
+ * to a single Slate block.  It is responsible for:
+ *  • Deriving the set of discussions that should be visible (filters out resolved
+ *    discussions or discussions whose type has been hidden by the user).
+ *  • Handling the state that decides whether the pop-over is open, closed or in
+ *    "new comment" mode.
+ *  • Computing a *virtual* anchor element so that the pop-over follows the exact
+ *    DOM node that is currently being interacted with.
+ *
+ * The component collapses to simply render `children` when there are no
+ * discussions and no draft comment, avoiding unnecessary DOM noise for blocks
+ * that are not commented.
+ */
 const BlockCommentsContent = ({
   blockPath,
   children,
@@ -109,11 +138,37 @@ const BlockCommentsContent = ({
   const commentingCurrent =
     !!commentingBlock && PathApi.equals(blockPath, commentingBlock);
 
+  /**
+   * Derived open state for the Radix `Popover`.
+   *
+   * We cannot rely solely on Radix' own `open` state (`_open`) because the
+   * pop-over should also open when either a discussion inside this block
+   * becomes the *active* one (`selected`) or when the user is in the dedicated
+   * "add new comment" flow (`isCommenting`).
+   *
+   * The additional `commentingCurrent` check ensures that the draft comment we
+   * are currently editing actually belongs to *this* block.  Without that
+   * safeguard, opening a draft comment in a different block would also open
+   * the pop-over here.
+   */
   const open =
     _open ||
     selected ||
     (isCommenting && !!draftCommentNode && commentingCurrent);
 
+  /**
+   * Virtual anchor element used by Radix to position the pop-over exactly at
+   * the location of the currently *active* comment.
+   *
+   * 1. Determine the Slate node that represents the active comment or draft.
+   * 2. Convert that Slate node to its corresponding DOM element via
+   *    `editor.api.toDOMNode`.
+   * 3. Memoise the element so the calculation only runs when the dependencies
+   *    change.
+   *
+   * Returning `null` tells Radix to fall back to anchoring the pop-over to its
+   * trigger button.
+   */
   const anchorElement = React.useMemo(() => {
     let activeNode: NodeEntry | undefined;
 
@@ -214,6 +269,15 @@ const BlockCommentsContent = ({
   );
 };
 
+/**
+ * BlockComment is a purely presentational component that renders an individual
+ * `TDiscussion`.
+ *
+ * It iterates over the discussion's `comments` array to display each comment and
+ * finally renders a reply form that inherits the comment type of the first
+ * comment in the thread.  A horizontal divider is shown between discussions,
+ * except after the last one (`isLast`).
+ */
 export const BlockComment = ({
   discussion,
   isLast,
@@ -251,6 +315,19 @@ export const BlockComment = ({
   );
 };
 
+/**
+ * useResolvedDiscussion converts the raw comment nodes that live inside the
+ * Slate document into fully-formed, *resolved* `TDiscussion` objects that belong
+ * to the provided `blockPath`.
+ *
+ * The hook maintains a `uniquePathMap` on the `commentsPlugin` option bag to
+ * remember the original block each comment was attached to.  This ensures
+ * discussions continue to be associated with the correct block even after
+ * structural editor changes (drag-and-drop, undo, table merges, …).
+ *
+ * Only discussions that still have a matching comment node *and* are not marked
+ * as resolved are returned.
+ */
 export const useResolvedDiscussion = (
   commentNodes: NodeEntry<TCommentText>[],
   blockPath: Path,
@@ -260,14 +337,16 @@ export const useResolvedDiscussion = (
 
   React.useEffect(() => {
     let changed = false;
-    const currentMap = getOption("uniquePathMap");
-    const newMap = new Map(currentMap);
+    // Ensure we are working with a strongly-typed Map so that downstream
+    // look-ups don't fall back to the implicit `any` type.
+    const currentMap = getOption("uniquePathMap") as Map<string, Path>;
+    const newMap: Map<string, Path> = new Map(currentMap);
 
     commentNodes.forEach(([node]) => {
       const id = api.comment.nodeId(node);
       if (!id) return;
 
-      const previousPath = newMap.get(id);
+      const previousPath: Path | undefined = newMap.get(id);
       if (PathApi.isPath(previousPath)) {
         const nodesAtPath = api.comment.node({ id, at: previousPath });
         if (!nodesAtPath) {
@@ -296,8 +375,8 @@ export const useResolvedDiscussion = (
         createdAt: new Date(d.createdAt),
       }))
       .filter((item: TDiscussion) => {
-        const commentsPathMap = getOption("uniquePathMap");
-        const firstBlockPath = commentsPathMap.get(item.id);
+        const commentsPathMap = getOption("uniquePathMap") as Map<string, Path>;
+        const firstBlockPath: Path | undefined = commentsPathMap.get(item.id);
 
         if (!firstBlockPath) return false;
         if (!PathApi.equals(firstBlockPath, blockPath)) return false;

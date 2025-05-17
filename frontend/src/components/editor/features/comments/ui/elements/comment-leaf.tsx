@@ -1,5 +1,23 @@
 "use client";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Comment-Leaf – custom Plate leaf renderer for comment anchors
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * CommentLeaf is a custom leaf renderer used by the Plate editor's comment
+ * plugin.  It visually marks text ranges that are associated with one or more
+ * comments and, in interactive mode, wires up mouse events so that the rest of
+ * the editor UI can react to user intent (hovering or selecting a comment).
+ *
+ * Two operating modes are supported:
+ * 1. Interactive **(default)** – adds event handlers that update the comment
+ *    plugin's `hoverId` and `activeId` options so that sidebars, pop-overs, etc.
+ *    can highlight the corresponding thread.
+ * 2. Static – renders the same visual appearance **without** any client-side
+ *    event handlers.  This is useful for read-only contexts such as PDF export
+ *    or server-side rendering where React events are stripped out.
+ */
+
 import * as React from "react";
 
 import type { TCommentText } from "@udecode/plate-comments";
@@ -15,6 +33,14 @@ import {
 import { cn } from "@/lib/utils";
 import { commentsPlugin } from "@comments/plugins/comments-plugin";
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Props accepted by {@link CommentLeaf}. Extends the default PlateLeafProps for
+ * a {@link TCommentText} node and introduces the `interactive` flag used to
+ * toggle event handling.
+ */
 export interface CommentLeafProps extends PlateLeafProps<TCommentText> {
   /**
    * When true (default) the leaf includes interactive behaviour (hover / active
@@ -24,6 +50,26 @@ export interface CommentLeafProps extends PlateLeafProps<TCommentText> {
   interactive?: boolean;
 }
 
+// ─────────────────────────────────────────────────────────────────────────────
+// Comment-Leaf – custom Plate leaf renderer for comment anchors
+// ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Render a Plate leaf node that represents a comment anchor.
+ *
+ * Visual cues
+ * ────────────
+ * • Base style – subtle background + underline to indicate a comment.
+ * • Hover / Active – stronger highlight when the user hovers the anchor or the
+ *   corresponding thread is selected in the sidebar.
+ * • Overlap – if multiple comments target the same text, the underline becomes
+ *   thicker / more opaque to communicate density.
+ *
+ * Behaviour (interactive mode only)
+ * ─────────────────────────────────
+ * • `onClick`       → sets `activeId` so the sidebar opens the thread.
+ * • `onMouseEnter` → sets `hoverId` so other UI elements can react.
+ * • `onMouseLeave` → clears `hoverId`.
+ */
 export function CommentLeaf({
   children,
   leaf,
@@ -83,10 +129,13 @@ export function CommentLeaf({
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-// Static / read-only alias – used in export or PDF generation where no
-// interactive behaviour is wanted. This avoids repeating the
-// `interactive={false}` prop at every call-site.
+// Static helper – non-interactive alias
 // ─────────────────────────────────────────────────────────────────────────────
+/**
+ * Convenience wrapper that renders {@link CommentLeaf} with
+ * `interactive={false}`.  Useful for read-only/export surfaces to avoid
+ * repeating the prop every time.
+ */
 export const CommentLeafStatic = (props: CommentLeafProps) => (
   <CommentLeaf {...props} interactive={false} />
 );

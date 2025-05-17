@@ -30,6 +30,35 @@ import { MiniPlateEditor } from "@/components/editor/MiniPlateEditor";
 import { useDiscussionMutations } from "@comments/hooks/useDiscussionMutations";
 import { CommentAvatar } from "@/components/ui/comment-avatar";
 
+/**
+ * Comment UI Components
+ *
+ * This file contains all React components required to render and interact with a
+ * single discussion comment inside the rich-text editor. A comment can be shown
+ * in read-only mode or – if the current user is the author – switched to an
+ * inline editing mode backed by a `MiniPlateEditor`. Network mutations (update
+ * and delete) are delegated to `useDiscussionMutations` which keeps data logic
+ * out of the presentation layer.
+ *
+ * Exported members:
+ *  • `TComment` – TypeScript interface describing the comment object shape.
+ *  • `Comment` – Main visual component that renders a single comment row.
+ *  • `CommentMoreDropdown` – Context menu providing edit / delete actions.
+ *
+ * Architectural notes:
+ *  • The component relies on the Plate `userPlugin` to resolve user meta data
+ *    (name, avatar) for the given `userId`.
+ *  • `modal={false}` is used on the Radix `DropdownMenu` so that focus is not
+ *    trapped and the surrounding editor keeps working as expected.
+ *
+ * IMPORTANT: Keep this block after the "use client" directive – the directive
+ * must stay the very first statement so that Next.js treats the file as a
+ * Client Component.
+ */
+
+/**
+ * Comment entity shape consumed by the UI components in this file.
+ */
 export interface TComment {
   id: string;
   contentRich: Value;
@@ -40,6 +69,12 @@ export interface TComment {
   commentType: CommentTypeId;
 }
 
+/**
+ * Renders a single comment. When `enableEditing` is true and the current user
+ * matches the comment author, the comment can be edited in-place or deleted via
+ * a dropdown menu. The component also highlights the first comment in a thread
+ * and optionally shows the document excerpt the discussion refers to.
+ */
 export function Comment(props: {
   comment: TComment;
   discussionLength: number;
@@ -67,12 +102,14 @@ export function Comment(props: {
 
   const { updateComment: updateCommentMutation } = useDiscussionMutations();
 
-  // Replace to your own backend or refer to potion
+  // Whether the comment belongs to the signed-in user – determines if edit &
+  // delete actions should be shown.
   const isMyComment = currentUserId === comment.userId;
 
+  // Keep the original value around so we can reset unsaved edits.
   const initialValue = comment.contentRich;
 
-  // State for editing value when in edit mode
+  // Local state for the Slate value while the comment is in edit mode.
   const [editingValue, setEditingValue] = React.useState<Value>(initialValue);
 
   // Sync editingValue whenever editing toggles on with fresh content
@@ -92,8 +129,8 @@ export function Comment(props: {
     setEditingId(null);
   };
 
-  const isFirst = index === 0;
-  const isLast = index === discussionLength - 1;
+  const isFirst = index === 0; // First comment of the discussion thread
+  const isLast = index === discussionLength - 1; // Last comment of the thread
   const isEditing = editingId && editingId === comment.id;
 
   const [hovering, setHovering] = React.useState(false);
@@ -210,6 +247,13 @@ export function Comment(props: {
     </div>
   );
 }
+
+/**
+ * Dropdown menu housing the "Edit" and "Delete" actions that is only shown for
+ * the author's own comments. A ref is used to work around Radix' default focus
+ * management so that focus is not forcefully returned to a button that may have
+ * been unmounted after an action (e.g. switching into edit mode).
+ */
 interface CommentMoreDropdownProps {
   comment: TComment;
   dropdownOpen: boolean;
@@ -222,6 +266,9 @@ export function CommentMoreDropdown(props: CommentMoreDropdownProps) {
 
   const { deleteComment: deleteCommentMutation } = useDiscussionMutations();
 
+  // Tracks whether the user has selected "Edit comment" so we can prevent
+  // Radix from automatically returning focus to the trigger element when that
+  // element might get unmounted afterwards.
   const selectedEditCommentRef = React.useRef<boolean>(false);
 
   const onEditComment = React.useCallback(() => {
