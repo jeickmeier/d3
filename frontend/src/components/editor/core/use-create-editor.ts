@@ -211,17 +211,23 @@ export const useCreateEditor = (
     };
   }
 
+  // `editorComponents` contains heterogeneous React components (elements and
+  // leaves). Those are ultimately accepted by Plate as `NodeComponent`s which
+  // have an `any` signature. For that reason we keep the value as
+  // `Record<string, any>` and cast when we pass it to `usePlateEditor`.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const combinedComponents: Record<string, any> = {
+    ...(readOnly
+      ? viewComponents
+      : placeholders
+        ? withPlaceholders(editorComponents)
+        : editorComponents),
+    ...((components ?? {}) as Record<string, unknown>),
+  };
+
   return usePlateEditor<Value>(
     {
-      components: {
-        ...(readOnly
-          ? viewComponents
-          : placeholders
-            ? withPlaceholders(editorComponents)
-            : editorComponents),
-        ...components,
-      },
-
+      components: combinedComponents,
       plugins: readOnly
         ? (viewPlugins as unknown as CreatePlateEditorOptions["plugins"])
         : (editorPlugins as unknown as CreatePlateEditorOptions["plugins"]),

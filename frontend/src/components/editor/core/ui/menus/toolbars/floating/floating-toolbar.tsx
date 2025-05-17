@@ -32,8 +32,12 @@ export function FloatingToolbar({
 }: FloatingToolbarProps) {
   const editorId = useEditorId();
   const focusedEditorId = useEventEditorValue("focus");
-  const isFloatingLinkOpen = !!usePluginOption({ key: "a" }, "mode");
-  const isAIChatOpen = usePluginOption({ key: "aiChat" }, "open");
+  const isFloatingLinkOpen = Boolean(
+    usePluginOption({ key: "a" }, "mode") as boolean | undefined,
+  );
+  const isAIChatOpen = Boolean(
+    usePluginOption({ key: "aiChat" }, "open") as boolean | undefined,
+  );
 
   const floatingToolbarState = useFloatingToolbarState({
     editorId,

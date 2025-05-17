@@ -30,6 +30,22 @@ export const ImageElement = withHOC(
       element: props.element,
     });
 
+    // Safely derive the `alt` attribute from the element's attributes without relying on `any`.
+    const alt = React.useMemo<string>(() => {
+      const attrs = props.attributes as unknown;
+
+      if (
+        attrs &&
+        typeof attrs === "object" &&
+        "alt" in attrs &&
+        typeof (attrs as { alt?: unknown }).alt === "string"
+      ) {
+        return (attrs as { alt: string }).alt;
+      }
+
+      return "";
+    }, [props.attributes]);
+
     return (
       <MediaPopover plugin={ImagePlugin}>
         <PlateElement {...props} className="py-2.5">
@@ -53,7 +69,7 @@ export const ImageElement = withHOC(
                   focused && selected && "ring-2 ring-ring ring-offset-2",
                   isDragging && "opacity-50",
                 )}
-                alt={(props.attributes as any).alt}
+                alt={alt}
               />
               <ResizeHandle
                 className={mediaResizeHandleVariants({

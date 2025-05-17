@@ -24,6 +24,7 @@ import { ToolbarButton } from "../menus/toolbars/toolbar";
 export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
   const [open, setOpen] = React.useState(false);
   const state = useLineHeightDropdownMenuState();
+  const values = state.values as unknown as string[];
   const { radioGroupProps } = useLineHeightDropdownMenu(state);
 
   return (
@@ -36,18 +37,18 @@ export function LineHeightDropdownMenu({ ...props }: DropdownMenuProps) {
 
       <DropdownMenuContent className="min-w-0" align="start">
         <DropdownMenuRadioGroup {...radioGroupProps}>
-          {state.values.map((_value) => (
+          {values.map((value) => (
             <DropdownMenuRadioItem
-              key={_value}
+              key={value}
               className="min-w-[180px] pl-2 *:first:[span]:hidden"
-              value={_value}
+              value={value}
             >
               <span className="pointer-events-none absolute right-2 flex size-3.5 items-center justify-center">
                 <DropdownMenuItemIndicator>
                   <CheckIcon />
                 </DropdownMenuItemIndicator>
               </span>
-              {_value}
+              {value}
             </DropdownMenuRadioItem>
           ))}
         </DropdownMenuRadioGroup>

@@ -58,12 +58,13 @@ export function Cursor({
 }
 
 export function CursorOverlay() {
-  const { cursors } = useCursorOverlay();
-
+  const { cursors } = useCursorOverlay() as {
+    cursors: CursorOverlayState<CursorData>[];
+  };
   return (
     <>
       {cursors.map((cursor) => (
-        <Cursor key={cursor.id} {...cursor} />
+        <Cursor key={(cursor as { id: string }).id} {...cursor} />
       ))}
     </>
   );

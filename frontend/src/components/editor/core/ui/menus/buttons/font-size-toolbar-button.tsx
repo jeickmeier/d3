@@ -50,10 +50,16 @@ export function FontSizeToolbarButton() {
   const { api, editor } = useEditorPlugin(FontSizePlugin);
 
   const cursorFontSize = useEditorSelector((editor) => {
-    const fontSize = editor.api.marks()?.[FontSizePlugin.key];
+    // Safely type the marks result before accessing a dynamic key to avoid
+    // eslint `no-unsafe-member-access` errors.
+    const marks = editor.api.marks() as
+      | Record<string, string>
+      | null
+      | undefined;
+    const fontSize = marks?.[String(FontSizePlugin.key)];
 
     if (fontSize) {
-      return toUnitLess(fontSize as string);
+      return toUnitLess(fontSize);
     }
 
     const [block] = editor.api.block<TElement>() || [];

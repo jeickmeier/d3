@@ -75,14 +75,19 @@ export const MediaPlaceholderElement = withHOC(
     const { openFilePicker } = useFilePicker({
       accept: currentContent.accept,
       multiple: true,
-      onFilesSelected: ({ plainFiles: updatedFiles }) => {
-        const firstFile = updatedFiles[0];
-        const restFiles = updatedFiles.slice(1);
+      onFilesSelected: ({ plainFiles }: { plainFiles: File[] }) => {
+        const [firstFile, ...restFiles] = plainFiles;
 
         replaceCurrentPlaceholder(firstFile);
 
         if (restFiles.length > 0) {
-          editor.getTransforms(PlaceholderPlugin).insert.media(restFiles);
+          // `insert.media` expects a `FileList`. Create a transient `FileList`
+          // via the `DataTransfer` API from the remaining files.
+          const dt = new DataTransfer();
+          restFiles.forEach((file) => dt.items.add(file));
+          const restFileList = dt.files;
+
+          editor.getTransforms(PlaceholderPlugin).insert.media(restFileList);
         }
       },
     });

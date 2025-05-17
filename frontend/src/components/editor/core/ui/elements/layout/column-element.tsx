@@ -65,7 +65,10 @@ export const ColumnElement = withHOC(
 
         <PlateElement
           {...props}
-          ref={useComposedRef(props.ref, previewRef)}
+          ref={useComposedRef<HTMLDivElement>(
+            props.ref as React.Ref<HTMLDivElement>,
+            previewRef,
+          )}
           className="h-full px-2 pt-2 group-first/column:pl-0 group-last/column:pr-0"
         >
           <div

@@ -20,7 +20,7 @@ import {
 } from "../inline-combobox";
 
 export function EmojiInputElement(props: PlateElementProps) {
-  const { children, editor, element } = props;
+  // Avoid props destructuring to prevent unsafe any assignments
   const data = usePluginOption(EmojiPlugin, "data")!;
   const [value, setValue] = React.useState("");
   const debouncedValue = useDebounce(value, 100);
@@ -35,10 +35,10 @@ export function EmojiInputElement(props: PlateElementProps) {
   }, [data, debouncedValue]);
 
   return (
-    <PlateElement as="span" data-slate-value={element.value} {...props}>
+    <PlateElement as="span" data-slate-value={props.element.value} {...props}>
       <InlineCombobox
         value={value}
-        element={element}
+        element={props.element}
         filter={false}
         setValue={setValue}
         trigger=":"
@@ -54,7 +54,7 @@ export function EmojiInputElement(props: PlateElementProps) {
               <InlineComboboxItem
                 key={emoji.id}
                 value={emoji.name}
-                onClick={() => insertEmoji(editor, emoji)}
+                onClick={() => insertEmoji(props.editor, emoji)}
               >
                 {emoji.skins[0].native} {emoji.name}
               </InlineComboboxItem>
@@ -63,7 +63,7 @@ export function EmojiInputElement(props: PlateElementProps) {
         </InlineComboboxContent>
       </InlineCombobox>
 
-      {children}
+      {props.children}
     </PlateElement>
   );
 }

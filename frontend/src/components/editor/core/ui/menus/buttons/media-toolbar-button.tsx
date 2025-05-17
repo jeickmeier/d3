@@ -96,8 +96,12 @@ export function MediaToolbarButton({
   const { openFilePicker } = useFilePicker({
     accept: currentConfig.accept,
     multiple: true,
-    onFilesSelected: ({ plainFiles: updatedFiles }) => {
-      editor.getTransforms(PlaceholderPlugin).insert.media(updatedFiles);
+    onFilesSelected: ({ plainFiles }: { plainFiles: File[] }) => {
+      // `insert.media` expects a `FileList`. Create one using the DataTransfer API.
+      const dt = new DataTransfer();
+      plainFiles.forEach((file) => dt.items.add(file));
+
+      editor.getTransforms(PlaceholderPlugin).insert.media(dt.files);
     },
   });
 

@@ -96,7 +96,9 @@ export const DraggableAboveNodes: RenderNodeWrapper = (props) => {
 };
 
 export function Draggable(props: PlateElementProps) {
-  const { children, editor, element, path } = props;
+  const editor = props.editor;
+  const element = props.element;
+  const path = props.path as number[];
   const blockSelectionApi = editor.getApi(BlockSelectionPlugin).blockSelection;
   const { isDragging, previewRef, handleRef } = useDraggable({
     element,
@@ -157,7 +159,7 @@ export function Draggable(props: PlateElementProps) {
       )}
 
       <div ref={previewRef} className="slate-blockWrapper">
-        <MemoizedChildren>{children}</MemoizedChildren>
+        <MemoizedChildren>{props.children}</MemoizedChildren>
         <DropLine />
       </div>
     </div>

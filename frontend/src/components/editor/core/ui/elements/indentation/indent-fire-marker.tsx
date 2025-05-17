@@ -22,8 +22,6 @@ export const FireMarker = (
   );
 };
 
-export const FireLiComponent = (props: SlateRenderElementProps) => {
-  const { children } = props;
-
-  return <li className="list-none">{children}</li>;
-};
+export const FireLiComponent = (props: SlateRenderElementProps) => (
+  <li className="list-none">{props.children}</li>
+);

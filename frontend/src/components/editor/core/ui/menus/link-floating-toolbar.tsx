@@ -23,6 +23,7 @@ import {
   useFormInputProps,
   usePluginOption,
 } from "@udecode/plate/react";
+import type { BaseRange } from "slate";
 import { cva } from "class-variance-authority";
 import { ExternalLink, Link, Text, Unlink } from "lucide-react";
 
@@ -42,8 +43,15 @@ export function LinkFloatingToolbar({
 }: {
   state?: LinkFloatingToolbarState;
 }) {
-  const activeCommentId = usePluginOption({ key: "comment" }, "activeId");
-  const activeSuggestionId = usePluginOption({ key: "suggestion" }, "activeId");
+  const activeCommentId = usePluginOption({ key: "comment" }, "activeId") as
+    | string
+    | null
+    | undefined;
+
+  const activeSuggestionId = usePluginOption(
+    { key: "suggestion" },
+    "activeId",
+  ) as string | null | undefined;
 
   const floatingOptions: UseVirtualFloatingOptions = React.useMemo(() => {
     return {
@@ -166,9 +174,11 @@ export function LinkFloatingToolbar({
 
 function LinkOpenButton() {
   const editor = useEditorRef();
-  const selection = useEditorSelection();
+  const selection = useEditorSelection() as BaseRange | null | undefined;
 
-  const attributes = React.useMemo(() => {
+  const attributes = React.useMemo<
+    React.AnchorHTMLAttributes<HTMLAnchorElement>
+  >(() => {
     const entry = editor.api.node<TLinkElement>({
       match: { type: editor.getType(LinkPlugin) },
     });
@@ -176,7 +186,10 @@ function LinkOpenButton() {
       return {};
     }
     const [element] = entry;
-    return getLinkAttributes(editor, element);
+    return getLinkAttributes(
+      editor,
+      element,
+    ) as React.AnchorHTMLAttributes<HTMLAnchorElement>;
   }, [editor, selection]);
 
   return (

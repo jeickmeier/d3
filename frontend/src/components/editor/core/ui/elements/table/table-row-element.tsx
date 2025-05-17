@@ -53,7 +53,10 @@ export function TableRowElement(props: PlateElementProps<TTableRowElement>) {
   return (
     <PlateElement
       {...props}
-      ref={useComposedRef(props.ref, previewRef)}
+      ref={useComposedRef<HTMLTableRowElement>(
+        props.ref as React.Ref<HTMLTableRowElement>,
+        previewRef as unknown as React.Ref<HTMLTableRowElement>,
+      )}
       as="tr"
       className={cn("group/row", isDragging && "opacity-50")}
       attributes={{
@@ -73,7 +76,7 @@ export function TableRowElement(props: PlateElementProps<TTableRowElement>) {
   );
 }
 
-function RowDragHandle({ dragRef }: { dragRef: React.Ref<any> }) {
+function RowDragHandle({ dragRef }: { dragRef: React.Ref<HTMLButtonElement> }) {
   const editor = useEditorRef();
   const element = useElement();
 

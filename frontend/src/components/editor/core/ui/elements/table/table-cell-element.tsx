@@ -2,7 +2,7 @@
 
 import * as React from "react";
 
-import type { TTableCellElement } from "@udecode/plate-table";
+import type { TTableCellElement, TTableRowElement } from "@udecode/plate-table";
 import type { PlateElementProps } from "@udecode/plate/react";
 
 import {
@@ -29,6 +29,8 @@ import { cn } from "@/lib/utils";
 import { blockSelectionVariants } from "../../primitives/block-selection";
 import { ResizeHandle } from "../../primitives/resize-handle";
 
+import type { NodeEntry } from "@udecode/plate";
+
 export function TableCellElement({
   isHeader,
   ...props
@@ -39,10 +41,15 @@ export function TableCellElement({
   const readOnly = useReadOnly();
   const element = props.element;
 
-  const rowId = useElementSelector(([node]) => node.id as string, [], {
+  const getRowId = ([node]: NodeEntry<TTableRowElement>): string => {
+    const id = (node as { id?: unknown }).id;
+    return typeof id === "string" ? id : "";
+  };
+
+  const rowId = useElementSelector<string>(getRowId, [], {
     key: TableRowPlugin.key,
   });
-  const isSelectingRow = useBlockSelected(rowId);
+  const isSelectingRow = Boolean(useBlockSelected(rowId));
   const isSelectionAreaVisible = usePluginOption(
     BlockSelectionPlugin,
     "isSelectionAreaVisible",
@@ -120,7 +127,9 @@ export function TableCellElement({
                 className={cn(
                   "absolute top-0 z-30 hidden h-full w-1 bg-ring",
                   "right-[-1.5px]",
-                  columnResizeVariants({ colIndex: colIndex as any }),
+                  columnResizeVariants({
+                    colIndex: colIndex as ColumnIndexVariant,
+                  }),
                 )}
               />
               {colIndex === 0 && (
@@ -149,6 +158,8 @@ export function TableCellHeaderElement(
 ) {
   return <TableCellElement {...props} isHeader />;
 }
+
+type ColumnIndexVariant = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10;
 
 const columnResizeVariants = cva("hidden animate-in fade-in", {
   variants: {

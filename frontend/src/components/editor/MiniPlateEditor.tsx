@@ -23,6 +23,7 @@ import {
 } from "@/components/editor/core/ui/primitives/editor";
 import { EditorStatic } from "@/components/editor/core/ui/primitives/editor-static";
 import type { PlateStaticProps } from "@udecode/plate";
+import type { CreatePlateEditorOptions } from "@udecode/plate/react";
 
 export const MINI_EDITOR_PLUGINS = [
   ParagraphPlugin,
@@ -59,8 +60,9 @@ export const MiniPlateEditor: React.FC<MiniPlateEditorProps> = ({
   const editor = useCreateEditor({
     id: readOnly ? "mini-static" : "mini-editor",
     placeholders: false,
-    // @ts-ignore: suppress type mismatch for custom plugins
-    plugins: [...MINI_EDITOR_PLUGINS],
+    plugins: [
+      ...MINI_EDITOR_PLUGINS,
+    ] as unknown as CreatePlateEditorOptions["plugins"],
     value,
     readOnly,
   });

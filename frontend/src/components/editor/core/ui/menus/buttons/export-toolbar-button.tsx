@@ -383,16 +383,16 @@ export function ExportToolbarButton(props: DropdownMenuProps) {
 
       <DropdownMenuContent align="start">
         <DropdownMenuGroup>
-          <DropdownMenuItem onSelect={exportToHtml}>
+          <DropdownMenuItem onSelect={() => void exportToHtml()}>
             Export as HTML
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToPdf}>
+          <DropdownMenuItem onSelect={() => void exportToPdf()}>
             Export as PDF
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToImage}>
+          <DropdownMenuItem onSelect={() => void exportToImage()}>
             Export as Image
           </DropdownMenuItem>
-          <DropdownMenuItem onSelect={exportToMarkdown}>
+          <DropdownMenuItem onSelect={() => void exportToMarkdown()}>
             Export as Markdown
           </DropdownMenuItem>
         </DropdownMenuGroup>

@@ -28,8 +28,9 @@ export function BlockSelection({
   className,
   ...props
 }: React.ComponentProps<"div"> & VariantProps<typeof blockSelectionVariants>) {
-  const isBlockSelected = useBlockSelected();
-  const isDragging = usePluginOption(DndPlugin, "isDragging");
+  // Coerce the potentially `any` values returned by the hooks into strict booleans
+  const isBlockSelected: boolean = !!useBlockSelected();
+  const isDragging: boolean = !!usePluginOption(DndPlugin, "isDragging");
 
   if (!isBlockSelected) return null;
 

@@ -14,6 +14,9 @@ export function ImageElementStatic(
 ) {
   const { align = "center", caption, url, width } = props.element;
 
+  const { alt = "" } =
+    props.attributes as React.ImgHTMLAttributes<HTMLImageElement>;
+
   return (
     <SlateElement {...props} className="py-2.5">
       <figure className="group relative m-0 inline-block" style={{ width }}>
@@ -26,7 +29,7 @@ export function ImageElementStatic(
               "w-full max-w-full cursor-default object-cover px-0",
               "rounded-sm",
             )}
-            alt={(props.attributes as any).alt || ""}
+            alt={alt}
             src={url}
             width={width}
             height={0}
