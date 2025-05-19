@@ -27,6 +27,7 @@ import { userPlugin } from "@components/editor/core/plugins/user-plugin";
 import type { CommentTypeId } from "@comments/types/comment-types";
 import { COMMENT_TYPES_MAP } from "@comments/types/comment-types";
 import { MiniPlateEditor } from "@/components/editor/MiniPlateEditor";
+import { DeserializeNode } from "./DeserializeNode"; // Added import
 import { useDiscussionMutations } from "@comments/hooks/useDiscussionMutations";
 import { CommentAvatar } from "@/components/ui/comment-avatar";
 
@@ -237,11 +238,13 @@ export function Comment(props: {
             </div>
           </div>
         ) : (
-          <MiniPlateEditor
-            value={initialValue}
-            readOnly
-            className="w-auto grow"
-          />
+          // Replace MiniPlateEditor with DeserializeNode for read-only view
+          <div className="w-auto grow prose dark:prose-invert max-w-none">
+            {/* It's assumed initialValue is PlateNode[] as per Value type */}
+            {initialValue.map((node, index) => (
+              <DeserializeNode key={index} node={node} />
+            ))}
+          </div>
         )}
       </div>
     </div>
