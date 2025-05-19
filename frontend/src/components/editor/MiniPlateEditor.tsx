@@ -24,6 +24,11 @@ import {
 import { EditorStatic } from "@/components/editor/core/ui/primitives/editor-static";
 import type { PlateStaticProps } from "@udecode/plate";
 import type { CreatePlateEditorOptions } from "@udecode/plate/react";
+import { mediaPlugins } from "@/components/editor/core/plugins/media-plugins";
+import { tablePlugin } from "@/components/editor/core/plugins/table-plugin";
+import { MediaToolbarButton } from "@/components/editor/core/ui/menus/buttons/media-toolbar-button";
+import { TableDropdownMenu } from "@/components/editor/core/ui/menus/table-dropdown-menu";
+import { ImagePlugin } from "@udecode/plate-media/react";
 
 export const MINI_EDITOR_PLUGINS = [
   ParagraphPlugin,
@@ -31,6 +36,8 @@ export const MINI_EDITOR_PLUGINS = [
   HeadingPlugin.configure({ options: { levels: 3 } }),
   IndentPlugin,
   IndentListPlugin,
+  ...mediaPlugins,
+  tablePlugin,
 ] as const;
 
 interface MiniPlateEditorProps {
@@ -73,7 +80,7 @@ export const MiniPlateEditor: React.FC<MiniPlateEditorProps> = ({
       onChange={onChange ? ({ value }) => onChange(value) : undefined}
     >
       {!readOnly && showToolbar && (
-        <FixedToolbar>
+        <FixedToolbar className="z-10">
           <ToolbarGroup>
             <MarkToolbarButton nodeType={BoldPlugin.key} tooltip="Bold (⌘+B)">
               <BoldIcon className="size-4" />
@@ -85,6 +92,8 @@ export const MiniPlateEditor: React.FC<MiniPlateEditorProps> = ({
               <ItalicIcon className="size-4" />
             </MarkToolbarButton>
             <BulletedIndentListToolbarButton />
+            <TableDropdownMenu />
+            <MediaToolbarButton nodeType={ImagePlugin.key} />
           </ToolbarGroup>
         </FixedToolbar>
       )}

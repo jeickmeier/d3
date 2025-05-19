@@ -79,7 +79,7 @@ export const CommentForm: React.FC<CommentFormProps> = ({
   defaultType = "formatting",
   placeholder = "Reply…",
   submitLabel,
-  hideAvatar = false,
+  hideAvatar = true,
   user,
 }) => {
   // Track selected type and editor value
