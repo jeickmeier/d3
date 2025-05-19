@@ -6,8 +6,8 @@ import type { DropdownMenuProps } from "@radix-ui/react-dropdown-menu";
 
 import { BlockquotePlugin } from "@udecode/plate-block-quote/react";
 import { CodeBlockPlugin } from "@udecode/plate-code-block/react";
+import { ColumnItemPlugin, ColumnPlugin } from "@udecode/plate-layout/react";
 import { DatePlugin } from "@udecode/plate-date/react";
-import { ExcalidrawPlugin } from "@udecode/plate-excalidraw/react";
 import { HEADING_KEYS } from "@udecode/plate-heading";
 import { TocPlugin } from "@udecode/plate-heading/react";
 import { HorizontalRulePlugin } from "@udecode/plate-horizontal-rule/react";
@@ -39,7 +39,6 @@ import {
   ListIcon,
   ListOrderedIcon,
   MinusIcon,
-  PenToolIcon,
   PilcrowIcon,
   PlusIcon,
   QuoteIcon,
@@ -163,23 +162,60 @@ const groups: Group[] = [
         icon: <ImageIcon />,
         label: "Image",
         value: ImagePlugin.key,
+        onSelect: (editor, value) => {
+          insertBlock(editor, value);
+        },
       },
       {
         icon: <FilmIcon />,
         label: "Embed",
         value: MediaEmbedPlugin.key,
+        onSelect: (editor, value) => {
+          insertBlock(editor, value);
+        },
       },
       {
-        icon: <PenToolIcon />,
-        label: "Excalidraw",
-        value: ExcalidrawPlugin.key,
+        icon: <RadicalIcon />,
+        label: "Equation",
+        value: EquationPlugin.key,
+        onSelect: (editor, value) => {
+          insertBlock(editor, value);
+        },
       },
-    ].map((item) => ({
-      ...item,
-      onSelect: (editor, value) => {
-        insertBlock(editor, value);
+      {
+        icon: <Columns3Icon />,
+        label: "Columns",
+        value: "columns",
+        onSelect: (editor) => {
+          (editor.commands as any).insertEmptyElement(
+            editor.getType(ColumnPlugin),
+            {
+              type: editor.getType(ColumnPlugin),
+              children: [
+                {
+                  type: editor.getType(ColumnItemPlugin),
+                  children: [
+                    {
+                      type: editor.getType(ParagraphPlugin),
+                      children: [{ text: "" }],
+                    },
+                  ],
+                },
+                {
+                  type: editor.getType(ColumnItemPlugin),
+                  children: [
+                    {
+                      type: editor.getType(ParagraphPlugin),
+                      children: [{ text: "" }],
+                    },
+                  ],
+                },
+              ],
+            }
+          );
+        },
       },
-    })),
+    ],
   },
   {
     group: "Advanced blocks",
@@ -188,17 +224,6 @@ const groups: Group[] = [
         icon: <TableOfContentsIcon />,
         label: "Table of contents",
         value: TocPlugin.key,
-      },
-      {
-        icon: <Columns3Icon />,
-        label: "3 columns",
-        value: "action_three_columns",
-      },
-      {
-        focusEditor: false,
-        icon: <RadicalIcon />,
-        label: "Equation",
-        value: EquationPlugin.key,
       },
     ].map((item) => ({
       ...item,
@@ -269,6 +294,8 @@ export function InsertDropdownMenu(props: DropdownMenuProps) {
             ))}
           </ToolbarMenuGroup>
         ))}
+
+        {/* Additional tools removed - handled in More dropdown */}
       </DropdownMenuContent>
     </DropdownMenu>
   );

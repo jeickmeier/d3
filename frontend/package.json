@@ -38,6 +38,7 @@
     "@tanstack/react-table": "8.21.3",
     "@udecode/cn": "48.0.3",
     "@udecode/plate": "^48.0.2",
+    "@udecode/plate-core": "^48.0.2",
     "@udecode/plate-ai": "48.0.2",
     "@udecode/plate-alignment": "48.0.0",
     "@udecode/plate-autoformat": "48.0.0",
@@ -53,7 +54,6 @@
     "@udecode/plate-dnd": "48.0.0",
     "@udecode/plate-docx": "48.0.0",
     "@udecode/plate-emoji": "48.0.0",
-    "@udecode/plate-excalidraw": "48.0.0",
     "@udecode/plate-floating": "48.0.0",
     "@udecode/plate-font": "48.0.0",
     "@udecode/plate-heading": "48.0.0",
@@ -150,5 +150,10 @@
     "typescript": "5.8.3",
     "typescript-eslint": "8.32.1"
   },
-  "packageManager": "pnpm@10.11.0"
+  "packageManager": "pnpm@10.11.0",
+  "pnpm": {
+    "overrides": {
+      "@udecode/plate-core": "48.0.3"
+    }
+  }
 }

@@ -7,17 +7,12 @@ import {
   ItalicPlugin,
   UnderlinePlugin,
 } from "@udecode/plate-basic-marks/react";
-import {
-  FontBackgroundColorPlugin,
-  FontColorPlugin,
-} from "@udecode/plate-font/react";
-import { ImagePlugin } from "@udecode/plate-media/react";
+import { FontColorPlugin } from "@udecode/plate-font/react";
 import { useEditorReadOnly } from "@udecode/plate/react";
 import {
   BaselineIcon,
   BoldIcon,
   ItalicIcon,
-  PaintBucketIcon,
   UnderlineIcon,
   WandSparklesIcon,
   MessageSquareTextIcon,
@@ -34,11 +29,10 @@ import { RedoToolbarButton, UndoToolbarButton } from "./history-toolbar-button";
 import { InsertDropdownMenu } from "../../menus/insert-dropdown-menu";
 import { LinkToolbarButton } from "./link-toolbar-button";
 import { MarkToolbarButton } from "./mark-toolbar-button";
-import { MediaToolbarButton } from "./media-toolbar-button";
 import { ModeDropdownMenu } from "../../menus/mode-dropdown-menu";
 import { TableDropdownMenu } from "../../menus/table-dropdown-menu";
-import { ToolbarGroup, ToolbarButton } from "../../menus/toolbars/toolbar";
 import { EmojiDropdownMenu } from "../../menus/emoji/emoji-dropdown-menu";
+import { ToolbarGroup, ToolbarButton } from "../../menus/toolbars/toolbar";
 
 export function FixedToolbarButtons() {
   const readOnly = useEditorReadOnly();
@@ -88,14 +82,7 @@ export function FixedToolbarButtons() {
             >
               <BaselineIcon />
             </ColorDropdownMenu>
-            <ColorDropdownMenu
-              nodeType={FontBackgroundColorPlugin.key}
-              tooltip="Background color"
-            >
-              <PaintBucketIcon />
-            </ColorDropdownMenu>
             <TableDropdownMenu />
-            <MediaToolbarButton nodeType={ImagePlugin.key} />
             <EmojiDropdownMenu />
           </ToolbarGroup>
 

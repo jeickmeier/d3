@@ -23,9 +23,15 @@ import {
   DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "@/components/ui/dropdown-menu";
 
 import { ToolbarButton } from "../menus/toolbars/toolbar";
+
+// Additional imports for background color and emoji
+import { FontBackgroundColorPlugin } from "@udecode/plate-font/react";
+import { ColorDropdownMenu } from "../primitives/color-picker/color-dropdown-menu";
+import { PaintBucketIcon } from "lucide-react";
 
 export function MoreDropdownMenu(props: DropdownMenuProps) {
   const editor = useEditorRef();
@@ -34,7 +40,7 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
   return (
     <DropdownMenu open={open} onOpenChange={setOpen} modal={false} {...props}>
       <DropdownMenuTrigger asChild>
-        <ToolbarButton pressed={open} tooltip="Insert">
+        <ToolbarButton pressed={open} tooltip="More">
           <MoreHorizontalIcon />
         </ToolbarButton>
       </DropdownMenuTrigger>
@@ -78,6 +84,26 @@ export function MoreDropdownMenu(props: DropdownMenuProps) {
             <SubscriptIcon />
             Subscript
             {/* (⌘+.) */}
+          </DropdownMenuItem>
+        </DropdownMenuGroup>
+
+        <DropdownMenuSeparator />
+
+        <DropdownMenuGroup>
+          <DropdownMenuItem
+            asChild
+            onSelect={(e) => e.preventDefault()}
+            className="p-0"
+          >
+            <ColorDropdownMenu
+              nodeType={FontBackgroundColorPlugin.key}
+              tooltip="Background color"
+            >
+              <div className="flex w-full items-center gap-2 px-2 py-1.5 rounded-none">
+                <PaintBucketIcon />
+                Background color
+              </div>
+            </ColorDropdownMenu>
           </DropdownMenuItem>
         </DropdownMenuGroup>
       </DropdownMenuContent>

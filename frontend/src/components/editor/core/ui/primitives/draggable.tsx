@@ -6,7 +6,6 @@ import { isType } from "@udecode/plate";
 import { BlockquotePlugin } from "@udecode/plate-block-quote/react";
 import { CodeBlockPlugin } from "@udecode/plate-code-block/react";
 import { useDraggable, useDropLine } from "@udecode/plate-dnd";
-import { ExcalidrawPlugin } from "@udecode/plate-excalidraw/react";
 import { HEADING_KEYS } from "@udecode/plate-heading";
 import { ColumnItemPlugin, ColumnPlugin } from "@udecode/plate-layout/react";
 import {
@@ -209,7 +208,6 @@ function Gutter({
         isNodeType([
           ImagePlugin.key,
           MediaEmbedPlugin.key,
-          ExcalidrawPlugin.key,
           TogglePlugin.key,
           ColumnPlugin.key,
         ]) && "py-0",
