@@ -22,6 +22,9 @@ const projectTweaks = {
 
     /* TS */
     "@typescript-eslint/no-explicit-any": ["warn", { ignoreRestArgs: true }],
+    // To ignore specific 'as any' assertions, add this comment above the line:
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
 
     /* Prettier – show red squiggles when file not formatted */
     "prettier/prettier": "error",

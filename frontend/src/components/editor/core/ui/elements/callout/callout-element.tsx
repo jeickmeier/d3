@@ -16,6 +16,7 @@ import {
 } from "@/components/editor/settings/emoji-icons";
 import { EmojiPicker } from "@/components/editor/core/ui/menus/emoji/emoji-picker";
 import { EmojiToolbarDropdown } from "@/components/editor/core/ui/menus/emoji/emoji-toolbar-dropdown";
+import { EMOJI_FONT_FAMILY } from "../../common/constants";
 
 export function CalloutElement({
   attributes,
@@ -55,8 +56,7 @@ export function CalloutElement({
               variant="ghost"
               className="size-6 p-1 text-[18px] select-none hover:bg-muted-foreground/15"
               style={{
-                fontFamily:
-                  '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',
+                fontFamily: EMOJI_FONT_FAMILY,
               }}
               contentEditable={false}
             >

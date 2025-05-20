@@ -8,6 +8,7 @@ import type { EmojiCategoryList } from "@udecode/plate-emoji";
 import { type Emoji, type GridRow, EmojiSettings } from "@udecode/plate-emoji";
 
 import { cn } from "@/lib/utils";
+import { EMOJI_FONT_FAMILY } from "../../common/constants";
 
 export type EmojiButtonProps = {
   emoji: Emoji;
@@ -53,8 +54,7 @@ const Button = React.memo(
         <span
           className="relative"
           style={{
-            fontFamily:
-              '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',
+            fontFamily: EMOJI_FONT_FAMILY,
           }}
           data-emoji-set="native"
         >

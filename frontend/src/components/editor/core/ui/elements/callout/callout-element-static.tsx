@@ -4,6 +4,7 @@ import type { SlateElementProps, TElement } from "@udecode/plate";
 
 import { cn } from "@udecode/cn";
 import { SlateElement } from "@udecode/plate";
+import { EMOJI_FONT_FAMILY } from "../../common/constants";
 
 export function CalloutElementStatic({
   children,
@@ -22,8 +23,7 @@ export function CalloutElementStatic({
         <div
           className="size-6 text-[18px] select-none"
           style={{
-            fontFamily:
-              '"Apple Color Emoji", "Segoe UI Emoji", NotoColorEmoji, "Noto Color Emoji", "Segoe UI Symbol", "Android Emoji", EmojiSymbols',
+            fontFamily: EMOJI_FONT_FAMILY,
           }}
         >
           <span data-plate-prevent-deserialization>

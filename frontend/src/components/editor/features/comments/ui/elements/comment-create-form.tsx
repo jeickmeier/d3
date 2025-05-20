@@ -89,63 +89,55 @@ export function CommentCreateForm({
    */
   const onAddComment = React.useCallback(
     (commentValue: Value, selectedType: CommentTypeId) => {
-      // If no discussionId prop is provided, always create a new discussion
-      if (discussionIdProp === undefined) {
-        addNewDiscussion(commentValue, selectedType);
-        return;
-      }
-      // Clear editor value handled by CommentForm
-
-      if (discussionId) {
-        const discussionExists = discussions.some((d) => d.id === discussionId);
-        if (!discussionExists) {
-          // create a new discussion anchored to this id (coming from commentId)
-          addNewDiscussion(commentValue, selectedType);
-          return;
-        }
-
-        // add reply to existing discussion
+      // ---------------------------------------------------------------------
+      // 1. Reply to an existing discussion (discussionId is known *and* exists)
+      // ---------------------------------------------------------------------
+      if (discussionId && discussions.some((d) => d.id === discussionId)) {
         addReply(discussionId, commentValue, selectedType);
         return;
       }
 
-      // New discussion (draft selection)
-      const commentsNodeEntry = editor
+      // ---------------------------------------------------------------------
+      // 2. Draft selection present → create a new discussion anchored to text
+      // ---------------------------------------------------------------------
+      const draftNodes = editor
         .getApi(CommentsPlugin)
         .comment.nodes({ at: [], isDraft: true });
 
-      if (commentsNodeEntry.length === 0) return;
+      if (draftNodes.length > 0) {
+        const documentContent = draftNodes.map(([node]) => node.text).join("");
 
-      const documentContent = commentsNodeEntry
-        .map(([node]) => node.text)
-        .join("");
-
-      const newDiscussionId = addNewDiscussion(
-        commentValue,
-        selectedType,
-        documentContent,
-      );
-
-      if (!newDiscussionId) return;
-
-      commentsNodeEntry.forEach(([, path]) => {
-        editor.tf.setNodes(
-          {
-            [getCommentKey(newDiscussionId)]: true,
-          },
-          { at: path, split: true },
+        const newDiscussionId = addNewDiscussion(
+          commentValue,
+          selectedType,
+          documentContent,
         );
-        editor.tf.unsetNodes([getDraftCommentKey()], { at: path });
-      });
+
+        if (!newDiscussionId) return;
+
+        draftNodes.forEach(([, path]) => {
+          editor.tf.setNodes(
+            {
+              // Plate's comment plugin requires both the generic "comment"
+              // flag *and* the specific id-based key so that
+              // `isCommentText` and related helpers recognise the leaf.
+              [CommentsPlugin.key]: true,
+              [getCommentKey(newDiscussionId)]: true,
+            },
+            { at: path, split: true },
+          );
+          editor.tf.unsetNodes([getDraftCommentKey()], { at: path });
+        });
+
+        return;
+      }
+
+      // ---------------------------------------------------------------------
+      // 3. No draft nodes → document-level (unanchored) discussion
+      // ---------------------------------------------------------------------
+      addNewDiscussion(commentValue, selectedType);
     },
-    [
-      discussionIdProp,
-      discussionId,
-      discussions,
-      addNewDiscussion,
-      addReply,
-      editor,
-    ],
+    [discussionId, discussions, addReply, editor, addNewDiscussion],
   );
 
   return (

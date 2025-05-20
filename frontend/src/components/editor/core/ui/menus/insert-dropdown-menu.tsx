@@ -187,6 +187,7 @@ const groups: Group[] = [
         label: "Columns",
         value: "columns",
         onSelect: (editor) => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-explicit-any
           (editor.commands as any).insertEmptyElement(
             editor.getType(ColumnPlugin),
             {
@@ -211,7 +212,7 @@ const groups: Group[] = [
                   ],
                 },
               ],
-            }
+            },
           );
         },
       },

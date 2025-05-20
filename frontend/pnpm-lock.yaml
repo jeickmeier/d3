@@ -336,6 +336,9 @@ importers:
       '@tailwindcss/postcss':
         specifier: 4.1.6
         version: 4.1.6
+      '@types/katex':
+        specifier: ^0.16.7
+        version: 0.16.7
       '@types/node':
         specifier: 22.15.17
         version: 22.15.17

@@ -337,17 +337,15 @@ export const useResolvedDiscussion = (
 
   React.useEffect(() => {
     let changed = false;
-    // Ensure we are working with a strongly-typed Map so that downstream
-    // look-ups don't fall back to the implicit `any` type.
-    const currentMap = getOption("uniquePathMap") as Map<string, Path>;
-    const newMap: Map<string, Path> = new Map(currentMap);
+    const currentMap = getOption("uniquePathMap");
+    const newMap = new Map(currentMap);
 
     commentNodes.forEach(([node]) => {
       const id = api.comment.nodeId(node);
       if (!id) return;
 
-      const previousPath: Path | undefined = newMap.get(id);
-      if (PathApi.isPath(previousPath)) {
+      const previousPath = newMap.get(id);
+      if (previousPath) {
         const nodesAtPath = api.comment.node({ id, at: previousPath });
         if (!nodesAtPath) {
           newMap.set(id, blockPath);
@@ -370,13 +368,13 @@ export const useResolvedDiscussion = (
     );
 
     return discussions
-      .map((d: TDiscussion) => ({
+      .map((d) => ({
         ...d,
         createdAt: new Date(d.createdAt),
       }))
-      .filter((item: TDiscussion) => {
-        const commentsPathMap = getOption("uniquePathMap") as Map<string, Path>;
-        const firstBlockPath: Path | undefined = commentsPathMap.get(item.id);
+      .filter((item) => {
+        const commentsPathMap = getOption("uniquePathMap");
+        const firstBlockPath = commentsPathMap.get(item.id);
 
         if (!firstBlockPath) return false;
         if (!PathApi.equals(firstBlockPath, blockPath)) return false;

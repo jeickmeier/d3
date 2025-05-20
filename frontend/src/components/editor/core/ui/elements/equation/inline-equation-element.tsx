@@ -17,6 +17,7 @@ import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
 import { EquationPopoverContent } from "../../common/equation/equation-popover";
+import { DEFAULT_KATEX_OPTIONS } from "./katex-config";
 
 export function InlineEquationElement(
   props: PlateElementProps<TEquationElement>,
@@ -33,17 +34,7 @@ export function InlineEquationElement(
   useEquationElement({
     element,
     katexRef: katexRef,
-    options: {
-      displayMode: true,
-      errorColor: "#cc0000",
-      fleqn: false,
-      leqno: false,
-      macros: { "\\f": "#1f(#2)" },
-      output: "htmlAndMathml",
-      strict: "warn",
-      throwOnError: false,
-      trust: false,
-    },
+    options: DEFAULT_KATEX_OPTIONS,
   });
 
   return (

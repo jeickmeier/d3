@@ -7,23 +7,14 @@ import { SlateElement } from "@udecode/plate";
 import { getEquationHtml } from "@udecode/plate-math";
 
 import { cn } from "@/lib/utils";
+import { DEFAULT_KATEX_OPTIONS } from "./katex-config";
 
 export function InlineEquationElementStatic(
   props: SlateElementProps<TEquationElement>,
 ) {
   const html = getEquationHtml({
     element: props.element,
-    options: {
-      displayMode: true,
-      errorColor: "#cc0000",
-      fleqn: false,
-      leqno: false,
-      macros: { "\\f": "#1f(#2)" },
-      output: "htmlAndMathml",
-      strict: "warn",
-      throwOnError: false,
-      trust: false,
-    },
+    options: DEFAULT_KATEX_OPTIONS,
   });
 
   return (
