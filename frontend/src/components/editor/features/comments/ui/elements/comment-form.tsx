@@ -9,7 +9,7 @@ import { ArrowUpIcon } from "lucide-react";
 import { CommentAvatar } from "@/components/ui/comment-avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { MiniPlateEditor } from "@/components/editor/MiniPlateEditor";
+import { MiniPlateEditor } from "@/components/editor/plate-editor";
 
 // Select dropdown for comment types
 import {

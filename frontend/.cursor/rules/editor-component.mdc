@@ -1,0 +1,67 @@
+---
+description: 
+globs: 
+alwaysApply: false
+---
+# Cursor Rule: PlateEditor Component
+
+## Purpose
+The `PlateEditor` component serves as the primary rich-text editor in our application, built on top of the `@udecode/plate` framework. It provides a unified interface for editable and read-only modes, supports custom toolbars, drag-and-drop, comments, and configuration presets.
+
+## Functionality
+
+- **Editable vs. Read-Only**: Renders either an interactive editor (`EditorContainer` + `Editor`) or a static view (`EditorStatic`) based on the `readOnly` prop.
+- **Presets**: Supports two presets:
+  - `mini`: Compact editor for comment inputs or simple text entry, with a minimal toolbar.
+  - `full`: Full-featured editor with drag-and-drop, settings dialog, and comments sidebar.
+- **Toolbars & Plugins**:
+  - Conditionally renders a fixed toolbar for the mini preset when `showToolbar` is true.
+  - Integrates core plugins (bold, italic, lists, tables, media) via `MINI_EDITOR_PLUGINS` or custom `plugins` prop.
+- **DnD Support**: Wraps content in `DndProvider` when `enableDnD` is set to `true`.
+- **Extension Points**:
+  - `showSettings`, `showComments`: Toggles rendering of the global settings dialog and comments sidebar.
+  - `currentUser` & `editorVariant`: Passes user context for comment/user plugins and variant styling.
+
+## Usage Examples
+
+```tsx
+// Basic full editor with all features:
+<PlateEditor
+  value={value}
+  onChange={handleChange}
+  showSettings
+  showComments
+  enableDnD
+  placeholder="Start writing..."
+/>
+
+// Mini editor for standalone comment form:
+<MiniPlateEditor
+  value={commentValue}
+  onChange={setCommentValue}
+  readOnly={false}
+  autoFocus
+/>
+
+// Static view (read-only) in mini layout:
+<MiniPlateEditor
+  value={documentValue}
+  readOnly
+/>
+
+// Full editor with custom plugins:
+<PlateEditor
+  plugins={[customPluginA, customPluginB]}
+  editorVariant="demo"
+/>
+```
+
+## Coding Styles & Rules
+
+- **Prop Ordering**: Keep props in alphabetical order where possible, grouping common concerns (`value`, `onChange`, `readOnly`) first.
+- **Preset Logic**: Avoid branching deep in JSX; calculate `finalPlugins` and `editor` setup outside return.
+- **Unidirectional Data Flow**: Pass callbacks (`onChange`, `onKeyDown`, `onClick`) directly to the `<Editor>` or `<EditorStatic>` component.
+- **Styling & Layout**: Use `className` and variant props consistently to control layout; wrap toolbars in `FixedToolbar` for floating UI.
+- **Accessibility**: Ensure keyboard handlers (e.g., Enter key) are properly prevented and propagated via `onKeyDown`.
+- **Documentation**: Document any new props in the `PlateEditorProps` interface with JSDoc comments.
+- **Lint & Format**: Run `pnpm lint` and `pnpm format` after edits to maintain code quality.

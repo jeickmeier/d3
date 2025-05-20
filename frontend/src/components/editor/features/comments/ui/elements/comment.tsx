@@ -26,7 +26,7 @@ import { cn } from "@/lib/utils";
 import { userPlugin } from "@components/editor/core/plugins/user-plugin";
 import type { CommentTypeId } from "@comments/types/comment-types";
 import { COMMENT_TYPES_MAP } from "@comments/types/comment-types";
-import { MiniPlateEditor } from "@/components/editor/MiniPlateEditor";
+import { MiniPlateEditor } from "@/components/editor/plate-editor";
 import { useDiscussionMutations } from "@comments/hooks/useDiscussionMutations";
 import { CommentAvatar } from "@/components/ui/comment-avatar";
 
@@ -237,11 +237,13 @@ export function Comment(props: {
             </div>
           </div>
         ) : (
-          <MiniPlateEditor
-            value={initialValue}
-            readOnly
-            className="w-auto grow"
-          />
+          <div className="w-full overflow-x-auto">
+            <MiniPlateEditor
+              value={initialValue}
+              readOnly
+              className="min-w-full px-0"
+            />
+          </div>
         )}
       </div>
     </div>

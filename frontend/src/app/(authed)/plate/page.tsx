@@ -66,7 +66,13 @@ export default function Page() {
       <CommentsSidebarProvider>
         <SettingsProvider>
           {/* Pass the potentially undefined currentUser */}
-          <PlateEditor currentUser={currentUser} />
+          <PlateEditor
+            currentUser={currentUser}
+            showToolbar
+            enableDnD
+            showComments
+            showSettings
+          />
         </SettingsProvider>
       </CommentsSidebarProvider>
 
