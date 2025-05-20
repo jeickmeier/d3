@@ -42,7 +42,9 @@ import {
   Square,
   Table,
   TableOfContentsIcon,
+  MinusIcon,
 } from "lucide-react";
+import { HorizontalRulePlugin } from "@udecode/plate-horizontal-rule/react";
 
 import {
   insertBlock,
@@ -155,6 +157,12 @@ const groups: Group[] = [
         keywords: ["citation", "blockquote", "quote", ">"],
         label: "Blockquote",
         value: BlockquotePlugin.key,
+      },
+      {
+        icon: <MinusIcon />,
+        keywords: ["divider", "hr", "line"],
+        label: "Divider",
+        value: HorizontalRulePlugin.key,
       },
       {
         description: "Insert a highlighted block.",

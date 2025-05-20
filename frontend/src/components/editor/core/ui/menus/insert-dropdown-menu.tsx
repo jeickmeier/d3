@@ -46,7 +46,9 @@ import {
   SquareIcon,
   TableIcon,
   TableOfContentsIcon,
+  LightbulbIcon,
 } from "lucide-react";
+import { CalloutPlugin } from "@udecode/plate-callout/react";
 
 import {
   DropdownMenu,
@@ -112,6 +114,11 @@ const groups: Group[] = [
         icon: <QuoteIcon />,
         label: "Quote",
         value: BlockquotePlugin.key,
+      },
+      {
+        icon: <LightbulbIcon />,
+        label: "Callout",
+        value: CalloutPlugin.key,
       },
       {
         icon: <MinusIcon />,
