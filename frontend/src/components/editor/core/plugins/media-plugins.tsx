@@ -11,7 +11,7 @@ import {
 } from "@udecode/plate-media/react";
 
 import { ImagePreview } from "../ui/elements/media/image-preview";
-import { MediaUploadToast } from "../ui/elements/media/media-upload-toast";
+import { MediaUploadToast } from "../ui/common/media/media-upload-toast";
 
 export const mediaPlugins = [
   ImagePlugin.extend({

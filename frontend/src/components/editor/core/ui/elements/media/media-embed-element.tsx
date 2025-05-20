@@ -15,7 +15,7 @@ import { PlateElement, withHOC } from "@udecode/plate/react";
 import { cn } from "@/lib/utils";
 
 import { Caption, CaptionTextarea } from "../../primitives/caption";
-import { MediaPopover } from "./media-popover";
+import { MediaPopover } from "../../common/media/media-popover";
 import {
   mediaResizeHandleVariants,
   Resizable,
@@ -115,7 +115,10 @@ export const MediaEmbedElement = withHOC(
                       "[&_.react-tweet-theme]:ring-2 [&_.react-tweet-theme]:ring-ring [&_.react-tweet-theme]:ring-offset-2",
                   )}
                 >
-                  <Tweet id={embed!.id} />
+                  <Tweet
+                    id={embed!.id}
+                    apiUrl="https://react-tweet.vercel.app/api/tweet"
+                  />
                 </div>
               )}
 

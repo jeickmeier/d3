@@ -13,7 +13,7 @@ import { PlateElement, withHOC } from "@udecode/plate/react";
 import { cn } from "@/lib/utils";
 
 import { Caption, CaptionTextarea } from "../../primitives/caption";
-import { MediaPopover } from "../media/media-popover";
+import { MediaPopover } from "../../common/media/media-popover";
 import {
   mediaResizeHandleVariants,
   Resizable,

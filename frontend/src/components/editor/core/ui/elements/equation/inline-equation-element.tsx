@@ -16,7 +16,7 @@ import { RadicalIcon } from "lucide-react";
 import { Popover, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 
-import { EquationPopoverContent } from "./equation-popover";
+import { EquationPopoverContent } from "../../common/equation/equation-popover";
 
 export function InlineEquationElement(
   props: PlateElementProps<TEquationElement>,
