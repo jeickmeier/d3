@@ -129,9 +129,6 @@ export function AIMenu() {
 
   useHotkeys("esc", () => {
     aiChatApi.stop();
-
-    // remove when you implement the route /api/ai/command
-    chat._abortFakeStream();
   });
 
   const isLoading = status === "streaming" || status === "submitted";

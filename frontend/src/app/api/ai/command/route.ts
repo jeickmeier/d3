@@ -1,11 +1,15 @@
 import type { TextStreamPart, ToolSet, Message } from "ai";
 import type { NextRequest } from "next/server";
 
-import { createOpenAI } from "@ai-sdk/openai";
+import { getOpenAIModel } from "@/lib/ai/openai";
 import { InvalidArgumentError } from "@ai-sdk/provider";
 import { delay as originalDelay } from "@ai-sdk/provider-utils";
 import { convertToCoreMessages, streamText } from "ai";
 import { NextResponse } from "next/server";
+import {
+  createMarkdownChunker,
+  CHUNKING_REGEXPS,
+} from "@/components/editor/features/ai/markdownChunker";
 
 /**
  * Detects the first chunk in a buffer.
@@ -120,25 +124,20 @@ function smoothStream<TOOLS extends ToolSet>({
   };
 }
 
-const CHUNKING_REGEXPS = {
-  line: /\n+/m,
-  list: /.{8}/m,
-  word: /\S+\s+/m,
-};
-
 // Type of the request body for the AI command endpoint
 type RequestBody = {
   apiKey?: string;
   messages: Array<Omit<Message, "id">>;
+  model?: string;
   system?: string;
 };
 
 export async function POST(req: NextRequest) {
   // Parse and type the request body
   const body = (await req.json()) as RequestBody;
-  const { apiKey: key, messages, system } = body;
+  const { apiKey: key, messages, model = "gpt-4o", system } = body;
 
-  const apiKey = key || process.env.OPENAI_API_KEY;
+  const apiKey = key ?? process.env.OPENAI_API_KEY;
 
   if (!apiKey) {
     return NextResponse.json(
@@ -147,67 +146,19 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const openai = createOpenAI({ apiKey });
+  const selectedModel = getOpenAIModel(model, apiKey);
 
-  let isInCodeBlock = false;
-  let isInTable = false;
-  let isInList = false;
-  let isInLink = false;
+  const { chunk, delay } = createMarkdownChunker();
+
   try {
     const result = streamText({
       experimental_transform: smoothStream({
-        chunking: (buffer) => {
-          // Check for code block markers
-          if (/```[^\s]+/.test(buffer)) {
-            isInCodeBlock = true;
-          } else if (isInCodeBlock && buffer.includes("```")) {
-            isInCodeBlock = false;
-          }
-          // test case: should not deserialize link with markdown syntax
-          if (buffer.includes("http")) {
-            isInLink = true;
-          } else if (buffer.includes("https")) {
-            isInLink = true;
-          } else if (buffer.includes("\n") && isInLink) {
-            isInLink = false;
-          }
-          if (buffer.includes("*") || buffer.includes("-")) {
-            isInList = true;
-          } else if (buffer.includes("\n") && isInList) {
-            isInList = false;
-          }
-          // Simple table detection: enter on |, exit on double newline
-          if (!isInTable && buffer.includes("|")) {
-            isInTable = true;
-          } else if (isInTable && buffer.includes("\n\n")) {
-            isInTable = false;
-          }
-
-          // Use line chunking for code blocks and tables, word chunking otherwise
-          // Choose the appropriate chunking strategy based on content type
-          let match;
-
-          if (isInCodeBlock || isInTable || isInLink) {
-            // Use line chunking for code blocks and tables
-            match = CHUNKING_REGEXPS.line.exec(buffer);
-          } else if (isInList) {
-            // Use list chunking for lists
-            match = CHUNKING_REGEXPS.list.exec(buffer);
-          } else {
-            // Use word chunking for regular text
-            match = CHUNKING_REGEXPS.word.exec(buffer);
-          }
-          if (!match) {
-            return null;
-          }
-
-          return buffer.slice(0, match.index) + match?.[0];
-        },
-        delayInMs: () => (isInCodeBlock || isInTable ? 100 : 30),
+        chunking: chunk,
+        delayInMs: delay,
       }),
       maxTokens: 2048,
       messages: convertToCoreMessages(messages),
-      model: openai("gpt-4o"),
+      model: selectedModel,
       system: system,
     });
 

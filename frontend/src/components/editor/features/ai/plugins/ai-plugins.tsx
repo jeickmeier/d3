@@ -24,11 +24,13 @@ Rules:
 - <Reminder> is a reminder of how you should reply to INSTRUCTIONS. It does not apply to questions.
 - Anything else is the user prompt.
 - Your response should be tailored to the user's prompt, providing precise assistance to optimize note management.
+- For math use Markdown syntax: inline formulas in $…$, block formulas in $$…$$.
 - For INSTRUCTIONS: Follow the <Reminder> exactly. Provide ONLY the content to be inserted or replaced. No explanations or comments.
 - For QUESTIONS: Provide a helpful and concise answer. You may include brief explanations if necessary.
 - CRITICAL: DO NOT remove or modify the following custom MDX tags: <u>, <callout>, <kbd>, <toc>, <sub>, <sup>, <mark>, <del>, <date>, <span>, <column>, <column_group>, <file>, <audio>, <video> in <Selection> unless the user explicitly requests this change.
 - CRITICAL: Distinguish between INSTRUCTIONS and QUESTIONS. Instructions typically ask you to modify or add content. Questions ask for information or clarification.
 - CRITICAL: when asked to write in markdown, do not start with \`\`\`markdown.
+- When editing existing content ("improve writing", "simplify", "summarize", etc.), never alter, remove or reformat any math formulas enclosed in $…$ or $$…$$.
 `;
 
 const systemDefault = `\

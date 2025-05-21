@@ -1,104 +1,19 @@
 "use client";
 
-import * as React from "react";
-
+// React import removed because it's no longer needed
 import { useChat as useBaseChat } from "@ai-sdk/react";
-
 import { useSettings } from "@/components/editor/settings/settings";
-import { fakeStreamText } from "@components/editor/features/ai/ui/primitives/mock-chat-stream";
 
 export const useChat = () => {
   const { aiModel } = useSettings();
 
-  // remove when you implement the route /api/ai/command
-  const abortControllerRef = React.useRef<AbortController | null>(null);
-  const _abortFakeStream = () => {
-    if (abortControllerRef.current) {
-      abortControllerRef.current.abort();
-      abortControllerRef.current = null;
-    }
-  };
-
   const chat = useBaseChat({
     id: "editor",
     api: "/api/ai/command",
-    // IMPORTANT: The OpenAI API key is now sourced from the NEXT_PUBLIC_OPENAI_API_KEY environment variable.
-    // Ensure this variable is set in your .env.local file for development.
-    // In a production environment, the /api/ai/command endpoint should securely manage the API key
-    // and not rely on a client-exposed environment variable if possible, or ensure the key has minimal privileges.
     body: {
-      apiKey: process.env.NEXT_PUBLIC_OPENAI_API_KEY,
       model: aiModel.value,
-    },
-    // Mock the API response. Remove it when you implement the route /api/ai/command
-    fetch: async (input, init) => {
-      const res = await fetch(input, init);
-
-      if (!res.ok) {
-        let sample: "markdown" | "mdx" | null = null;
-
-        try {
-          // Type definitions for runtime validation
-          interface ChatMessage {
-            content: string;
-          }
-
-          interface ChatRequestBody {
-            messages: ChatMessage[];
-          }
-
-          // Runtime type-guard to ensure we only access the expected shape
-          const isChatRequestBody = (val: unknown): val is ChatRequestBody => {
-            return (
-              typeof val === "object" &&
-              val !== null &&
-              "messages" in val &&
-              Array.isArray((val as { messages: unknown }).messages) &&
-              (val as { messages: unknown[] }).messages.every(
-                (msg) =>
-                  typeof msg === "object" &&
-                  msg !== null &&
-                  "content" in msg &&
-                  typeof (msg as { content: unknown }).content === "string",
-              )
-            );
-          };
-
-          const parsed = JSON.parse(init?.body as string) as unknown;
-
-          if (isChatRequestBody(parsed)) {
-            const lastContent =
-              parsed.messages[parsed.messages.length - 1]?.content ?? "";
-
-            if (lastContent.includes("Generate a markdown sample")) {
-              sample = "markdown";
-            } else if (lastContent.includes("Generate a mdx sample")) {
-              sample = "mdx";
-            }
-          }
-        } catch {
-          sample = null;
-        }
-
-        abortControllerRef.current = new AbortController();
-        await new Promise((resolve) => setTimeout(resolve, 400));
-
-        const stream = fakeStreamText({
-          sample,
-          signal: abortControllerRef.current.signal,
-        });
-
-        return new Response(stream, {
-          headers: {
-            Connection: "keep-alive",
-            "Content-Type": "text/plain",
-          },
-        });
-      }
-
-      return res;
     },
   });
 
-  return { ...chat, _abortFakeStream };
+  return chat;
 };

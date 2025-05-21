@@ -1,6 +1,7 @@
 # Cursor Rule: PlateEditor Component
 
 ## Purpose
+
 The `PlateEditor` component serves as the primary rich-text editor in our application, built on top of the `@udecode/plate` framework. It provides a unified interface for editable and read-only modes, supports custom toolbars, drag-and-drop, comments, and configuration presets.
 
 ## Functionality
@@ -59,4 +60,4 @@ The `PlateEditor` component serves as the primary rich-text editor in our applic
 - **Styling & Layout**: Use `className` and variant props consistently to control layout; wrap toolbars in `FixedToolbar` for floating UI.
 - **Accessibility**: Ensure keyboard handlers (e.g., Enter key) are properly prevented and propagated via `onKeyDown`.
 - **Documentation**: Document any new props in the `PlateEditorProps` interface with JSDoc comments.
-- **Lint & Format**: Run `pnpm lint` and `pnpm format` after edits to maintain code quality. 
+- **Lint & Format**: Run `pnpm lint` and `pnpm format` after edits to maintain code quality.
