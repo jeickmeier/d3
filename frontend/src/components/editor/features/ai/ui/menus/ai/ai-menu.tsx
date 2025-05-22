@@ -18,16 +18,32 @@ import {
   usePluginOption,
 } from "@udecode/plate/react";
 import { Command as CommandPrimitive } from "cmdk";
-import { Loader2Icon } from "lucide-react";
+import { Check, ChevronsUpDown, Loader2Icon } from "lucide-react";
 
-import { Command, CommandList } from "@/components/ui/command";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
 import {
   Popover,
   PopoverAnchor,
   PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
+import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useChat } from "@components/editor/features/ai/core/use-chat";
+import { useChat } from "@/lib/ai/use-chat";
+import {
+  useSettings,
+  type Provider,
+  type Model,
+  providers,
+} from "../../../../../settings/settings";
+import { modelsFor, type ModelID } from "../../../../../settings/ai-registry";
 
 import { AIChatEditor } from "../../elements/ai-chat-editor";
 import { AIMenuItems } from "./ai-menu-items";
@@ -66,15 +82,35 @@ export function AIMenu() {
 
   const content = useLastAssistantMessage()?.content;
 
+  // Settings for AI provider and model
+  const { aiSelection, setAiSelection } = useSettings();
+  const { provider: currentProvider, model: currentModel } = aiSelection;
+
+  const [providerSelectOpen, setProviderSelectOpen] = React.useState(false);
+  const [modelSelectOpen, setModelSelectOpen] = React.useState(false);
+
+  const availableModels: Model[] = React.useMemo(
+    () =>
+      modelsFor(currentProvider.value).map((mid: ModelID) => ({
+        label: mid,
+        value: mid,
+      })),
+    [currentProvider.value],
+  );
+
   React.useEffect(() => {
     if (streaming) {
-      const anchor = aiChatApi.node({ anchor: true });
-      setTimeout(() => {
-        const anchorDom = editor.api.toDOMNode(anchor![0])!;
-        setAnchorElement(anchorDom);
-      }, 0);
+      const anchorNodeEntry = aiChatApi.node({ anchor: true });
+      if (anchorNodeEntry && anchorNodeEntry[0]) {
+        setTimeout(() => {
+          const anchorDom = editor.api.toDOMNode(anchorNodeEntry[0]);
+          if (anchorDom) {
+            setAnchorElement(anchorDom);
+          }
+        }, 0);
+      }
     }
-  }, [streaming]);
+  }, [streaming, aiChatApi, editor.api]);
 
   const hideChat = () => aiChatApi.hide();
   const submitChat = () => aiChatApi.submit();
@@ -197,6 +233,121 @@ export function AIMenu() {
             <CommandList>
               <AIMenuItems setValue={setValue} />
             </CommandList>
+          )}
+
+          {/* Provider and Model Selectors */}
+          {!isLoading && (
+            <div className="flex gap-2 border-t p-2">
+              {/* Provider Selector */}
+              <Popover
+                open={providerSelectOpen}
+                onOpenChange={setProviderSelectOpen}
+              >
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={providerSelectOpen}
+                    className="w-[180px] justify-between text-xs h-8"
+                  >
+                    {currentProvider.label}
+                    <ChevronsUpDown className="ml-2 size-3 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[180px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search provider..." />
+                    <CommandEmpty>No provider found.</CommandEmpty>
+                    <CommandList>
+                      <CommandGroup>
+                        {providers.map((p: Provider) => (
+                          <CommandItem
+                            key={p.value}
+                            value={p.label}
+                            onSelect={() => {
+                              const newProviderModels = modelsFor(p.value);
+                              let newModel = currentModel;
+                              if (
+                                !newProviderModels.includes(currentModel.value)
+                              ) {
+                                newModel = {
+                                  label: newProviderModels[0],
+                                  value: newProviderModels[0],
+                                };
+                              }
+                              setAiSelection({
+                                provider: p,
+                                model: newModel,
+                              });
+                              setProviderSelectOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 size-4",
+                                currentProvider.value === p.value
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {p.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {/* Model Selector */}
+              <Popover open={modelSelectOpen} onOpenChange={setModelSelectOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={modelSelectOpen}
+                    className="w-[180px] justify-between text-xs h-8"
+                    disabled={availableModels.length === 0}
+                  >
+                    {currentModel.label}
+                    <ChevronsUpDown className="ml-2 size-3 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[180px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search model..." />
+                    <CommandEmpty>No model found.</CommandEmpty>
+                    <CommandList>
+                      <CommandGroup>
+                        {availableModels.map((m: Model) => (
+                          <CommandItem
+                            key={m.value}
+                            value={m.label}
+                            onSelect={() => {
+                              setAiSelection({
+                                provider: currentProvider,
+                                model: m,
+                              });
+                              setModelSelectOpen(false);
+                            }}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 size-4",
+                                currentModel.value === m.value
+                                  ? "opacity-100"
+                                  : "opacity-0",
+                              )}
+                            />
+                            {m.label}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+            </div>
           )}
         </Command>
       </PopoverContent>

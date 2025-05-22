@@ -1,4 +1,4 @@
-export * from "./core/use-chat";
+export * from "../../../../lib/ai/use-chat";
 export * from "./plugins/ai-plugins";
 export * from "./plugins/copilot-plugins";
 

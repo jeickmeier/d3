@@ -29,8 +29,9 @@ export function createMarkdownChunker() {
       isInLink = false;
     }
 
-    // List detection
-    if (buffer.includes("*") || buffer.includes("-")) {
+    // List detection (bullet characters at start of a line, e.g. "- " or "* ")
+    const listBulletRegex = /(^|\n)\s*([*+-])\s+/;
+    if (listBulletRegex.test(buffer)) {
       isInList = true;
     } else if (buffer.includes("\n") && isInList) {
       isInList = false;

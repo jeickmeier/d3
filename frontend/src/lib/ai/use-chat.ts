@@ -5,13 +5,14 @@ import { useChat as useBaseChat } from "@ai-sdk/react";
 import { useSettings } from "@/components/editor/settings/settings";
 
 export const useChat = () => {
-  const { aiModel } = useSettings();
+  const { aiSelection } = useSettings();
+  const { provider, model } = aiSelection;
 
   const chat = useBaseChat({
     id: "editor",
     api: "/api/ai/command",
     body: {
-      model: aiModel.value,
+      model: `${provider.value}:${model.value}`,
     },
   });
 

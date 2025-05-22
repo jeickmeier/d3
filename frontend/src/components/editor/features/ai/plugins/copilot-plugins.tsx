@@ -1,8 +1,9 @@
 "use client";
 
 import { CopilotPlugin } from "@udecode/plate-ai/react";
-// import { faker } from '@faker-js/faker';
 import { serializeMd, stripMarkdown } from "@udecode/plate-markdown";
+
+import { COPILOT_PROMPTS } from "@components/editor/features/ai/prompts/prompts";
 
 import { GhostText } from "@components/editor/features/ai/ui/primitives/ghost-text";
 import { markdownPlugin } from "@components/editor/core/plugins/markdown-plugin";
@@ -14,23 +15,9 @@ export const copilotPlugins = [
       completeOptions: {
         api: "/api/ai/copilot",
         body: {
-          system: `You are an advanced AI writing assistant, similar to VSCode Copilot but for general text. Your task is to predict and generate the next part of the text based on the given context.
-  
-  Rules:
-  - Continue the text naturally up to the next punctuation mark (., ,, ;, :, ?, or !).
-  - Maintain style and tone. Don't repeat given text.
-  - For unclear context, provide the most likely continuation.
-  - Handle code snippets, lists, or structured text if needed.
-  - Don't include """ in your response.
-  - CRITICAL: Always end with a punctuation mark.
-  - CRITICAL: Avoid starting a new block. Do not use block formatting like >, #, 1., 2., -, etc. The suggestion should continue in the same block as the context.
-  - If no context is provided or you can't generate a continuation, return "0" without explanation.`,
+          system: COPILOT_PROMPTS.system,
         },
         onError: () => {
-          // Mock the API response. Remove it when you implement the route /api/ai/copilot
-          // api.copilot.setBlockSuggestion({
-          //   text: stripMarkdown(faker.lorem.sentence()),
-          // });
           console.error("Copilot API call failed or is not implemented.");
         },
         onFinish: (_, completion) => {
@@ -52,10 +39,7 @@ export const copilotPlugins = [
           value: [contextEntry[0]],
         });
 
-        return `Continue the text up to the next punctuation mark:
-  """
-  ${prompt}
-  """`;
+        return COPILOT_PROMPTS.generatePrompt(prompt);
       },
     },
   })),

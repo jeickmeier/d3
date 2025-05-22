@@ -26,7 +26,7 @@ export function InlineEquationElement(
   const katexRef = React.useRef<HTMLDivElement | null>(null);
   const selected = useSelected();
   const isCollapsed = useEditorSelector(
-    (editor) => editor.api.isCollapsed(),
+    (editor) => editor && editor.api && editor.api.isCollapsed(),
     [],
   );
   const [open, setOpen] = React.useState(selected && isCollapsed);

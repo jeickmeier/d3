@@ -38,27 +38,42 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import {
+  ProviderID,
+  ModelID,
+  PROVIDERS,
+  ALL_MODELS,
+  modelsFor,
+} from "./ai-registry";
 
-interface Model {
+// Define UI-facing types driven by the AI registry
+export type Model = {
   label: string;
-  value: string;
-}
+  value: ModelID;
+};
 
 interface ApiKeys {
   uploadthing: string;
 }
 
-interface SettingsContextType {
-  apiKeys: ApiKeys;
-  aiModel: Model;
-  setApiKey: (service: keyof ApiKeys, key: string) => void;
-  setAiModel: (model: Model) => void;
-}
+export type Provider = {
+  label: string;
+  value: ProviderID;
+};
 
-export const models: Model[] = [
-  { label: "gpt-4o-mini", value: "gpt-4o-mini" }, // Default
-  { label: "gpt-4o", value: "gpt-4o" },
-];
+export const providers: Provider[] = PROVIDERS.map(({ id, name }) => ({
+  label: name,
+  value: id,
+}));
+
+export const models: Model[] = ALL_MODELS.map((m) => ({ label: m, value: m }));
+
+export interface SettingsContextType {
+  apiKeys: ApiKeys;
+  aiSelection: { provider: Provider; model: Model };
+  setApiKey: (service: keyof ApiKeys, key: string) => void;
+  setAiSelection: (selection: { provider: Provider; model: Model }) => void;
+}
 
 const SettingsContext = React.createContext<SettingsContextType | undefined>(
   undefined,
@@ -68,22 +83,51 @@ export function SettingsProvider({ children }: { children: React.ReactNode }) {
   const [apiKeys, setApiKeys] = React.useState<ApiKeys>({
     uploadthing: "",
   });
-  const [aiModel, setAiModel] = React.useState<Model>(models[0]);
+  const [aiSelectionState, setAiSelectionState] = React.useState<{
+    provider: Provider;
+    model: Model;
+  }>(() => {
+    const defaultProvider = providers[0];
+    const defaultModelID = modelsFor(defaultProvider.value)[0];
+    const defaultModel: Model = {
+      label: defaultModelID,
+      value: defaultModelID,
+    };
+    return { provider: defaultProvider, model: defaultModel };
+  });
 
   const setApiKey = (service: keyof ApiKeys, key: string) => {
     setApiKeys((prev) => ({ ...prev, [service]: key }));
   };
 
+  const setAiSelection = (selection: { provider: Provider; model: Model }) => {
+    const allowedModels = modelsFor(selection.provider.value);
+    let modelValue = selection.model.value;
+    if (!allowedModels.includes(modelValue)) {
+      modelValue = allowedModels[0];
+    }
+    const modelObj: Model = { label: modelValue, value: modelValue };
+    setAiSelectionState({
+      provider: selection.provider,
+      model: modelObj,
+    });
+  };
+
   return (
     <SettingsContext.Provider
-      value={{ apiKeys, aiModel, setApiKey, setAiModel }}
+      value={{
+        apiKeys,
+        aiSelection: aiSelectionState,
+        setApiKey,
+        setAiSelection,
+      }}
     >
       {children}
     </SettingsContext.Provider>
   );
 }
 
-export function useSettings() {
+export function useSettings(): SettingsContextType {
   const context = React.useContext(SettingsContext);
 
   return (
@@ -91,18 +135,30 @@ export function useSettings() {
       apiKeys: {
         uploadthing: "",
       },
-      aiModel: models[0],
+      aiSelection: {
+        provider: providers[0],
+        model: (() => {
+          const defaultModelID = modelsFor(providers[0].value)[0];
+          return { label: defaultModelID, value: defaultModelID };
+        })(),
+      },
       setApiKey: () => {},
-      setAiModel: () => {},
+      setAiSelection: () => {},
     }
   );
 }
 
 export function SettingsDialog() {
-  const { apiKeys, aiModel, setApiKey, setAiModel } = useSettings();
+  const { apiKeys, aiSelection, setApiKey, setAiSelection } = useSettings();
+  const { provider: aiProvider, model: aiModel } = aiSelection;
+  const availableModels: Model[] = modelsFor(aiProvider.value).map((mid) => ({
+    label: mid,
+    value: mid,
+  }));
   const [tempApiKeys, setTempApiKeys] = React.useState(apiKeys);
   const [showKey, setShowKey] = React.useState<Record<string, boolean>>({});
   const [open, setOpen] = React.useState(false);
+  const [openProvider, setOpenProvider] = React.useState(false);
   const [openModel, setOpenModel] = React.useState(false);
 
   const { getOptions, setOption } = useEditorPlugin(CopilotPlugin);
@@ -226,6 +282,63 @@ export function SettingsDialog() {
             <div className="space-y-4">
               {renderApiKeyInput("uploadthing", "UploadThing API key")}
 
+              {/* Provider selector */}
+              <div className="group relative">
+                <label
+                  className="absolute start-1 top-0 z-10 block -translate-y-1/2 bg-background px-2 text-xs font-medium text-foreground"
+                  htmlFor="select-provider"
+                >
+                  Provider
+                </label>
+                <Popover open={openProvider} onOpenChange={setOpenProvider}>
+                  <PopoverTrigger id="select-provider" asChild>
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full justify-between"
+                      aria-expanded={openProvider}
+                      role="combobox"
+                    >
+                      <code>{aiProvider.label}</code>
+                      <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-full p-0">
+                    <Command>
+                      <CommandInput placeholder="Search provider..." />
+                      <CommandEmpty>No provider found.</CommandEmpty>
+                      <CommandList>
+                        <CommandGroup>
+                          {providers.map((p) => (
+                            <CommandItem
+                              key={p.value}
+                              value={p.value}
+                              onSelect={() => {
+                                setAiSelection({
+                                  provider: p,
+                                  model: aiModel,
+                                });
+                                setOpenProvider(false);
+                              }}
+                            >
+                              <Check
+                                className={cn(
+                                  "mr-2 size-4",
+                                  aiProvider.value === p.value
+                                    ? "opacity-100"
+                                    : "opacity-0",
+                                )}
+                              />
+                              <code>{p.label}</code>
+                            </CommandItem>
+                          ))}
+                        </CommandGroup>
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               <div className="group relative">
                 <label
                   className="absolute start-1 top-0 z-10 block -translate-y-1/2 bg-background px-2 text-xs font-medium text-foreground group-has-disabled:opacity-50"
@@ -252,12 +365,15 @@ export function SettingsDialog() {
                       <CommandEmpty>No model found.</CommandEmpty>
                       <CommandList>
                         <CommandGroup>
-                          {models.map((m) => (
+                          {availableModels.map((m) => (
                             <CommandItem
                               key={m.value}
                               value={m.value}
                               onSelect={() => {
-                                setAiModel(m);
+                                setAiSelection({
+                                  provider: aiProvider,
+                                  model: m,
+                                });
                                 setOpenModel(false);
                               }}
                             >

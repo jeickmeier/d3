@@ -52,11 +52,14 @@ const EquationPopoverContent = ({
     setOpen(false);
 
     if (isInline) {
-      editor.tf.select(element, { next: true });
+      if (editor && editor.tf) {
+        editor.tf.select(element, { next: true });
+      }
     } else {
-      editor
-        .getApi(BlockSelectionPlugin)
-        .blockSelection.set(element.id as string);
+      const blockSelectionApi = editor?.getApi(BlockSelectionPlugin);
+      if (blockSelectionApi) {
+        blockSelectionApi.blockSelection.set(element.id as string);
+      }
     }
   };
 
