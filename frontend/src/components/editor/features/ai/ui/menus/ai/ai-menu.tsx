@@ -42,8 +42,8 @@ import {
   type Provider,
   type Model,
   providers,
-} from "../../../../../settings/settings";
-import { modelsFor, type ModelID } from "../../../../../settings/ai-registry";
+} from "@/lib/settings/context";
+import { modelsFor, type ModelID } from "@/lib/ai/registry";
 
 import { AIChatEditor } from "../../elements/ai-chat-editor";
 import { AIMenuItems } from "./ai-menu-items";

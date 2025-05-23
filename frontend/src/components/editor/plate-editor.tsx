@@ -24,7 +24,7 @@ import { MediaToolbarButton } from "@components/editor/core/ui/menus/buttons/med
 import { TableDropdownMenu } from "@components/editor/core/ui/menus/table-dropdown-menu";
 import { ImagePlugin } from "@udecode/plate-media/react";
 
-import { SettingsDialog } from "@/components/editor/settings/settings";
+import { SettingsDialog } from "@/lib/settings/context";
 import { CommentsSidebar } from "@components/editor/features/comments/ui/sidebars/CommentsSidebar";
 import {
   Editor,

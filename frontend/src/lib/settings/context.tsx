@@ -44,7 +44,7 @@ import {
   PROVIDERS,
   ALL_MODELS,
   modelsFor,
-} from "./ai-registry";
+} from "@/lib/ai/registry";
 
 // Define UI-facing types driven by the AI registry
 export type Model = {

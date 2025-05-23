@@ -59,7 +59,6 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
       components={{
         IconLeft: ({ className, ...props }) => (
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument

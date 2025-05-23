@@ -35,6 +35,7 @@ export function streamGoogle({
       }),
       maxTokens: 2048,
       messages: convertToCoreMessages(messages),
+      // @ts-expect-error: using string id for model
       model: selectedModel,
       system,
     });
