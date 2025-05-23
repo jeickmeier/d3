@@ -5,7 +5,8 @@ export type ModelID =
   | "gpt-4.1"
   | "gemini-2.5-flash-preview-05-20"
   | "gemini-2.5-pro-preview-05-06"
-  | "hacker_news_agent";
+  | "hacker_news_agent"
+  | "web_agent";
 
 export interface ProviderInfo {
   id: ProviderID;
@@ -27,7 +28,7 @@ export const PROVIDERS: ProviderInfo[] = [
   {
     id: "custom",
     name: "Custom Agent",
-    models: ["hacker_news_agent"],
+    models: ["hacker_news_agent", "web_agent"],
   },
 ];
 

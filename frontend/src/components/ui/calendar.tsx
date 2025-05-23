@@ -1,4 +1,3 @@
-// @ts-nocheck
 "use client";
 
 import * as React from "react";
@@ -60,18 +59,17 @@ function Calendar({
         day_hidden: "invisible",
         ...classNames,
       }}
-      components={
-        {
-          IconLeft: ({ className, ...props }) => (
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            <ChevronLeft className={cn("size-4", className)} {...props} />
-          ),
-          IconRight: ({ className, ...props }) => (
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-            <ChevronRight className={cn("size-4", className)} {...props} />
-          ),
-        } as any
-      }
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+      components={{
+        IconLeft: ({ className, ...props }) => (
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          <ChevronLeft className={cn("size-4", className)} {...props} />
+        ),
+        IconRight: ({ className, ...props }) => (
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
+          <ChevronRight className={cn("size-4", className)} {...props} />
+        ),
+      }}
       {...props}
     />
   );
