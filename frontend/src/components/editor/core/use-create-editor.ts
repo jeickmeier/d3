@@ -3,7 +3,7 @@
 import type { Value } from "@udecode/plate";
 
 import { withProps } from "@udecode/cn";
-import { AIChatPlugin, AIPlugin } from "@udecode/plate-ai/react";
+import { AIChatPlugin, AIPlugin, CopilotPlugin } from "@udecode/plate-ai/react";
 import {
   BoldPlugin,
   CodePlugin,
@@ -102,7 +102,6 @@ import { TocElement } from "@/components/editor/core/ui/elements/toc/toc-element
 import { ToggleElement } from "@/components/editor/core/ui/elements/toggle/toggle-element";
 
 import { userPlugin } from "@/components/editor/core/plugins/user-plugin";
-import type { UserPluginOptions } from "@/components/editor/core/plugins/user-plugin";
 import { editorPlugins, viewPlugins } from "./editor-plugins";
 
 // Define a more specific type for currentUser based on PlateEditorProps if available,
@@ -188,8 +187,9 @@ export const useCreateEditor = (
     ...plateEditorOptions // Renamed from options to avoid conflict
   } = options;
 
+  // Allow overriding any plugin options
   let pluginOverrides:
-    | Record<string, { options: Partial<UserPluginOptions> }>
+    | Record<string, { options: Record<string, unknown> }>
     | undefined;
   if (currentUser) {
     // Only include the current user in the users map
@@ -201,11 +201,32 @@ export const useCreateEditor = (
       },
     };
 
+    // start with user plugin override
     pluginOverrides = {
       [userPlugin.key]: {
         options: {
           currentUserId: currentUser.id,
           users: combinedUsers,
+        },
+      },
+    };
+    // also inject user ID into AIPlugin requests
+    pluginOverrides[AIPlugin.key as string] = {
+      options: {
+        completeOptions: {
+          api: "/api/ai/command",
+          headers: { "X-User-Id": currentUser.id },
+          body: { userId: currentUser.id },
+        },
+      },
+    };
+    // likewise for CopilotPlugin
+    pluginOverrides[CopilotPlugin.key as string] = {
+      options: {
+        completeOptions: {
+          api: "/api/ai/copilot",
+          headers: { "X-User-Id": currentUser.id },
+          body: { userId: currentUser.id },
         },
       },
     };

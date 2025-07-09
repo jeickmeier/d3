@@ -29,6 +29,7 @@ export async function streamCustomFastApi({
   // Assemble headers – optionally include an authorization token if provided
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
+    Accept: "text/event-stream",
   };
   if (apiKey) {
     headers["Authorization"] = `Bearer ${apiKey}`;
@@ -79,39 +80,53 @@ export async function streamCustomFastApi({
 
         while (true) {
           const { value, done } = await reader.read();
-          if (done) break;
-          buffer += decoder.decode(value, { stream: true });
+          buffer += decoder.decode(value ?? new Uint8Array(), {
+            stream: !done,
+          });
 
-          let newlineIdx;
-          while ((newlineIdx = buffer.indexOf("\n")) !== -1) {
-            const line = buffer.slice(0, newlineIdx).trim();
-            buffer = buffer.slice(newlineIdx + 1);
+          if (done) {
+            // Flush any remaining multi-byte chars
+            buffer += decoder.decode();
+          }
 
-            if (!line.startsWith("data:")) continue;
+          // Split events on double newlines (handles LF and CRLF)
+          let eventEnd;
+          while ((eventEnd = buffer.search(/\r?\n\r?\n/)) !== -1) {
+            const rawEvent = buffer.slice(0, eventEnd);
+            // Advance past the delimiter (2 or 4 chars)
+            buffer = buffer.slice(
+              eventEnd + (buffer[eventEnd] === "\r" ? 4 : 2),
+            );
 
-            const payload = line.slice(5).trim();
-
-            if (payload === "[DONE]") {
-              controller.close();
-              return;
-            }
-
-            try {
-              const json = JSON.parse(payload);
-              // OpenAI-style delta
-              const delta: string | undefined =
-                json?.choices?.[0]?.delta?.content;
-
-              if (delta) {
-                controller.enqueue(
-                  encoder.encode(`0:${JSON.stringify(delta)}\n`),
-                );
+            // Process each data: line in the event
+            const lines = rawEvent.split(/\r?\n/);
+            for (const line of lines) {
+              if (!line.startsWith("data:")) continue;
+              // Extract the payload after "data:" without trimming internal spaces
+              const payload = line.startsWith("data: ")
+                ? line.slice(6)
+                : line.slice(5);
+              if (payload === "[DONE]") {
+                controller.close();
+                return;
               }
-            } catch {
-              // ignore malformed lines
+              try {
+                const json = JSON.parse(payload);
+                const delta = json?.choices?.[0]?.delta?.content;
+                if (delta != null) {
+                  controller.enqueue(
+                    encoder.encode(`0:${JSON.stringify(delta)}\n`),
+                  );
+                }
+              } catch {
+                // ignore parsing errors
+              }
             }
           }
+
+          if (done) break;
         }
+
         controller.close();
       },
     });

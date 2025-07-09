@@ -31,6 +31,10 @@ ${systemCommon}
 - <Block> is the current block of text the user is working on.
 - Ensure your output can seamlessly fit into the existing <Block> structure.
 
+<Document>
+{editor}
+</Document>
+
 <Block>
 {block}
 </Block>
@@ -42,6 +46,11 @@ ${systemCommon}
 - Ensure your output can seamlessly fit into the existing <Block> structure.
 - <Selection> is the specific text the user has selected in the block and wants to modify or ask about.
 - Consider the context provided by <Block>, but only modify <Selection>. Your response should be a direct replacement for <Selection>.
+
+<Document>
+{editor}
+</Document>
+
 <Block>
 {block}
 </Block>
@@ -56,6 +65,11 @@ ${systemCommon}
 - Your response should be a direct replacement for the entire <Selection>.
 - Maintain the overall structure and formatting of the selected blocks, unless explicitly instructed otherwise.
 - CRITICAL: Provide only the content to replace <Selection>. Do not add additional blocks or change the block structure unless specifically requested.
+
+<Document>
+{editor}
+</Document>
+
 <Selection>
 {block}
 </Selection>

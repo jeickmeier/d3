@@ -1,10 +1,9 @@
-/* eslint-disable @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call */
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { providers, type ProviderName } from "@/lib/ai/providers";
-import { getOpenAIModel } from "@/lib/ai/openai";
 import { generateText } from "ai";
+import { getLanguageModel } from "@/lib/ai/models";
 
 const RequestSchema = z.object({
   apiKey: z.string().optional(),
@@ -61,11 +60,12 @@ export async function POST(req: NextRequest) {
     });
   }
 
-  // OpenAI single-prompt completion
-  const modelInstance = getOpenAIModel(modelId, apiKey);
+  // Define the model for OpenAI requests
+  const modelInstance = getLanguageModel(`openai:${modelId}`);
 
   try {
     const result = await generateText({
+      // @ts-expect-error: using string id for model
       model: modelInstance,
       prompt,
       system,

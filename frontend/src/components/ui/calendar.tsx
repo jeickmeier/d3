@@ -60,14 +60,28 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ className, ...props }) => (
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          <ChevronLeft className={cn("size-4", className)} {...props} />
-        ),
-        IconRight: ({ className, ...props }) => (
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-          <ChevronRight className={cn("size-4", className)} {...props} />
-        ),
+        /*
+         * Override the default Chevron component used by DayPicker’s navigation
+         * buttons and dropdowns so we can render Lucide icons with our
+         * Tailwind classes. The `orientation` prop indicates which direction
+         * of chevron should be rendered.
+         */
+        // prettier-ignore
+        Chevron: (
+          { orientation, className, ...props }: { orientation?: "left" | "right" | "up" | "down"; className?: string } &
+            React.SVGProps<SVGSVGElement>,
+        ) => {
+          // Select icon based on orientation (default to right chevron)
+          const Icon =
+            orientation === "left"
+              ? ChevronLeft
+              : orientation === "right"
+                ? ChevronRight
+                : ChevronRight;
+
+           
+          return <Icon className={cn("size-4", className)} {...props} />;
+        },
       }}
       {...props}
     />

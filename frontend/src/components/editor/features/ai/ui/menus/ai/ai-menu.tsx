@@ -44,6 +44,7 @@ import {
   providers,
 } from "@/lib/settings/context";
 import { modelsFor, type ModelID } from "@/lib/ai/registry";
+import { userPlugin } from "@/components/editor/core/plugins/user-plugin";
 
 import { AIChatEditor } from "../../elements/ai-chat-editor";
 import { AIMenuItems } from "./ai-menu-items";
@@ -70,10 +71,11 @@ export function AIMenu() {
   const mode = usePluginOption(AIChatPlugin, "mode");
   const streaming = usePluginOption(AIChatPlugin, "streaming");
   const isSelecting = Boolean(useIsSelecting());
+  const currentUserId = usePluginOption(userPlugin, "currentUserId");
 
   const [value, setValue] = React.useState("");
 
-  const chat = useChat();
+  const chat = useChat(currentUserId);
 
   const { input, messages, setInput, status } = chat;
   const [anchorElement, setAnchorElement] = React.useState<HTMLElement | null>(

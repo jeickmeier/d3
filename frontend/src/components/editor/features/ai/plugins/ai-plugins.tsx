@@ -21,6 +21,7 @@ import { PROMPT_TEMPLATES } from "@components/editor/features/ai/prompts/prompts
 export const aiPlugins = [
   cursorOverlayPlugin,
   markdownPlugin,
+  // Base AI plugin - the user ID will be injected via AIChatPlugin
   AIPlugin,
   AIChatPlugin.configure({
     options: {
